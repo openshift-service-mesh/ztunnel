@@ -56,5 +56,7 @@ merge
 [[ $? -ne 0 ]] && echo "Merge failed." >&2 && exit 1
 
 cargo vendor
-git add .
-git -c "user.name=$GIT_USERNAME" -c "user.email=$GIT_EMAIL" commit -m "update cargo deps"
+if [ -n "$(git status --porcelain)" ]; then
+  git add .
+  git -c "user.name=$GIT_USERNAME" -c "user.email=$GIT_EMAIL" commit -m "update cargo deps"
+fi
