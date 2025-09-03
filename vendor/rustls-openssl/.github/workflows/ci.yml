@@ -1,0 +1,112 @@
+
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+      - name: Cache build artifacts
+        uses: Swatinem/rust-cache@v2
+      - name: cargo test
+        run: cargo test
+      # https://github.com/rust-lang/cargo/issues/6669
+      - name: cargo test --doc
+        run: cargo test --doc
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - name: Cache build artifacts
+        uses: Swatinem/rust-cache@v2
+      - name: cargo fmt (check)
+        run: cargo fmt -- --check -l
+      - name: cargo clippy (warnings)
+        run: cargo clippy --all-targets -- -D warnings
+      - name: cargo clippy --no-default-features (warnings)
+        run: cargo clippy --no-default-features --all-targets -- -D warnings
+
+  test-fips-1-1-1:
+    name: Test using FIPS openssl 1.1.1
+    runs-on: ubuntu-latest
+    container:
+      image: registry.access.redhat.com/ubi8/ubi:latest
+    steps:
+      - name: Install dependencies
+        run: dnf install -y gcc openssl-devel
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+      - name: Cache build artifacts
+        uses: Swatinem/rust-cache@v2
+      # Use single thread on FIPS to avoid running out of entropy
+      - name: Run cargo test --features fips
+        run: cargo test --tests --features fips -- --test-threads=1
+
+  test-fips-openssl-3:
+    name: Test using FIPS openssl 3
+    runs-on: ubuntu-latest
+    container:
+      image: registry.access.redhat.com/ubi9/ubi:latest
+    steps:
+      - name: Install dependencies
+        run: dnf install -y gcc openssl-devel
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+      - name: Cache build artifacts
+        uses: Swatinem/rust-cache@v2
+      - name: Run cargo test --features fips
+        run: cargo test --tests --features fips -- --test-threads=1
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: llvm-tools
+      - name: Cache build artifacts
+        uses: Swatinem/rust-cache@v2
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Generate coverage
+        run: cargo llvm-cov --lcov --output-path lcov.info
+      - name: Report to codecov.io
+        uses: codecov/codecov-action@v5
+        with:
+          files: lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
