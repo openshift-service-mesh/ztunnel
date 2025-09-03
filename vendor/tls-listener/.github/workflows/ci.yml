@@ -1,0 +1,60 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '*.md'
+  pull_request:
+
+jobs:
+  build-full:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly]
+    continue-on-error: ${{ matrix.rust == 'nightly' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: |
+          rustup toolchain install ${{ matrix.rust }} --profile minimal --component clippy,rustfmt
+          rustup default ${{ matrix.rust }}
+      - name: Build
+        run: cargo build --verbose --examples --all-features
+      - name: Test
+        run: cargo test --verbose --all-features
+      - name: Lint
+        run: cargo clippy --examples --all-features
+      - name: Format check
+        run: cargo fmt -- --check
+  check-features:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        features:
+          - ""
+          - tokio-net
+          - rustls
+          - native-tls
+          - openssl
+          - rt
+          - rustls,native-tls,openssl
+          - tokio-net,rt,rustls
+          - tokio-net,native-tls
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - name: Check
+        run: cargo check --verbose --no-default-features --features "${{ matrix.features }}"
+  test-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - name: Test examples
+        run: python -m unittest examples.test_examples
