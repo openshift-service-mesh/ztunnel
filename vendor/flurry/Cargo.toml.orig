@@ -1,0 +1,54 @@
+[package]
+name = "flurry"
+version = "0.5.2"
+authors = ["Jon Gjengset <jon@thesquareplanet.com>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+readme = "README.md"
+description = "Rust port of Java's ConcurrentHashMap"
+repository = "https://github.com/jonhoo/flurry.git"
+
+keywords = ["hashmap","concurrent","map"]
+categories = ["concurrency", "data-structures"]
+
+exclude = ["/jsr166/**"]
+
+[badges]
+azure-devops = { project = "jonhoo/jonhoo", pipeline = "flurry", build = "15" }
+codecov = { repository = "jonhoo/flurry", branch = "master", service = "github" }
+maintenance = { status = "experimental" }
+
+[dependencies]
+parking_lot = "0.12"
+num_cpus = "1.12.0"
+rayon = {version = "1.3", optional = true}
+serde = {version = "1.0.105", optional = true}
+seize = "0.3.3"
+
+[dependencies.ahash]
+version = "0.8.4"
+# NOTE: we enable just compile-time-rng to get a reasonable ahash::RandomState::default
+# without _also_ forcing consumers of flurry into using runtime-rng. they can, however,
+# still opt into that feature if they wish, which will take precedence over compile-time-rng
+# as per the ahash docs.
+default-features = false
+features = ["compile-time-rng"]
+
+# for minimal-versions
+[target.'cfg(any())'.dependencies]
+regex = { version = "1.6.0", optional = true }
+
+[dev-dependencies]
+rand = "0.8"
+rayon = "1.3"
+criterion = "0.5"
+serde_json = "1.0.50"
+
+[[bench]]
+name = "flurry_dashmap" 
+harness = false
+
+[[bench]]
+name = "flurry_hashbrown" 
+harness = false
