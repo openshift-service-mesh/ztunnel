@@ -20,4 +20,4 @@ else
 fi
 
 tar czf ./out/rust/release/ztunnel.tar.gz ./out/rust/release/ztunnel
-gsutil cp bazel-bin/envoy_tar.tar.gz "${ARTIFACTS_GCS_PATH}/ztunnel-alpha-${SHA}${ARCH_SUFFIX}.tar.gz"
+gsutil cp ./out/rust/release/ztunnel.tar.gz "${ARTIFACTS_GCS_PATH}/ztunnel-${SHA}${ARCH_SUFFIX}.tar.gz"
