@@ -13,10 +13,10 @@ gcloud config set project "${GCS_PROJECT}"
 # Copy artifacts to GCS
 SHA="$(git rev-parse --verify HEAD)"
 
-if [[ "$(uname -m)" == "aarch64" ]]; then
-  ARCH_SUFFIX="-arm64"
-else
-  ARCH_SUFFIX=""
-fi
+case $(uname -m) in
+  "x86_64") export ARCH=amd64;;
+  "aarch64") export ARCH=arm64 ;;
+  *) echo "unsupported architecture"; exit 1;;
+esac
 
-gsutil cp ./out/rust/release/ztunnel "${ARTIFACTS_GCS_PATH}/ztunnel-${SHA}-${ARCH_SUFFIX}"
+gsutil cp ./out/rust/release/ztunnel "${ARTIFACTS_GCS_PATH}/ztunnel-${SHA}-${ARCH}"
