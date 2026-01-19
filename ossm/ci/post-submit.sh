@@ -19,5 +19,4 @@ else
   ARCH_SUFFIX=""
 fi
 
-tar czf ./out/rust/release/ztunnel.tar.gz ./out/rust/release/ztunnel
-gsutil cp ./out/rust/release/ztunnel.tar.gz "${ARTIFACTS_GCS_PATH}/ztunnel-${SHA}${ARCH_SUFFIX}.tar.gz"
+gsutil cp ./out/rust/release/ztunnel "${ARTIFACTS_GCS_PATH}/ztunnel-${SHA}-${ARCH_SUFFIX}"
