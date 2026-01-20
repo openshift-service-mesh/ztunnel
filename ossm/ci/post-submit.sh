@@ -7,6 +7,8 @@ DIR=$(cd "$(dirname "$0")" ; pwd -P)
 GCS_PROJECT=${GCS_PROJECT:-maistra-prow-testing}
 ARTIFACTS_GCS_PATH=${ARTIFACTS_GCS_PATH:-gs://maistra-prow-testing/ztunnel}
 
+time cargo build --release --features tls-openssl --no-default-features
+
 gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
 gcloud config set project "${GCS_PROJECT}"
 
