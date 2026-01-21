@@ -2,8 +2,6 @@
 
 set -exo pipefail
 
-DIR=$(cd "$(dirname "$0")" ; pwd -P)
-
 GCS_PROJECT=${GCS_PROJECT:-maistra-prow-testing}
 ARTIFACTS_GCS_PATH=${ARTIFACTS_GCS_PATH:-gs://maistra-prow-testing/ztunnel}
 
