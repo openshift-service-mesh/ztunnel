@@ -3,10 +3,11 @@ impl windows_core::RuntimeType for IPrintTicketCapabilities {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IPrintTicketCapabilities_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
-    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(feature = "Data_Xml_Dom")]
     pub XmlNode: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(not(feature = "Data_Xml_Dom"))]
@@ -26,28 +27,26 @@ pub struct IPrintTicketCapabilities_Vtbl {
     pub PageOutputColorFeature: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub PageOutputQualityFeature: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub PageResolutionFeature: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub GetFeature: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub GetParameterDefinition: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetFeature: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetParameterDefinition: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(IPrintTicketFeature, IPrintTicketFeature_Vtbl, 0xe7607d6a_59f5_4103_8858_b97710963d39);
 impl windows_core::RuntimeType for IPrintTicketFeature {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IPrintTicketFeature_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
-    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(feature = "Data_Xml_Dom")]
     pub XmlNode: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(not(feature = "Data_Xml_Dom"))]
     XmlNode: usize,
-    pub DisplayName: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
-    pub GetOption: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(feature = "Foundation_Collections")]
+    pub DisplayName: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetOption: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub Options: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    Options: usize,
     pub GetSelectedOption: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub SetSelectedOption: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub SelectionType: unsafe extern "system" fn(*mut core::ffi::c_void, *mut PrintTicketFeatureSelectionType) -> windows_core::HRESULT,
@@ -57,41 +56,43 @@ impl windows_core::RuntimeType for IPrintTicketOption {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IPrintTicketOption_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
-    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(feature = "Data_Xml_Dom")]
     pub XmlNode: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(not(feature = "Data_Xml_Dom"))]
     XmlNode: usize,
-    pub DisplayName: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub DisplayName: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(feature = "Data_Xml_Dom")]
-    pub GetPropertyNode: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetPropertyNode: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(not(feature = "Data_Xml_Dom"))]
     GetPropertyNode: usize,
     #[cfg(feature = "Data_Xml_Dom")]
-    pub GetScoredPropertyNode: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetScoredPropertyNode: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(not(feature = "Data_Xml_Dom"))]
     GetScoredPropertyNode: usize,
-    pub GetPropertyValue: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub GetScoredPropertyValue: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetPropertyValue: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetScoredPropertyValue: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(IPrintTicketParameterDefinition, IPrintTicketParameterDefinition_Vtbl, 0xd6bab4e4_2962_4c01_b7f3_9a9294eb8335);
 impl windows_core::RuntimeType for IPrintTicketParameterDefinition {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IPrintTicketParameterDefinition_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
-    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(feature = "Data_Xml_Dom")]
     pub XmlNode: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(not(feature = "Data_Xml_Dom"))]
     XmlNode: usize,
     pub DataType: unsafe extern "system" fn(*mut core::ffi::c_void, *mut PrintTicketParameterDataType) -> windows_core::HRESULT,
-    pub UnitType: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub UnitType: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub RangeMin: unsafe extern "system" fn(*mut core::ffi::c_void, *mut i32) -> windows_core::HRESULT,
     pub RangeMax: unsafe extern "system" fn(*mut core::ffi::c_void, *mut i32) -> windows_core::HRESULT,
 }
@@ -100,10 +101,11 @@ impl windows_core::RuntimeType for IPrintTicketParameterInitializer {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IPrintTicketParameterInitializer_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
-    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(feature = "Data_Xml_Dom")]
     pub XmlNode: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(not(feature = "Data_Xml_Dom"))]
@@ -116,21 +118,23 @@ impl windows_core::RuntimeType for IPrintTicketValue {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IPrintTicketValue_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Type: unsafe extern "system" fn(*mut core::ffi::c_void, *mut PrintTicketValueType) -> windows_core::HRESULT,
     pub GetValueAsInteger: unsafe extern "system" fn(*mut core::ffi::c_void, *mut i32) -> windows_core::HRESULT,
-    pub GetValueAsString: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub GetValueAsString: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(IWorkflowPrintTicket, IWorkflowPrintTicket_Vtbl, 0x41d52285_35e8_448e_a8c5_e4b6a2cf826c);
 impl windows_core::RuntimeType for IWorkflowPrintTicket {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IWorkflowPrintTicket_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
-    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Name: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub XmlNamespace: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(feature = "Data_Xml_Dom")]
     pub XmlNode: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(not(feature = "Data_Xml_Dom"))]
@@ -151,12 +155,12 @@ pub struct IWorkflowPrintTicket_Vtbl {
     pub PageOutputColorFeature: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub PageOutputQualityFeature: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub PageResolutionFeature: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub GetFeature: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetFeature: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub NotifyXmlChangedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub ValidateAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub GetParameterInitializer: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub SetParameterInitializerAsInteger: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, i32, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub SetParameterInitializerAsString: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetParameterInitializer: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub SetParameterInitializerAsInteger: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, i32, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub SetParameterInitializerAsString: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub MergeAndValidateTicket: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(IWorkflowPrintTicketValidationResult, IWorkflowPrintTicketValidationResult_Vtbl, 0x0ad1f392_da7b_4a36_bf36_6a99a62e2059);
@@ -164,13 +168,14 @@ impl windows_core::RuntimeType for IWorkflowPrintTicketValidationResult {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IWorkflowPrintTicketValidationResult_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Validated: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
     pub ExtendedError: unsafe extern "system" fn(*mut core::ffi::c_void, *mut windows_core::HRESULT) -> windows_core::HRESULT,
 }
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PrintTicketCapabilities(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(PrintTicketCapabilities, windows_core::IUnknown, windows_core::IInspectable);
 impl PrintTicketCapabilities {
@@ -178,14 +183,14 @@ impl PrintTicketCapabilities {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn XmlNamespace(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     #[cfg(feature = "Data_Xml_Dom")]
@@ -320,7 +325,7 @@ impl windows_core::RuntimeType for PrintTicketCapabilities {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IPrintTicketCapabilities>();
 }
 unsafe impl windows_core::Interface for PrintTicketCapabilities {
-    type Vtable = IPrintTicketCapabilities_Vtbl;
+    type Vtable = <IPrintTicketCapabilities as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <IPrintTicketCapabilities as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for PrintTicketCapabilities {
@@ -329,7 +334,7 @@ impl windows_core::RuntimeName for PrintTicketCapabilities {
 unsafe impl Send for PrintTicketCapabilities {}
 unsafe impl Sync for PrintTicketCapabilities {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PrintTicketFeature(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(PrintTicketFeature, windows_core::IUnknown, windows_core::IInspectable);
 impl PrintTicketFeature {
@@ -337,14 +342,14 @@ impl PrintTicketFeature {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn XmlNamespace(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     #[cfg(feature = "Data_Xml_Dom")]
@@ -359,7 +364,7 @@ impl PrintTicketFeature {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).DisplayName)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).DisplayName)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn GetOption(&self, name: &windows_core::HSTRING, xmlnamespace: &windows_core::HSTRING) -> windows_core::Result<PrintTicketOption> {
@@ -369,8 +374,7 @@ impl PrintTicketFeature {
             (windows_core::Interface::vtable(this).GetOption)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(name), core::mem::transmute_copy(xmlnamespace), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn Options(&self) -> windows_core::Result<super::super::super::Foundation::Collections::IVectorView<PrintTicketOption>> {
+    pub fn Options(&self) -> windows_core::Result<windows_collections::IVectorView<PrintTicketOption>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -403,7 +407,7 @@ impl windows_core::RuntimeType for PrintTicketFeature {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IPrintTicketFeature>();
 }
 unsafe impl windows_core::Interface for PrintTicketFeature {
-    type Vtable = IPrintTicketFeature_Vtbl;
+    type Vtable = <IPrintTicketFeature as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <IPrintTicketFeature as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for PrintTicketFeature {
@@ -412,7 +416,20 @@ impl windows_core::RuntimeName for PrintTicketFeature {
 unsafe impl Send for PrintTicketFeature {}
 unsafe impl Sync for PrintTicketFeature {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct PrintTicketFeatureSelectionType(pub i32);
+impl PrintTicketFeatureSelectionType {
+    pub const PickOne: Self = Self(0i32);
+    pub const PickMany: Self = Self(1i32);
+}
+impl windows_core::TypeKind for PrintTicketFeatureSelectionType {
+    type TypeKind = windows_core::CopyType;
+}
+impl windows_core::RuntimeType for PrintTicketFeatureSelectionType {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Graphics.Printing.PrintTicket.PrintTicketFeatureSelectionType;i4)");
+}
+#[repr(transparent)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PrintTicketOption(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(PrintTicketOption, windows_core::IUnknown, windows_core::IInspectable);
 impl PrintTicketOption {
@@ -420,14 +437,14 @@ impl PrintTicketOption {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn XmlNamespace(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     #[cfg(feature = "Data_Xml_Dom")]
@@ -442,7 +459,7 @@ impl PrintTicketOption {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).DisplayName)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).DisplayName)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     #[cfg(feature = "Data_Xml_Dom")]
@@ -480,7 +497,7 @@ impl windows_core::RuntimeType for PrintTicketOption {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IPrintTicketOption>();
 }
 unsafe impl windows_core::Interface for PrintTicketOption {
-    type Vtable = IPrintTicketOption_Vtbl;
+    type Vtable = <IPrintTicketOption as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <IPrintTicketOption as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for PrintTicketOption {
@@ -489,7 +506,21 @@ impl windows_core::RuntimeName for PrintTicketOption {
 unsafe impl Send for PrintTicketOption {}
 unsafe impl Sync for PrintTicketOption {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct PrintTicketParameterDataType(pub i32);
+impl PrintTicketParameterDataType {
+    pub const Integer: Self = Self(0i32);
+    pub const NumericString: Self = Self(1i32);
+    pub const String: Self = Self(2i32);
+}
+impl windows_core::TypeKind for PrintTicketParameterDataType {
+    type TypeKind = windows_core::CopyType;
+}
+impl windows_core::RuntimeType for PrintTicketParameterDataType {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Graphics.Printing.PrintTicket.PrintTicketParameterDataType;i4)");
+}
+#[repr(transparent)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PrintTicketParameterDefinition(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(PrintTicketParameterDefinition, windows_core::IUnknown, windows_core::IInspectable);
 impl PrintTicketParameterDefinition {
@@ -497,14 +528,14 @@ impl PrintTicketParameterDefinition {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn XmlNamespace(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     #[cfg(feature = "Data_Xml_Dom")]
@@ -526,7 +557,7 @@ impl PrintTicketParameterDefinition {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).UnitType)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).UnitType)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn RangeMin(&self) -> windows_core::Result<i32> {
@@ -548,7 +579,7 @@ impl windows_core::RuntimeType for PrintTicketParameterDefinition {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IPrintTicketParameterDefinition>();
 }
 unsafe impl windows_core::Interface for PrintTicketParameterDefinition {
-    type Vtable = IPrintTicketParameterDefinition_Vtbl;
+    type Vtable = <IPrintTicketParameterDefinition as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <IPrintTicketParameterDefinition as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for PrintTicketParameterDefinition {
@@ -557,7 +588,7 @@ impl windows_core::RuntimeName for PrintTicketParameterDefinition {
 unsafe impl Send for PrintTicketParameterDefinition {}
 unsafe impl Sync for PrintTicketParameterDefinition {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PrintTicketParameterInitializer(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(PrintTicketParameterInitializer, windows_core::IUnknown, windows_core::IInspectable);
 impl PrintTicketParameterInitializer {
@@ -565,14 +596,14 @@ impl PrintTicketParameterInitializer {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn XmlNamespace(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     #[cfg(feature = "Data_Xml_Dom")]
@@ -602,7 +633,7 @@ impl windows_core::RuntimeType for PrintTicketParameterInitializer {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IPrintTicketParameterInitializer>();
 }
 unsafe impl windows_core::Interface for PrintTicketParameterInitializer {
-    type Vtable = IPrintTicketParameterInitializer_Vtbl;
+    type Vtable = <IPrintTicketParameterInitializer as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <IPrintTicketParameterInitializer as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for PrintTicketParameterInitializer {
@@ -611,7 +642,7 @@ impl windows_core::RuntimeName for PrintTicketParameterInitializer {
 unsafe impl Send for PrintTicketParameterInitializer {}
 unsafe impl Sync for PrintTicketParameterInitializer {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PrintTicketValue(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(PrintTicketValue, windows_core::IUnknown, windows_core::IInspectable);
 impl PrintTicketValue {
@@ -633,7 +664,7 @@ impl PrintTicketValue {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).GetValueAsString)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).GetValueAsString)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
 }
@@ -641,7 +672,7 @@ impl windows_core::RuntimeType for PrintTicketValue {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IPrintTicketValue>();
 }
 unsafe impl windows_core::Interface for PrintTicketValue {
-    type Vtable = IPrintTicketValue_Vtbl;
+    type Vtable = <IPrintTicketValue as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <IPrintTicketValue as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for PrintTicketValue {
@@ -650,7 +681,21 @@ impl windows_core::RuntimeName for PrintTicketValue {
 unsafe impl Send for PrintTicketValue {}
 unsafe impl Sync for PrintTicketValue {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct PrintTicketValueType(pub i32);
+impl PrintTicketValueType {
+    pub const Integer: Self = Self(0i32);
+    pub const String: Self = Self(1i32);
+    pub const Unknown: Self = Self(2i32);
+}
+impl windows_core::TypeKind for PrintTicketValueType {
+    type TypeKind = windows_core::CopyType;
+}
+impl windows_core::RuntimeType for PrintTicketValueType {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Graphics.Printing.PrintTicket.PrintTicketValueType;i4)");
+}
+#[repr(transparent)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct WorkflowPrintTicket(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(WorkflowPrintTicket, windows_core::IUnknown, windows_core::IInspectable);
 impl WorkflowPrintTicket {
@@ -658,14 +703,14 @@ impl WorkflowPrintTicket {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Name)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn XmlNamespace(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).XmlNamespace)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     #[cfg(feature = "Data_Xml_Dom")]
@@ -795,14 +840,14 @@ impl WorkflowPrintTicket {
             (windows_core::Interface::vtable(this).GetFeature)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(name), core::mem::transmute_copy(xmlnamespace), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn NotifyXmlChangedAsync(&self) -> windows_core::Result<super::super::super::Foundation::IAsyncAction> {
+    pub fn NotifyXmlChangedAsync(&self) -> windows_core::Result<windows_future::IAsyncAction> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).NotifyXmlChangedAsync)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ValidateAsync(&self) -> windows_core::Result<super::super::super::Foundation::IAsyncOperation<WorkflowPrintTicketValidationResult>> {
+    pub fn ValidateAsync(&self) -> windows_core::Result<windows_future::IAsyncOperation<WorkflowPrintTicketValidationResult>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -845,7 +890,7 @@ impl windows_core::RuntimeType for WorkflowPrintTicket {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWorkflowPrintTicket>();
 }
 unsafe impl windows_core::Interface for WorkflowPrintTicket {
-    type Vtable = IWorkflowPrintTicket_Vtbl;
+    type Vtable = <IWorkflowPrintTicket as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <IWorkflowPrintTicket as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for WorkflowPrintTicket {
@@ -854,7 +899,7 @@ impl windows_core::RuntimeName for WorkflowPrintTicket {
 unsafe impl Send for WorkflowPrintTicket {}
 unsafe impl Sync for WorkflowPrintTicket {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct WorkflowPrintTicketValidationResult(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(WorkflowPrintTicketValidationResult, windows_core::IUnknown, windows_core::IInspectable);
 impl WorkflowPrintTicketValidationResult {
@@ -877,7 +922,7 @@ impl windows_core::RuntimeType for WorkflowPrintTicketValidationResult {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWorkflowPrintTicketValidationResult>();
 }
 unsafe impl windows_core::Interface for WorkflowPrintTicketValidationResult {
-    type Vtable = IWorkflowPrintTicketValidationResult_Vtbl;
+    type Vtable = <IWorkflowPrintTicketValidationResult as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <IWorkflowPrintTicketValidationResult as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for WorkflowPrintTicketValidationResult {
@@ -885,59 +930,3 @@ impl windows_core::RuntimeName for WorkflowPrintTicketValidationResult {
 }
 unsafe impl Send for WorkflowPrintTicketValidationResult {}
 unsafe impl Sync for WorkflowPrintTicketValidationResult {}
-#[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
-pub struct PrintTicketFeatureSelectionType(pub i32);
-impl PrintTicketFeatureSelectionType {
-    pub const PickOne: Self = Self(0i32);
-    pub const PickMany: Self = Self(1i32);
-}
-impl windows_core::TypeKind for PrintTicketFeatureSelectionType {
-    type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for PrintTicketFeatureSelectionType {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("PrintTicketFeatureSelectionType").field(&self.0).finish()
-    }
-}
-impl windows_core::RuntimeType for PrintTicketFeatureSelectionType {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Graphics.Printing.PrintTicket.PrintTicketFeatureSelectionType;i4)");
-}
-#[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
-pub struct PrintTicketParameterDataType(pub i32);
-impl PrintTicketParameterDataType {
-    pub const Integer: Self = Self(0i32);
-    pub const NumericString: Self = Self(1i32);
-    pub const String: Self = Self(2i32);
-}
-impl windows_core::TypeKind for PrintTicketParameterDataType {
-    type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for PrintTicketParameterDataType {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("PrintTicketParameterDataType").field(&self.0).finish()
-    }
-}
-impl windows_core::RuntimeType for PrintTicketParameterDataType {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Graphics.Printing.PrintTicket.PrintTicketParameterDataType;i4)");
-}
-#[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
-pub struct PrintTicketValueType(pub i32);
-impl PrintTicketValueType {
-    pub const Integer: Self = Self(0i32);
-    pub const String: Self = Self(1i32);
-    pub const Unknown: Self = Self(2i32);
-}
-impl windows_core::TypeKind for PrintTicketValueType {
-    type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for PrintTicketValueType {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("PrintTicketValueType").field(&self.0).finish()
-    }
-}
-impl windows_core::RuntimeType for PrintTicketValueType {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Graphics.Printing.PrintTicket.PrintTicketValueType;i4)");
-}

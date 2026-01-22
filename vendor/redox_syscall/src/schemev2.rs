@@ -41,7 +41,7 @@ bitflags! {
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Cqe {
-    pub flags: u8, // bits 3:0 are CqeOpcode
+    pub flags: u8, // bits 2:0 are CqeOpcode
     pub extra_raw: [u8; 3],
     pub tag: u32,
     pub result: u64,
@@ -79,6 +79,7 @@ pub enum CqeOpcode {
     RespondWithFd,
     SendFevent, // no tag
     ObtainFd,
+    RespondWithMultipleFds,
     // TODO: ProvideMmap
 }
 impl CqeOpcode {
@@ -88,6 +89,7 @@ impl CqeOpcode {
             1 => Self::RespondWithFd,
             2 => Self::SendFevent,
             3 => Self::ObtainFd,
+            4 => Self::RespondWithMultipleFds,
             _ => return None,
         })
     }
@@ -130,7 +132,10 @@ pub enum Opcode {
     CloseMsg = 27,
     Call = 28,
 
-    OpenAt = 29,  // fd, buf_ptr, buf_len, flags
+    OpenAt = 29, // fd, buf_ptr, buf_len, flags
+    Flink = 30,
+
+    Recvfd = 31,
 }
 
 impl Opcode {
@@ -172,6 +177,9 @@ impl Opcode {
             28 => Call,
 
             29 => OpenAt,
+            30 => Flink,
+
+            31 => Recvfd,
 
             _ => return None,
         })

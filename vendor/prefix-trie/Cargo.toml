@@ -13,14 +13,14 @@
 edition = "2021"
 rust-version = "1.65.0"
 name = "prefix-trie"
-version = "0.6.0"
+version = "0.7.0"
 build = false
 autolib = false
 autobins = false
 autoexamples = false
 autotests = false
 autobenches = false
-description = "Prefix trie datastructure (both a set and a map) that provides exact and longest-prefix matches."
+description = "Prefix trie (tree) datastructure (both a set and a map) that provides exact and longest-prefix matches."
 homepage = "https://github.com/tiborschneider/prefix-trie"
 documentation = "https://docs.rs/prefix-trie"
 readme = "Readme.md"
@@ -28,11 +28,19 @@ keywords = [
     "IP",
     "prefix",
     "trie",
+    "tree",
     "collection",
 ]
 categories = ["network-programming"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/tiborschneider/prefix-trie"
+
+[features]
+cidr = ["dep:cidr"]
+default = ["ipnet"]
+ipnet = ["dep:ipnet"]
+ipnetwork = ["dep:ipnetwork"]
+serde = ["dep:serde"]
 
 [lib]
 name = "prefix_trie"
@@ -95,10 +103,3 @@ version = "1.0.0"
 
 [dev-dependencies.rand]
 version = "0.8.5"
-
-[features]
-cidr = ["dep:cidr"]
-default = ["ipnet"]
-ipnet = ["dep:ipnet"]
-ipnetwork = ["dep:ipnetwork"]
-serde = ["dep:serde"]

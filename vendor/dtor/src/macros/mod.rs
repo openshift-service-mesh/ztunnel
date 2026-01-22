@@ -1,6 +1,21 @@
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
+    /// Return type for the constructor. Why is this needed?
+    ///
+    /// On Windows, `.CRT$XIA` … `.CRT$XIZ` constructors are required to return a `usize` value. We don't know
+    /// if the user is putting this function into a retval-requiring section or a non-retval section, so we
+    /// just return a `usize` value which is always valid and just ignored if not needed.
+    ///
+    /// Miri is pedantic about this, so we just return `()` if we're running under miri.
+    ///
+    /// See <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/initterm-initterm-e?view=msvc-170>
+    #[cfg(all(windows, not(miri)))]
+    pub type CtorRetType = usize;
+    #[cfg(any(not(windows), miri))]
+    pub type CtorRetType = ();
+
+    pub use crate::__ctor_call as ctor_call;
     pub use crate::__ctor_entry as ctor_entry;
     pub use crate::__ctor_link_section as ctor_link_section;
     pub use crate::__ctor_link_section_attr as ctor_link_section_attr;
@@ -255,15 +270,6 @@ macro_rules! __ctor_entry {
         };
     };
     (named, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
-        #[cfg(target_family="wasm")]
-        $(#[$fnmeta])*
-        #[allow(unused)]
-        #[::wasm_bindgen::prelude::wasm_bindgen(start)]
-        $($vis)* fn $ident() {
-            $block
-        }
-
-        #[cfg(not(target_family="wasm"))]
         $(#[$fnmeta])*
         #[allow(unused)]
         $($vis)* $($unsafe)? fn $ident() {
@@ -281,25 +287,18 @@ macro_rules! __ctor_entry {
                     }, {});
                 });
 
-                $crate::__support::ctor_link_section!(
-                    array,
+                $crate::__support::ctor_call!(
                     features=$features,
-
-                    #[allow(non_upper_case_globals, non_snake_case)]
-                    #[doc(hidden)]
-                    static f: /*unsafe*/ extern "C" fn() -> usize =
-                    {
-                        $crate::__support::ctor_link_section!(
-                            startup,
-                            features=$features,
-
-                            #[allow(non_snake_case)]
-                            /*unsafe*/ extern "C" fn f() -> usize { unsafe { $ident(); 0 } }
-                        );
-
-                        f
-                    };
+                    { unsafe { $ident(); } }
                 );
+            }
+
+            #[cfg(target_family = "wasm")]
+            {
+                static __CTOR__INITILIZED: core::sync::atomic::AtomicBool = core::sync::atomic::AtomicBool::new(false);
+                if __CTOR__INITILIZED.swap(true, core::sync::atomic::Ordering::Relaxed) {
+                    return;
+                }
             }
 
             $block
@@ -309,31 +308,9 @@ macro_rules! __ctor_entry {
         $(#[$imeta])*
         $($vis)* static $ident: $ident::Static<$ty> = $ident::Static::<$ty> {
             _storage: {
-                #[cfg(target_family="wasm")]
-                #[::wasm_bindgen::prelude::wasm_bindgen(start)]
-                fn init() {
-                    _ = &*$ident;
-                }
-
-                #[cfg(not(target_family="wasm"))]
-                $crate::__support::ctor_link_section!(
-                    array,
+                $crate::__support::ctor_call!(
                     features=$features,
-
-                    #[allow(non_upper_case_globals, non_snake_case)]
-                    #[doc(hidden)]
-                    static f: /*unsafe*/ extern "C" fn() -> usize =
-                    {
-                        $crate::__support::ctor_link_section!(
-                            startup,
-                            features=$features,
-
-                            #[allow(non_snake_case)]
-                            /*unsafe*/ extern "C" fn f() -> usize { _ = &*$ident; 0 }
-                        );
-
-                        f
-                    };
+                    { _ = &*$ident; }
                 );
 
                 ::std::sync::OnceLock::new()
@@ -427,24 +404,9 @@ macro_rules! __dtor_entry {
                     }, {});
                 });
 
-                $crate::__support::ctor_link_section!(
-                    array,
+                $crate::__support::ctor_call!(
                     features=$features,
-
-                    #[allow(non_upper_case_globals, non_snake_case)]
-                    #[doc(hidden)]
-                    static f: /*unsafe*/ extern "C" fn() -> usize =
-                    {
-                        $crate::__support::ctor_link_section!(
-                            startup,
-                            features=$features,
-
-                            #[allow(non_snake_case)]
-                            /*unsafe*/ extern "C" fn f() -> usize { unsafe { do_atexit(__dtor); 0 } }
-                        );
-
-                        f
-                    };
+                    { unsafe { do_atexit(__dtor); } }
                 );
 
                 $crate::__support::ctor_link_section!(
@@ -489,6 +451,36 @@ macro_rules! __dtor_entry {
 /// Annotate a block with its appropriate link section.
 #[doc(hidden)]
 #[macro_export]
+macro_rules! __ctor_call {
+    (features=$features:tt, { $($block:tt)+ } ) => {
+        $crate::__support::ctor_link_section!(
+            array,
+            features=$features,
+
+            #[allow(non_upper_case_globals, non_snake_case)]
+            #[doc(hidden)]
+            static f: /*unsafe*/ extern "C" fn() -> $crate::__support::CtorRetType =
+            {
+                $crate::__support::ctor_link_section!(
+                    startup,
+                    features=$features,
+
+                    #[allow(non_snake_case)]
+                    /*unsafe*/ extern "C" fn f() -> $crate::__support::CtorRetType {
+                        $($block)+;
+                        core::default::Default::default()
+                    }
+                );
+
+                f
+            };
+        );
+    }
+}
+
+/// Annotate a block with its appropriate link section.
+#[doc(hidden)]
+#[macro_export]
 macro_rules! __ctor_link_section {
     ($section:ident, features=$features:tt, $($block:tt)+) => {
         $crate::__support::if_has_feature!(used_linker, $features, {
@@ -507,6 +499,7 @@ macro_rules! __ctor_link_section {
             target_os = "illumos",
             target_os = "haiku",
             target_vendor = "apple",
+            target_family = "wasm",
             windows
         )))]
         compile_error!("#[ctor]/#[dtor] is not supported on the current target");
@@ -534,9 +527,10 @@ macro_rules! __ctor_link_section_attr {
                     target_os = "openbsd",
                     target_os = "dragonfly",
                     target_os = "illumos",
-                    target_os = "haiku"
+                    target_os = "haiku",
+                    target_family = "wasm"
                 ), ".init_array"],
-                [target_vendor = "apple", "__DATA,__mod_init_func"],
+                [target_vendor = "apple", "__DATA,__mod_init_func,mod_init_funcs"],
                 [windows, ".CRT$XCU"]],
                 #[$used]
                 $item

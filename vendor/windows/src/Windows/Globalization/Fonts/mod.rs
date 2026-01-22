@@ -3,9 +3,10 @@ impl windows_core::RuntimeType for ILanguageFont {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ILanguageFont_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub FontFamily: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub FontFamily: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(feature = "UI_Text")]
     pub FontWeight: unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::super::UI::Text::FontWeight) -> windows_core::HRESULT,
     #[cfg(not(feature = "UI_Text"))]
@@ -25,6 +26,7 @@ impl windows_core::RuntimeType for ILanguageFontGroup {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ILanguageFontGroup_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub UITextFont: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -44,12 +46,13 @@ impl windows_core::RuntimeType for ILanguageFontGroupFactory {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ILanguageFontGroupFactory_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub CreateLanguageFontGroup: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub CreateLanguageFontGroup: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LanguageFont(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(LanguageFont, windows_core::IUnknown, windows_core::IInspectable);
 impl LanguageFont {
@@ -57,7 +60,7 @@ impl LanguageFont {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).FontFamily)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).FontFamily)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     #[cfg(feature = "UI_Text")]
@@ -96,7 +99,7 @@ impl windows_core::RuntimeType for LanguageFont {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ILanguageFont>();
 }
 unsafe impl windows_core::Interface for LanguageFont {
-    type Vtable = ILanguageFont_Vtbl;
+    type Vtable = <ILanguageFont as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ILanguageFont as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for LanguageFont {
@@ -105,7 +108,7 @@ impl windows_core::RuntimeName for LanguageFont {
 unsafe impl Send for LanguageFont {}
 unsafe impl Sync for LanguageFont {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LanguageFontGroup(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(LanguageFontGroup, windows_core::IUnknown, windows_core::IInspectable);
 impl LanguageFontGroup {
@@ -192,8 +195,7 @@ impl LanguageFontGroup {
             (windows_core::Interface::vtable(this).CreateLanguageFontGroup)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(languagetag), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    #[doc(hidden)]
-    pub fn ILanguageFontGroupFactory<R, F: FnOnce(&ILanguageFontGroupFactory) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    fn ILanguageFontGroupFactory<R, F: FnOnce(&ILanguageFontGroupFactory) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<LanguageFontGroup, ILanguageFontGroupFactory> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }
@@ -202,7 +204,7 @@ impl windows_core::RuntimeType for LanguageFontGroup {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ILanguageFontGroup>();
 }
 unsafe impl windows_core::Interface for LanguageFontGroup {
-    type Vtable = ILanguageFontGroup_Vtbl;
+    type Vtable = <ILanguageFontGroup as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ILanguageFontGroup as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for LanguageFontGroup {

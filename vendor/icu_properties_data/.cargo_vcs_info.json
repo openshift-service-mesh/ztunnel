@@ -1,6 +1,6 @@
 {
   "git": {
-    "sha1": "044c9659f217ad1e197fb778701829e4f597646c"
+    "sha1": "6fe1953b1fe2e2df9d7727f74752c04e30181e78"
   },
-  "path_in_vcs": "provider/baked/properties"
+  "path_in_vcs": "provider/data/properties"
 }

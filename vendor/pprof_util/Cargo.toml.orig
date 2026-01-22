@@ -1,6 +1,6 @@
 [package]
 name = "pprof_util"
-version = "0.6.0"
+version = "0.8.0"
 edition = "2021"
 description = "various utilities for representing and manipulating profiling data"
 publish = true
@@ -16,3 +16,9 @@ prost.workspace = true
 anyhow.workspace = true
 num.workspace = true
 paste.workspace = true
+backtrace = { workspace = true, optional = true }
+inferno = { workspace = true, optional = true }
+
+[features]
+flamegraph = ["symbolize", "dep:inferno"]
+symbolize = ["dep:backtrace"]

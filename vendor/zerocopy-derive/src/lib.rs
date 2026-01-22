@@ -17,6 +17,8 @@
 #![allow(unknown_lints)]
 #![deny(renamed_and_removed_lints)]
 #![deny(clippy::all, clippy::missing_safety_doc, clippy::undocumented_unsafe_blocks)]
+// Inlining format args isn't supported on our MSRV.
+#![allow(clippy::uninlined_format_args)]
 #![deny(
     rustdoc::bare_urls,
     rustdoc::broken_intra_doc_links,
@@ -34,21 +36,16 @@ mod ext;
 mod output_tests;
 mod repr;
 
-use proc_macro2::{TokenStream, TokenTree};
-use quote::ToTokens;
-
-use {
-    proc_macro2::Span,
-    quote::quote,
-    syn::{
-        parse_quote, Attribute, Data, DataEnum, DataStruct, DataUnion, DeriveInput, Error, Expr,
-        ExprLit, ExprUnary, GenericParam, Ident, Lit, Meta, Path, Type, UnOp, WherePredicate,
-    },
+use proc_macro2::{Span, TokenStream, TokenTree};
+use quote::{quote, ToTokens};
+use syn::{
+    parse_quote, Attribute, Data, DataEnum, DataStruct, DataUnion, DeriveInput, Error, Expr,
+    ExprLit, ExprUnary, GenericParam, Ident, Lit, Meta, Path, Type, UnOp, WherePredicate,
 };
 
-use {crate::ext::*, crate::repr::*};
+use crate::{ext::*, repr::*};
 
-// TODO(https://github.com/rust-lang/rust/issues/54140): Some errors could be
+// FIXME(https://github.com/rust-lang/rust/issues/54140): Some errors could be
 // made better if we could add multiple lines of error output like this:
 //
 // error: unsupported representation
@@ -149,6 +146,7 @@ derive!(IntoBytes => derive_into_bytes => derive_into_bytes_inner);
 derive!(Unaligned => derive_unaligned => derive_unaligned_inner);
 derive!(ByteHash => derive_hash => derive_hash_inner);
 derive!(ByteEq => derive_eq => derive_eq_inner);
+derive!(SplitAt => derive_split_at => derive_split_at_inner);
 
 /// Deprecated: prefer [`FromZeros`] instead.
 #[deprecated(since = "0.8.0", note = "`FromZeroes` was renamed to `FromZeros`")]
@@ -273,7 +271,7 @@ fn derive_known_layout_inner(
                 // The layout of `Self` is reflected using a sequence of
                 // invocations of `DstLayout::{new_zst,extend,pad_to_align}`.
                 // The documentation of these items vows that invocations in
-                // this manner will acurately describe a type, so long as:
+                // this manner will accurately describe a type, so long as:
                 //
                 //  - that type is `repr(C)`,
                 //  - its fields are enumerated in the order they appear,
@@ -434,7 +432,7 @@ fn derive_known_layout_inner(
 
                 // SAFETY: `.cast` preserves address and provenance.
                 //
-                // TODO(#429): Add documentation to `.cast` that promises that
+                // FIXME(#429): Add documentation to `.cast` that promises that
                 // it preserves provenance.
                 #[inline(always)]
                 fn raw_from_ptr_len(
@@ -601,7 +599,7 @@ fn derive_hash_inner(
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let where_predicates = where_clause.map(|clause| &clause.predicates);
     Ok(quote! {
-        // TODO(#553): Add a test that generates a warning when
+        // FIXME(#553): Add a test that generates a warning when
         // `#[allow(deprecated)]` isn't present.
         #[allow(deprecated)]
         // While there are not currently any warnings that this suppresses (that
@@ -649,7 +647,7 @@ fn derive_eq_inner(
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let where_predicates = where_clause.map(|clause| &clause.predicates);
     Ok(quote! {
-        // TODO(#553): Add a test that generates a warning when
+        // FIXME(#553): Add a test that generates a warning when
         // `#[allow(deprecated)]` isn't present.
         #[allow(deprecated)]
         // While there are not currently any warnings that this suppresses (that
@@ -668,7 +666,7 @@ fn derive_eq_inner(
             }
         }
 
-        // TODO(#553): Add a test that generates a warning when
+        // FIXME(#553): Add a test that generates a warning when
         // `#[allow(deprecated)]` isn't present.
         #[allow(deprecated)]
         // While there are not currently any warnings that this suppresses (that
@@ -681,6 +679,52 @@ fn derive_eq_inner(
         {
         }
     })
+}
+
+fn derive_split_at_inner(
+    ast: &DeriveInput,
+    _top_level: Trait,
+    zerocopy_crate: &Path,
+) -> Result<TokenStream, Error> {
+    let repr = StructUnionRepr::from_attrs(&ast.attrs)?;
+
+    match &ast.data {
+        Data::Struct(_) => {}
+        Data::Enum(_) | Data::Union(_) => {
+            return Err(Error::new(Span::call_site(), "can only be applied to structs"));
+        }
+    };
+
+    if repr.get_packed().is_some() {
+        return Err(Error::new(Span::call_site(), "must not have #[repr(packed)] attribute"));
+    }
+
+    if !(repr.is_c() || repr.is_transparent()) {
+        return Err(Error::new(Span::call_site(), "must have #[repr(C)] or #[repr(transparent)] in order to guarantee this type's layout is splitable"));
+    }
+
+    let fields = ast.data.fields();
+    let trailing_field = if let Some(((_, _, trailing_field), _)) = fields.split_last() {
+        trailing_field
+    } else {
+        return Err(Error::new(Span::call_site(), "must at least one field"));
+    };
+
+    // SAFETY: `#ty`, per the above checks, is `repr(C)` or `repr(transparent)`
+    // and is not packed; its trailing field is guaranteed to be well-aligned
+    // for its type. By invariant on `FieldBounds::TRAILING_SELF`, the trailing
+    // slice of the trailing field is also well-aligned for its type.
+    Ok(ImplBlockBuilder::new(
+        ast,
+        &ast.data,
+        Trait::SplitAt,
+        FieldBounds::TRAILING_SELF,
+        zerocopy_crate,
+    )
+    .inner_extras(quote! {
+        type Elem = <#trailing_field as ::zerocopy::SplitAt>::Elem;
+    })
+    .build())
 }
 
 /// A struct is `TryFromBytes` if:
@@ -709,6 +753,7 @@ fn derive_try_from_bytes_struct(
                     ___ZerocopyAliasing: #zerocopy_crate::pointer::invariant::Reference,
                 {
                     use #zerocopy_crate::util::macro_util::core_reexport;
+                    use #zerocopy_crate::pointer::PtrInner;
 
                     true #(&& {
                         // SAFETY:
@@ -719,17 +764,28 @@ fn derive_try_from_bytes_struct(
                         //   the same byte ranges in the returned pointer's referent
                         //   as they do in `*slf`
                         let field_candidate = unsafe {
-                            let project = |slf: core_reexport::ptr::NonNull<Self>| {
-                                let slf = slf.as_ptr();
+                            let project = |slf: PtrInner<'_, Self>| {
+                                let slf = slf.as_non_null().as_ptr();
                                 let field = core_reexport::ptr::addr_of_mut!((*slf).#field_names);
                                 // SAFETY: `cast_unsized_unchecked` promises that
                                 // `slf` will either reference a zero-sized byte
                                 // range, or else will reference a byte range that
-                                // is entirely contained withing an allocated
+                                // is entirely contained within an allocated
                                 // object. In either case, this guarantees that
                                 // field projection will not wrap around the address
                                 // space, and so `field` will be non-null.
-                                unsafe { core_reexport::ptr::NonNull::new_unchecked(field) }
+                                let ptr = unsafe { core_reexport::ptr::NonNull::new_unchecked(field) };
+                                // SAFETY:
+                                // 0. `ptr` addresses a subset of the bytes of
+                                //    `slf`, so by invariant on `slf: PtrInner`,
+                                //    if `ptr`'s referent is not zero sized,
+                                //    then `ptr` has valid provenance for its
+                                //    referent, which is entirely contained in
+                                //    some Rust allocation, `A`.
+                                // 1. By invariant on `slf: PtrInner`, if
+                                //    `ptr`'s referent is not zero sized, `A` is
+                                //    guaranteed to live for at least `'a`.
+                                unsafe { PtrInner::new(ptr) }
                             };
 
                             candidate.reborrow().cast_unsized_unchecked(project)
@@ -759,7 +815,7 @@ fn derive_try_from_bytes_union(
     top_level: Trait,
     zerocopy_crate: &Path,
 ) -> TokenStream {
-    // TODO(#5): Remove the `Immutable` bound.
+    // FIXME(#5): Remove the `Immutable` bound.
     let field_type_trait_bounds =
         FieldBounds::All(&[TraitBound::Slf, TraitBound::Other(Trait::Immutable)]);
     let extras =
@@ -780,6 +836,7 @@ fn derive_try_from_bytes_union(
                     ___ZerocopyAliasing: #zerocopy_crate::pointer::invariant::Reference,
                 {
                     use #zerocopy_crate::util::macro_util::core_reexport;
+                    use #zerocopy_crate::pointer::PtrInner;
 
                     false #(|| {
                         // SAFETY:
@@ -790,17 +847,28 @@ fn derive_try_from_bytes_union(
                         //   `self_type_trait_bounds`, neither `*slf` nor the
                         //   returned pointer's referent contain any `UnsafeCell`s
                         let field_candidate = unsafe {
-                            let project = |slf: core_reexport::ptr::NonNull<Self>| {
-                                let slf = slf.as_ptr();
+                            let project = |slf: PtrInner<'_, Self>| {
+                                let slf = slf.as_non_null().as_ptr();
                                 let field = core_reexport::ptr::addr_of_mut!((*slf).#field_names);
                                 // SAFETY: `cast_unsized_unchecked` promises that
                                 // `slf` will either reference a zero-sized byte
                                 // range, or else will reference a byte range that
-                                // is entirely contained withing an allocated
+                                // is entirely contained within an allocated
                                 // object. In either case, this guarantees that
                                 // field projection will not wrap around the address
                                 // space, and so `field` will be non-null.
-                                unsafe { core_reexport::ptr::NonNull::new_unchecked(field) }
+                                let ptr = unsafe { core_reexport::ptr::NonNull::new_unchecked(field) };
+                                // SAFETY:
+                                // 0. `ptr` addresses a subset of the bytes of
+                                //    `slf`, so by invariant on `slf: PtrInner`,
+                                //    if `ptr`'s referent is not zero sized,
+                                //    then `ptr` has valid provenance for its
+                                //    referent, which is entirely contained in
+                                //    some Rust allocation, `A`.
+                                // 1. By invariant on `slf: PtrInner`, if
+                                //    `ptr`'s referent is not zero sized, `A` is
+                                //    guaranteed to live for at least `'a`.
+                                unsafe { PtrInner::new(ptr) }
                             };
 
                             candidate.reborrow().cast_unsized_unchecked(project)
@@ -836,7 +904,7 @@ fn derive_try_from_bytes_enum(
     let trivial_is_bit_valid = try_gen_trivial_is_bit_valid(ast, top_level, zerocopy_crate);
     let extra = match (trivial_is_bit_valid, could_be_from_bytes) {
         (Some(is_bit_valid), _) => is_bit_valid,
-        // SAFETY: It would be sound for the enum to implement `FomBytes`, as
+        // SAFETY: It would be sound for the enum to implement `FromBytes`, as
         // required by `gen_trivial_is_bit_valid_unchecked`.
         (None, true) => unsafe { gen_trivial_is_bit_valid_unchecked(zerocopy_crate) },
         (None, false) => {
@@ -1097,7 +1165,7 @@ fn derive_from_zeros_union(
     unn: &DataUnion,
     zerocopy_crate: &Path,
 ) -> TokenStream {
-    // TODO(#5): Remove the `Immutable` bound. It's only necessary for
+    // FIXME(#5): Remove the `Immutable` bound. It's only necessary for
     // compatibility with `derive(TryFromBytes)` on unions; not for soundness.
     let field_type_trait_bounds =
         FieldBounds::All(&[TraitBound::Slf, TraitBound::Other(Trait::Immutable)]);
@@ -1155,7 +1223,9 @@ fn derive_from_bytes_enum(
 
 // Returns `None` if the enum's size is not guaranteed by the repr.
 fn enum_size_from_repr(repr: &EnumRepr) -> Result<usize, Error> {
-    use {CompoundRepr::*, PrimitiveRepr::*, Repr::*};
+    use CompoundRepr::*;
+    use PrimitiveRepr::*;
+    use Repr::*;
     match repr {
         Transparent(span)
         | Compound(
@@ -1174,7 +1244,7 @@ fn derive_from_bytes_union(
     unn: &DataUnion,
     zerocopy_crate: &Path,
 ) -> TokenStream {
-    // TODO(#5): Remove the `Immutable` bound. It's only necessary for
+    // FIXME(#5): Remove the `Immutable` bound. It's only necessary for
     // compatibility with `derive(TryFromBytes)` on unions; not for soundness.
     let field_type_trait_bounds =
         FieldBounds::All(&[TraitBound::Slf, TraitBound::Other(Trait::Immutable)]);
@@ -1238,7 +1308,7 @@ fn derive_into_bytes_struct(
         // padding unless #[repr(align)] explicitly adds padding, which we check
         // for in this branch's condition.
         //
-        // TODO(#10): Support type parameters for non-transparent, non-packed
+        // FIXME(#10): Support type parameters for non-transparent, non-packed
         // structs without requiring `Unaligned`.
         (None, true)
     } else {
@@ -1307,7 +1377,7 @@ please let us know you use this feature: https://github.com/google/zerocopy/disc
         )
     };
 
-    // TODO(#10): Support type parameters.
+    // FIXME(#10): Support type parameters.
     if !ast.generics.params.is_empty() {
         return Err(Error::new(Span::call_site(), "unsupported on types with type parameters"));
     }
@@ -1449,6 +1519,7 @@ enum Trait {
     Sized,
     ByteHash,
     ByteEq,
+    SplitAt,
 }
 
 impl ToTokens for Trait {
@@ -1457,7 +1528,7 @@ impl ToTokens for Trait {
         // stable and therefore not guaranteed to represent the variant names.
         // Indeed with the (unstable) `fmt-debug` compiler flag [2], it can
         // return only a minimalized output or empty string. To make sure this
-        // code will work in the future and independet of the compiler flag, we
+        // code will work in the future and independent of the compiler flag, we
         // translate the variants to their names manually here.
         //
         // [1] https://doc.rust-lang.org/1.81.0/std/fmt/trait.Debug.html#stability
@@ -1473,6 +1544,7 @@ impl ToTokens for Trait {
             Trait::Sized => "Sized",
             Trait::ByteHash => "ByteHash",
             Trait::ByteEq => "ByteEq",
+            Trait::SplitAt => "SplitAt",
         };
         let ident = Ident::new(s, Span::call_site());
         tokens.extend(core::iter::once(TokenTree::Ident(ident)));
@@ -1514,8 +1586,8 @@ enum SelfBounds<'a> {
     All(&'a [Trait]),
 }
 
-// TODO(https://github.com/rust-lang/rust-clippy/issues/12908): This is a false positive.
-// Explicit lifetimes are actually necessary here.
+// FIXME(https://github.com/rust-lang/rust-clippy/issues/12908): This is a false
+// positive. Explicit lifetimes are actually necessary here.
 #[allow(clippy::needless_lifetimes)]
 impl<'a> SelfBounds<'a> {
     const SIZED: Self = Self::All(&[Trait::Sized]);
@@ -1673,8 +1745,6 @@ impl<'a, D: DataExt> ImplBlockBuilder<'a, D> {
 
         // Don't bother emitting a padding check if there are no fields.
         #[allow(unstable_name_collisions)] // See `BoolExt` below
-        // Work around https://github.com/rust-lang/rust-clippy/issues/12280
-        #[allow(clippy::incompatible_msrv)]
         let padding_check_bound = self
             .padding_check
             .and_then(|check| (!fields.is_empty()).then_some(check))
@@ -1745,7 +1815,7 @@ impl<'a, D: DataExt> ImplBlockBuilder<'a, D> {
 
         let inner_extras = self.inner_extras;
         let impl_tokens = quote! {
-            // TODO(#553): Add a test that generates a warning when
+            // FIXME(#553): Add a test that generates a warning when
             // `#[allow(deprecated)]` isn't present.
             #[allow(deprecated)]
             // While there are not currently any warnings that this suppresses
@@ -1783,7 +1853,7 @@ impl<'a, D: DataExt> ImplBlockBuilder<'a, D> {
 // versions, `b.then_some(...)` resolves to the inherent method rather than to
 // this trait, and so this trait is considered unused.
 //
-// TODO(#67): Remove this once our MSRV is >= 1.62.
+// FIXME(#67): Remove this once our MSRV is >= 1.62.
 #[allow(unused)]
 trait BoolExt {
     fn then_some<T>(self, t: T) -> Option<T>;

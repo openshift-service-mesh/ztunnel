@@ -1,6 +1,6 @@
 [package]
 name = "chrono"
-version = "0.4.40"
+version = "0.4.41"
 description = "Date and time library for Rust"
 homepage = "https://github.com/chronotope/chrono"
 documentation = "https://docs.rs/chrono/"
@@ -11,7 +11,7 @@ readme = "README.md"
 license = "MIT OR Apache-2.0"
 include = ["src/*", "tests/*.rs", "LICENSE.txt", "CITATION.cff"]
 edition = "2021"
-rust-version = "1.61.0"
+rust-version = "1.62.0"
 
 [lib]
 name = "chrono"
@@ -52,7 +52,7 @@ js-sys = { version = "0.3", optional = true }       # contains FFI bindings for 
 windows-link = { version = "0.1", optional = true }
 
 [target.'cfg(windows)'.dev-dependencies]
-windows-bindgen = { version = "0.60" } # MSRV is 1.74
+windows-bindgen = { version = "0.61" } # MSRV is 1.74
 
 [target.'cfg(unix)'.dependencies]
 iana-time-zone = { version = "0.1.45", optional = true, features = ["fallback"] }

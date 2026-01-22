@@ -1,67 +1,58 @@
 #[inline]
 pub unsafe fn McastApiCleanup() {
-    windows_targets::link!("dhcpcsvc.dll" "system" fn McastApiCleanup());
-    McastApiCleanup()
+    windows_link::link!("dhcpcsvc.dll" "system" fn McastApiCleanup());
+    unsafe { McastApiCleanup() }
 }
 #[inline]
 pub unsafe fn McastApiStartup(version: *mut u32) -> u32 {
-    windows_targets::link!("dhcpcsvc.dll" "system" fn McastApiStartup(version : *mut u32) -> u32);
-    McastApiStartup(version)
+    windows_link::link!("dhcpcsvc.dll" "system" fn McastApiStartup(version : *mut u32) -> u32);
+    unsafe { McastApiStartup(version as _) }
 }
 #[inline]
-pub unsafe fn McastEnumerateScopes<P0>(addrfamily: u16, requery: P0, pscopelist: *mut MCAST_SCOPE_ENTRY, pscopelen: *mut u32, pscopecount: *mut u32) -> u32
-where
-    P0: windows_core::Param<super::super::Foundation::BOOL>,
-{
-    windows_targets::link!("dhcpcsvc.dll" "system" fn McastEnumerateScopes(addrfamily : u16, requery : super::super::Foundation:: BOOL, pscopelist : *mut MCAST_SCOPE_ENTRY, pscopelen : *mut u32, pscopecount : *mut u32) -> u32);
-    McastEnumerateScopes(addrfamily, requery.param().abi(), pscopelist, pscopelen, pscopecount)
+pub unsafe fn McastEnumerateScopes(addrfamily: u16, requery: bool, pscopelist: *mut MCAST_SCOPE_ENTRY, pscopelen: *mut u32, pscopecount: *mut u32) -> u32 {
+    windows_link::link!("dhcpcsvc.dll" "system" fn McastEnumerateScopes(addrfamily : u16, requery : windows_core::BOOL, pscopelist : *mut MCAST_SCOPE_ENTRY, pscopelen : *mut u32, pscopecount : *mut u32) -> u32);
+    unsafe { McastEnumerateScopes(addrfamily, requery.into(), pscopelist as _, pscopelen as _, pscopecount as _) }
 }
 #[inline]
 pub unsafe fn McastGenUID(prequestid: *mut MCAST_CLIENT_UID) -> u32 {
-    windows_targets::link!("dhcpcsvc.dll" "system" fn McastGenUID(prequestid : *mut MCAST_CLIENT_UID) -> u32);
-    McastGenUID(prequestid)
+    windows_link::link!("dhcpcsvc.dll" "system" fn McastGenUID(prequestid : *mut MCAST_CLIENT_UID) -> u32);
+    unsafe { McastGenUID(prequestid as _) }
 }
 #[inline]
 pub unsafe fn McastReleaseAddress(addrfamily: u16, prequestid: *mut MCAST_CLIENT_UID, preleaserequest: *mut MCAST_LEASE_REQUEST) -> u32 {
-    windows_targets::link!("dhcpcsvc.dll" "system" fn McastReleaseAddress(addrfamily : u16, prequestid : *mut MCAST_CLIENT_UID, preleaserequest : *mut MCAST_LEASE_REQUEST) -> u32);
-    McastReleaseAddress(addrfamily, prequestid, preleaserequest)
+    windows_link::link!("dhcpcsvc.dll" "system" fn McastReleaseAddress(addrfamily : u16, prequestid : *mut MCAST_CLIENT_UID, preleaserequest : *mut MCAST_LEASE_REQUEST) -> u32);
+    unsafe { McastReleaseAddress(addrfamily, prequestid as _, preleaserequest as _) }
 }
 #[inline]
 pub unsafe fn McastRenewAddress(addrfamily: u16, prequestid: *mut MCAST_CLIENT_UID, prenewrequest: *mut MCAST_LEASE_REQUEST, prenewresponse: *mut MCAST_LEASE_RESPONSE) -> u32 {
-    windows_targets::link!("dhcpcsvc.dll" "system" fn McastRenewAddress(addrfamily : u16, prequestid : *mut MCAST_CLIENT_UID, prenewrequest : *mut MCAST_LEASE_REQUEST, prenewresponse : *mut MCAST_LEASE_RESPONSE) -> u32);
-    McastRenewAddress(addrfamily, prequestid, prenewrequest, prenewresponse)
+    windows_link::link!("dhcpcsvc.dll" "system" fn McastRenewAddress(addrfamily : u16, prequestid : *mut MCAST_CLIENT_UID, prenewrequest : *mut MCAST_LEASE_REQUEST, prenewresponse : *mut MCAST_LEASE_RESPONSE) -> u32);
+    unsafe { McastRenewAddress(addrfamily, prequestid as _, prenewrequest as _, prenewresponse as _) }
 }
 #[inline]
 pub unsafe fn McastRequestAddress(addrfamily: u16, prequestid: *mut MCAST_CLIENT_UID, pscopectx: *mut MCAST_SCOPE_CTX, paddrrequest: *mut MCAST_LEASE_REQUEST, paddrresponse: *mut MCAST_LEASE_RESPONSE) -> u32 {
-    windows_targets::link!("dhcpcsvc.dll" "system" fn McastRequestAddress(addrfamily : u16, prequestid : *mut MCAST_CLIENT_UID, pscopectx : *mut MCAST_SCOPE_CTX, paddrrequest : *mut MCAST_LEASE_REQUEST, paddrresponse : *mut MCAST_LEASE_RESPONSE) -> u32);
-    McastRequestAddress(addrfamily, prequestid, pscopectx, paddrrequest, paddrresponse)
+    windows_link::link!("dhcpcsvc.dll" "system" fn McastRequestAddress(addrfamily : u16, prequestid : *mut MCAST_CLIENT_UID, pscopectx : *mut MCAST_SCOPE_CTX, paddrrequest : *mut MCAST_LEASE_REQUEST, paddrresponse : *mut MCAST_LEASE_RESPONSE) -> u32);
+    unsafe { McastRequestAddress(addrfamily, prequestid as _, pscopectx as _, paddrrequest as _, paddrresponse as _) }
 }
-pub const MCAST_API_CURRENT_VERSION: i32 = 1i32;
-pub const MCAST_API_VERSION_0: i32 = 0i32;
-pub const MCAST_API_VERSION_1: i32 = 1i32;
-pub const MCAST_CLIENT_ID_LEN: u32 = 17u32;
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub union IPNG_ADDRESS {
     pub IpAddrV4: u32,
     pub IpAddrV6: [u8; 16],
 }
-impl windows_core::TypeKind for IPNG_ADDRESS {
-    type TypeKind = windows_core::CopyType;
-}
 impl Default for IPNG_ADDRESS {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
 }
+pub const MCAST_API_CURRENT_VERSION: i32 = 1i32;
+pub const MCAST_API_VERSION_0: i32 = 0i32;
+pub const MCAST_API_VERSION_1: i32 = 1i32;
+pub const MCAST_CLIENT_ID_LEN: u32 = 17u32;
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MCAST_CLIENT_UID {
     pub ClientUID: *mut u8,
     pub ClientUIDLength: u32,
-}
-impl windows_core::TypeKind for MCAST_CLIENT_UID {
-    type TypeKind = windows_core::CopyType;
 }
 impl Default for MCAST_CLIENT_UID {
     fn default() -> Self {
@@ -80,9 +71,6 @@ pub struct MCAST_LEASE_REQUEST {
     pub AddrCount: u16,
     pub pAddrBuf: *mut u8,
 }
-impl windows_core::TypeKind for MCAST_LEASE_REQUEST {
-    type TypeKind = windows_core::CopyType;
-}
 impl Default for MCAST_LEASE_REQUEST {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
@@ -97,9 +85,6 @@ pub struct MCAST_LEASE_RESPONSE {
     pub AddrCount: u16,
     pub pAddrBuf: *mut u8,
 }
-impl windows_core::TypeKind for MCAST_LEASE_RESPONSE {
-    type TypeKind = windows_core::CopyType;
-}
 impl Default for MCAST_LEASE_RESPONSE {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
@@ -111,9 +96,6 @@ pub struct MCAST_SCOPE_CTX {
     pub ScopeID: IPNG_ADDRESS,
     pub Interface: IPNG_ADDRESS,
     pub ServerID: IPNG_ADDRESS,
-}
-impl windows_core::TypeKind for MCAST_SCOPE_CTX {
-    type TypeKind = windows_core::CopyType;
 }
 impl Default for MCAST_SCOPE_CTX {
     fn default() -> Self {
@@ -127,9 +109,6 @@ pub struct MCAST_SCOPE_ENTRY {
     pub LastAddr: IPNG_ADDRESS,
     pub TTL: u32,
     pub ScopeDesc: super::super::Foundation::UNICODE_STRING,
-}
-impl windows_core::TypeKind for MCAST_SCOPE_ENTRY {
-    type TypeKind = windows_core::CopyType;
 }
 impl Default for MCAST_SCOPE_ENTRY {
     fn default() -> Self {

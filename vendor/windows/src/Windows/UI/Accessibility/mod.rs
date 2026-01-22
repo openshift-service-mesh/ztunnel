@@ -3,6 +3,7 @@ impl windows_core::RuntimeType for IScreenReaderPositionChangedEventArgs {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IScreenReaderPositionChangedEventArgs_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub ScreenPositionInRawPixels: unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::super::Foundation::Rect) -> windows_core::HRESULT,
@@ -13,14 +14,15 @@ impl windows_core::RuntimeType for IScreenReaderService {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IScreenReaderService_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub CurrentScreenReaderPosition: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub ScreenReaderPositionChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
-    pub RemoveScreenReaderPositionChanged: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub ScreenReaderPositionChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
+    pub RemoveScreenReaderPositionChanged: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
 }
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ScreenReaderPositionChangedEventArgs(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(ScreenReaderPositionChangedEventArgs, windows_core::IUnknown, windows_core::IInspectable);
 impl ScreenReaderPositionChangedEventArgs {
@@ -43,7 +45,7 @@ impl windows_core::RuntimeType for ScreenReaderPositionChangedEventArgs {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IScreenReaderPositionChangedEventArgs>();
 }
 unsafe impl windows_core::Interface for ScreenReaderPositionChangedEventArgs {
-    type Vtable = IScreenReaderPositionChangedEventArgs_Vtbl;
+    type Vtable = <IScreenReaderPositionChangedEventArgs as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <IScreenReaderPositionChangedEventArgs as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for ScreenReaderPositionChangedEventArgs {
@@ -52,7 +54,7 @@ impl windows_core::RuntimeName for ScreenReaderPositionChangedEventArgs {
 unsafe impl Send for ScreenReaderPositionChangedEventArgs {}
 unsafe impl Sync for ScreenReaderPositionChangedEventArgs {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ScreenReaderService(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(ScreenReaderService, windows_core::IUnknown, windows_core::IInspectable);
 impl ScreenReaderService {
@@ -70,7 +72,7 @@ impl ScreenReaderService {
             (windows_core::Interface::vtable(this).CurrentScreenReaderPosition)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ScreenReaderPositionChanged<P0>(&self, handler: P0) -> windows_core::Result<super::super::Foundation::EventRegistrationToken>
+    pub fn ScreenReaderPositionChanged<P0>(&self, handler: P0) -> windows_core::Result<i64>
     where
         P0: windows_core::Param<super::super::Foundation::TypedEventHandler<ScreenReaderService, ScreenReaderPositionChangedEventArgs>>,
     {
@@ -80,7 +82,7 @@ impl ScreenReaderService {
             (windows_core::Interface::vtable(this).ScreenReaderPositionChanged)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveScreenReaderPositionChanged(&self, token: super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
+    pub fn RemoveScreenReaderPositionChanged(&self, token: i64) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveScreenReaderPositionChanged)(windows_core::Interface::as_raw(this), token).ok() }
     }
@@ -89,7 +91,7 @@ impl windows_core::RuntimeType for ScreenReaderService {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IScreenReaderService>();
 }
 unsafe impl windows_core::Interface for ScreenReaderService {
-    type Vtable = IScreenReaderService_Vtbl;
+    type Vtable = <IScreenReaderService as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <IScreenReaderService as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for ScreenReaderService {

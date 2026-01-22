@@ -88,7 +88,8 @@ macro_rules! bindgen_available {
                     )
                 ),
                 all(target_arch = "x86", target_os = "windows", target_env = "msvc"),
-                all(target_arch = "x86", target_os = "linux", target_env = "gnu")
+                all(target_arch = "x86", target_os = "linux", target_env = "gnu"),
+                all(target_arch = "riscv64", target_os = "linux", target_env = "gnu")
             ))
         )))]
         $item
@@ -117,8 +118,7 @@ pub(crate) fn get_generated_include_path(manifest_dir: &Path) -> PathBuf {
 }
 
 pub(crate) fn get_aws_lc_sys_includes_path() -> Option<Vec<PathBuf>> {
-    option_env("AWS_LC_SYS_INCLUDES")
-        .map(|colon_delim_paths| colon_delim_paths.split(':').map(PathBuf::from).collect())
+    optional_env_crate_target("INCLUDES").map(|v| std::env::split_paths(&v).collect())
 }
 
 #[allow(dead_code)]
@@ -138,44 +138,113 @@ enum OutputLibType {
 
 fn cargo_env<N: AsRef<str>>(name: N) -> String {
     let name = name.as_ref();
-    std::env::var(name).unwrap_or_else(|_| panic!("missing env var {name:?}"))
+    env::var(name).unwrap_or_else(|_| panic!("missing env var {name:?}"))
 }
-fn option_env<N: AsRef<str>>(name: N) -> Option<String> {
+
+// "CFLAGS" =>
+// "AWS_LC_SYS_CFLAGS_aarch64_unknown_linux_gnu" OR "AWS_LC_SYS_CFLAGS"
+//    OR "CFLAGS_aarch64_unknown_linux_gnu" OR "CFLAGS"
+fn optional_env_optional_crate_target<N: AsRef<str>>(name: N) -> Option<String> {
+    let name = name.as_ref();
+    optional_env_crate_target(name).or(optional_env_target(name))
+}
+
+// "EFFECTIVE_TARGET" => "AWS_LC_SYS_EFFECTIVE_TARGET_aarch64_unknown_linux_gnu" + "AWS_LC_SYS_EFFECTIVE_TARGET"
+fn optional_env_crate_target<N: AsRef<str>>(name: N) -> Option<String> {
+    let name = name.as_ref();
+    let crate_name = crate_name().to_uppercase().replace('-', "_");
+    let target_name = target().to_lowercase().replace('-', "_");
+    let name_for_crate = format!("{crate_name}_{name}");
+    let name_for_crate_target = format!("{crate_name}_{name}_{target_name}");
+    optional_env(name_for_crate_target).or(optional_env(name_for_crate))
+}
+
+fn optional_env_target<N: AsRef<str>>(name: N) -> Option<String> {
+    let name = name.as_ref();
+    let target_name = target().to_lowercase().replace('-', "_");
+    let name_for_target = format!("{}_{}", &name, target_name);
+    optional_env(name_for_target).or(optional_env(name))
+}
+
+fn optional_env<N: AsRef<str>>(name: N) -> Option<String> {
     let name = name.as_ref();
     println!("cargo:rerun-if-env-changed={name}");
-    std::env::var(name).ok()
+    if let Ok(value) = env::var(name) {
+        emit_warning(&format!(
+            "Environment Variable found '{name}': '{}'",
+            &value
+        ));
+        return Some(value);
+    }
+    None
+}
+
+fn set_env_for_target<K, V>(env_var: K, value: V)
+where
+    K: AsRef<OsStr>,
+    V: AsRef<OsStr>,
+{
+    let target = target().to_lowercase();
+    let target = target.replace('-', "_");
+    let env_var = format!("{}_{target}", env_var.as_ref().to_str().unwrap());
+    env::set_var(&env_var, &value);
+    emit_warning(&format!(
+        "Setting {env_var}: {}",
+        value.as_ref().to_str().unwrap()
+    ));
+}
+
+fn set_env<K, V>(env_var: K, value: V)
+where
+    K: AsRef<OsStr>,
+    V: AsRef<OsStr>,
+{
+    env::set_var(&env_var, &value);
+    emit_warning(&format!(
+        "Setting {}: {}",
+        env_var.as_ref().to_str().unwrap(),
+        value.as_ref().to_str().unwrap()
+    ));
 }
 
 fn env_var_to_bool(name: &str) -> Option<bool> {
-    let build_type_result = option_env(name);
-    if let Some(env_var_value) = build_type_result {
-        eprintln!("Evaluating: {name}='{env_var_value}'");
+    if let Some(value) = optional_env(name) {
+        return parse_to_bool(&value);
+    }
+    None
+}
 
-        let env_var_value = env_var_value.to_lowercase();
-        if env_var_value.starts_with('0')
-            || env_var_value.starts_with('n')
-            || env_var_value.starts_with("off")
-            || env_var_value.starts_with('f')
-        {
-            eprintln!("Parsed: {name}=false");
-            return Some(false);
-        }
-        if env_var_value.starts_with(|c: char| c.is_ascii_digit())
-            || env_var_value.starts_with('y')
-            || env_var_value.starts_with("on")
-            || env_var_value.starts_with('t')
-        {
-            eprintln!("Parsed: {name}=true");
-            return Some(true);
-        }
-        eprintln!("Parsed: {name}=unknown");
+fn env_crate_var_to_bool(name: &str) -> Option<bool> {
+    if let Some(value) = optional_env_crate_target(name) {
+        return parse_to_bool(&value);
+    }
+    None
+}
+
+fn parse_to_bool(env_var_value: &str) -> Option<bool> {
+    let env_var_value = env_var_value.to_lowercase();
+    if env_var_value.starts_with('0')
+        || env_var_value.starts_with('n')
+        || env_var_value.starts_with("off")
+        || env_var_value.starts_with('f')
+    {
+        emit_warning(&format!("Value: {} is false.", &env_var_value));
+        return Some(false);
+    }
+    if env_var_value.starts_with(|c: char| c.is_ascii_digit())
+        || env_var_value.starts_with('y')
+        || env_var_value.starts_with("on")
+        || env_var_value.starts_with('t')
+    {
+        emit_warning(&format!("Value: {} is true.", &env_var_value));
+        return Some(true);
     }
     None
 }
 
 impl Default for OutputLibType {
     fn default() -> Self {
-        if Some(false) == env_var_to_bool("AWS_LC_SYS_STATIC") {
+        if Some(false) == env_crate_var_to_bool("STATIC") {
             // Only dynamic if the value is set and is a "negative" value
             OutputLibType::Dynamic
         } else {
@@ -311,6 +380,7 @@ fn target_env() -> String {
     cargo_env("CARGO_CFG_TARGET_ENV")
 }
 
+#[allow(unused)]
 fn target_vendor() -> String {
     cargo_env("CARGO_CFG_TARGET_VENDOR")
 }
@@ -319,7 +389,18 @@ fn target() -> String {
     cargo_env("TARGET")
 }
 
+fn crate_name() -> String {
+    cargo_env("CARGO_PKG_NAME")
+}
+
 fn effective_target() -> String {
+    #[allow(unknown_lints)]
+    #[allow(static_mut_refs)]
+    unsafe {
+        if !AWS_LC_SYS_EFFECTIVE_TARGET.is_empty() {
+            return AWS_LC_SYS_EFFECTIVE_TARGET.clone();
+        }
+    }
     let target = target();
     match target.as_str() {
         "x86_64-alpine-linux-musl" => "x86_64-unknown-linux-musl".to_string(),
@@ -398,7 +479,7 @@ pub(crate) enum CStdRequested {
 
 impl CStdRequested {
     fn from_env() -> Self {
-        if let Some(val) = option_env("AWS_LC_SYS_C_STD") {
+        if let Some(val) = optional_env_crate_target("C_STD") {
             let cstd = match val.as_str() {
                 "99" => CStdRequested::C99,
                 "11" => CStdRequested::C11,
@@ -416,32 +497,36 @@ impl CStdRequested {
 static mut PREGENERATED: bool = false;
 static mut AWS_LC_SYS_NO_PREFIX: bool = false;
 static mut AWS_LC_SYS_PREGENERATING_BINDINGS: bool = false;
-static mut AWS_LC_SYS_EXTERNAL_BINDGEN: bool = false;
+static mut AWS_LC_SYS_EXTERNAL_BINDGEN: Option<bool> = None;
 static mut AWS_LC_SYS_NO_ASM: bool = false;
 static mut AWS_LC_SYS_CFLAGS: String = String::new();
 static mut AWS_LC_SYS_PREBUILT_NASM: Option<bool> = None;
 static mut AWS_LC_SYS_CMAKE_BUILDER: Option<bool> = None;
 static mut AWS_LC_SYS_NO_PREGENERATED_SRC: bool = false;
+static mut AWS_LC_SYS_EFFECTIVE_TARGET: String = String::new();
 
 static mut AWS_LC_SYS_C_STD: CStdRequested = CStdRequested::None;
 
 fn initialize() {
     unsafe {
-        AWS_LC_SYS_NO_PREFIX = env_var_to_bool("AWS_LC_SYS_NO_PREFIX").unwrap_or(false);
+        AWS_LC_SYS_NO_PREFIX = env_crate_var_to_bool("NO_PREFIX").unwrap_or(false);
         AWS_LC_SYS_PREGENERATING_BINDINGS =
-            env_var_to_bool("AWS_LC_SYS_PREGENERATING_BINDINGS").unwrap_or(false);
-        AWS_LC_SYS_EXTERNAL_BINDGEN =
-            env_var_to_bool("AWS_LC_SYS_EXTERNAL_BINDGEN").unwrap_or(false);
-        AWS_LC_SYS_NO_ASM = env_var_to_bool("AWS_LC_SYS_NO_ASM").unwrap_or(false);
-        AWS_LC_SYS_CFLAGS = option_env("AWS_LC_SYS_CFLAGS").unwrap_or_default();
-        AWS_LC_SYS_PREBUILT_NASM = env_var_to_bool("AWS_LC_SYS_PREBUILT_NASM");
+            env_crate_var_to_bool("PREGENERATING_BINDINGS").unwrap_or(false);
+        AWS_LC_SYS_EXTERNAL_BINDGEN = env_crate_var_to_bool("EXTERNAL_BINDGEN");
+        AWS_LC_SYS_NO_ASM = env_crate_var_to_bool("NO_ASM").unwrap_or(false);
+        AWS_LC_SYS_CFLAGS = optional_env_optional_crate_target("CFLAGS").unwrap_or_default();
+        AWS_LC_SYS_PREBUILT_NASM = env_crate_var_to_bool("PREBUILT_NASM");
         AWS_LC_SYS_C_STD = CStdRequested::from_env();
-        AWS_LC_SYS_CMAKE_BUILDER = env_var_to_bool("AWS_LC_SYS_CMAKE_BUILDER");
+        AWS_LC_SYS_CMAKE_BUILDER = env_crate_var_to_bool("CMAKE_BUILDER");
         AWS_LC_SYS_NO_PREGENERATED_SRC =
-            env_var_to_bool("AWS_LC_SYS_NO_PREGENERATED_SRC").unwrap_or(false);
+            env_crate_var_to_bool("NO_PREGENERATED_SRC").unwrap_or(false);
+        AWS_LC_SYS_EFFECTIVE_TARGET =
+            optional_env_crate_target("EFFECTIVE_TARGET").unwrap_or_default();
     }
 
-    if !is_external_bindgen() && (is_pregenerating_bindings() || !has_bindgen_feature()) {
+    if !is_external_bindgen_requested().unwrap_or(false)
+        && (is_pregenerating_bindings() || !has_bindgen_feature())
+    {
         let target = effective_target();
         let supported_platform = match target.as_str() {
             "aarch64-apple-darwin"
@@ -471,7 +556,7 @@ fn initialize() {
 fn is_bindgen_required() -> bool {
     is_no_prefix()
         || is_pregenerating_bindings()
-        || is_external_bindgen()
+        || is_external_bindgen_requested().unwrap_or(false)
         || has_bindgen_feature()
         || !has_pregenerated()
 }
@@ -492,7 +577,7 @@ fn is_pregenerating_bindings() -> bool {
     unsafe { AWS_LC_SYS_PREGENERATING_BINDINGS }
 }
 
-fn is_external_bindgen() -> bool {
+fn is_external_bindgen_requested() -> Option<bool> {
     unsafe { AWS_LC_SYS_EXTERNAL_BINDGEN }
 }
 
@@ -544,7 +629,11 @@ fn has_pregenerated() -> bool {
 }
 
 fn test_nasm_command() -> bool {
-    execute_command("nasm".as_ref(), &["-version".as_ref()]).status
+    let status = execute_command("nasm".as_ref(), &["-version".as_ref()]).status;
+    if !status {
+        emit_warning("NASM command not found or failed to execute.");
+    }
+    status
 }
 
 fn prepare_cargo_cfg() {
@@ -573,7 +662,7 @@ fn is_crt_static() -> bool {
 
 bindgen_available!(
     fn handle_bindgen(manifest_dir: &Path, prefix: &Option<String>) -> bool {
-        if internal_bindgen_supported() && !is_external_bindgen() {
+        if internal_bindgen_supported() && !is_external_bindgen_requested().unwrap_or(false) {
             emit_warning(&format!(
                 "Generating bindings - internal bindgen. Platform: {}",
                 effective_target()
@@ -622,7 +711,7 @@ fn main() {
             let src_bindings_path = Path::new(&manifest_dir)
                 .join("src")
                 .join(format!("{}.rs", target_platform_prefix("crypto")));
-            if is_external_bindgen() {
+            if is_external_bindgen_requested().unwrap_or(false) {
                 invoke_external_bindgen(&manifest_dir, &prefix, &src_bindings_path).unwrap();
             } else {
                 generate_src_bindings(&manifest_dir, &prefix, &src_bindings_path);
@@ -630,6 +719,13 @@ fn main() {
             bindings_available = true;
         }
     } else if is_bindgen_required() {
+        emit_warning("######");
+        emit_warning(
+            "If bindgen is unable to locate a header file, use the \
+            BINDGEN_EXTRA_CLANG_ARGS environment variable to specify additional include paths.",
+        );
+        emit_warning("See: https://github.com/rust-lang/rust-bindgen?tab=readme-ov-file#environment-variables");
+        emit_warning("######");
         let aws_lc_crypto_dir = Path::new(&manifest_dir).join("aws-lc").join("crypto");
         if !aws_lc_crypto_dir.exists() {
             emit_warning("######");
@@ -738,6 +834,12 @@ impl Debug for BindingOptions {
 }
 
 fn verify_bindgen() -> Result<(), String> {
+    if !is_external_bindgen_requested().unwrap_or(true) {
+        return Err(
+            "external bindgen usage prevented by AWS_LC_SYS_EXTERNAL_BINDGEN=0".to_string(),
+        );
+    }
+
     let result = execute_command("bindgen".as_ref(), &["--version".as_ref()]);
     if !result.status {
         if result.executed {
@@ -851,9 +953,9 @@ fn invoke_external_bindgen(
         r"rustfmt",
         "--",
     ]);
-    clang_args
-        .iter()
-        .for_each(|x| bindgen_params.push(x.as_str()));
+    for x in &clang_args {
+        bindgen_params.push(x.as_str());
+    }
     let cmd_params: Vec<OsString> = bindgen_params.iter().map(OsString::from).collect();
     let cmd_params: Vec<&OsStr> = cmd_params.iter().map(OsString::as_os_str).collect();
 

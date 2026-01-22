@@ -1,62 +1,63 @@
 #[inline]
-pub unsafe fn MatchEnumTag<P0, P1>(hmodule: P0, pwcarg: P1, dwnumarg: u32, penumtable: *const TOKEN_VALUE, pdwvalue: *mut u32) -> u32
+pub unsafe fn MatchEnumTag<P1>(hmodule: super::super::Foundation::HANDLE, pwcarg: P1, dwnumarg: u32, penumtable: *const TOKEN_VALUE, pdwvalue: *mut u32) -> u32
 where
-    P0: windows_core::Param<super::super::Foundation::HANDLE>,
     P1: windows_core::Param<windows_core::PCWSTR>,
 {
-    windows_targets::link!("netsh.dll" "system" fn MatchEnumTag(hmodule : super::super::Foundation:: HANDLE, pwcarg : windows_core::PCWSTR, dwnumarg : u32, penumtable : *const TOKEN_VALUE, pdwvalue : *mut u32) -> u32);
-    MatchEnumTag(hmodule.param().abi(), pwcarg.param().abi(), dwnumarg, penumtable, pdwvalue)
+    windows_link::link!("netsh.dll" "system" fn MatchEnumTag(hmodule : super::super::Foundation:: HANDLE, pwcarg : windows_core::PCWSTR, dwnumarg : u32, penumtable : *const TOKEN_VALUE, pdwvalue : *mut u32) -> u32);
+    unsafe { MatchEnumTag(hmodule, pwcarg.param().abi(), dwnumarg, penumtable, pdwvalue as _) }
 }
 #[inline]
-pub unsafe fn MatchToken<P0, P1>(pwszusertoken: P0, pwszcmdtoken: P1) -> super::super::Foundation::BOOL
+pub unsafe fn MatchToken<P0, P1>(pwszusertoken: P0, pwszcmdtoken: P1) -> windows_core::BOOL
 where
     P0: windows_core::Param<windows_core::PCWSTR>,
     P1: windows_core::Param<windows_core::PCWSTR>,
 {
-    windows_targets::link!("netsh.dll" "system" fn MatchToken(pwszusertoken : windows_core::PCWSTR, pwszcmdtoken : windows_core::PCWSTR) -> super::super::Foundation:: BOOL);
-    MatchToken(pwszusertoken.param().abi(), pwszcmdtoken.param().abi())
+    windows_link::link!("netsh.dll" "system" fn MatchToken(pwszusertoken : windows_core::PCWSTR, pwszcmdtoken : windows_core::PCWSTR) -> windows_core::BOOL);
+    unsafe { MatchToken(pwszusertoken.param().abi(), pwszcmdtoken.param().abi()) }
 }
 #[inline]
-pub unsafe fn PreprocessCommand<P0>(hmodule: P0, ppwcarguments: &mut [windows_core::PWSTR], dwcurrentindex: u32, ptttags: Option<&mut [TAG_TYPE]>, dwminargs: u32, dwmaxargs: u32, pdwtagtype: Option<*mut u32>) -> u32
-where
-    P0: windows_core::Param<super::super::Foundation::HANDLE>,
-{
-    windows_targets::link!("netsh.dll" "system" fn PreprocessCommand(hmodule : super::super::Foundation:: HANDLE, ppwcarguments : *mut windows_core::PWSTR, dwcurrentindex : u32, dwargcount : u32, ptttags : *mut TAG_TYPE, dwtagcount : u32, dwminargs : u32, dwmaxargs : u32, pdwtagtype : *mut u32) -> u32);
-    PreprocessCommand(hmodule.param().abi(), core::mem::transmute(ppwcarguments.as_ptr()), dwcurrentindex, ppwcarguments.len().try_into().unwrap(), core::mem::transmute(ptttags.as_deref().map_or(core::ptr::null(), |slice| slice.as_ptr())), ptttags.as_deref().map_or(0, |slice| slice.len().try_into().unwrap()), dwminargs, dwmaxargs, core::mem::transmute(pdwtagtype.unwrap_or(std::ptr::null_mut())))
+pub unsafe fn PreprocessCommand(hmodule: Option<super::super::Foundation::HANDLE>, ppwcarguments: &mut [windows_core::PWSTR], dwcurrentindex: u32, ptttags: Option<&mut [TAG_TYPE]>, dwminargs: u32, dwmaxargs: u32, pdwtagtype: Option<*mut u32>) -> u32 {
+    windows_link::link!("netsh.dll" "system" fn PreprocessCommand(hmodule : super::super::Foundation:: HANDLE, ppwcarguments : *mut windows_core::PWSTR, dwcurrentindex : u32, dwargcount : u32, ptttags : *mut TAG_TYPE, dwtagcount : u32, dwminargs : u32, dwmaxargs : u32, pdwtagtype : *mut u32) -> u32);
+    unsafe { PreprocessCommand(hmodule.unwrap_or(core::mem::zeroed()) as _, core::mem::transmute(ppwcarguments.as_ptr()), dwcurrentindex, ppwcarguments.len().try_into().unwrap(), core::mem::transmute(ptttags.as_deref().map_or(core::ptr::null(), |slice| slice.as_ptr())), ptttags.as_deref().map_or(0, |slice| slice.len().try_into().unwrap()), dwminargs, dwmaxargs, pdwtagtype.unwrap_or(core::mem::zeroed()) as _) }
 }
 #[inline]
-pub unsafe fn PrintError<P0>(hmodule: P0, dwerrid: u32) -> u32
-where
-    P0: windows_core::Param<super::super::Foundation::HANDLE>,
-{
-    windows_targets::link!("netsh.dll" "cdecl" fn PrintError(hmodule : super::super::Foundation:: HANDLE, dwerrid : u32) -> u32);
-    PrintError(hmodule.param().abi(), dwerrid)
+pub unsafe fn PrintError(hmodule: super::super::Foundation::HANDLE, dwerrid: u32) -> u32 {
+    windows_link::link!("netsh.dll" "C" fn PrintError(hmodule : super::super::Foundation:: HANDLE, dwerrid : u32) -> u32);
+    unsafe { PrintError(hmodule, dwerrid) }
 }
 #[inline]
 pub unsafe fn PrintMessage<P0>(pwszformat: P0) -> u32
 where
     P0: windows_core::Param<windows_core::PCWSTR>,
 {
-    windows_targets::link!("netsh.dll" "cdecl" fn PrintMessage(pwszformat : windows_core::PCWSTR) -> u32);
-    PrintMessage(pwszformat.param().abi())
+    windows_link::link!("netsh.dll" "C" fn PrintMessage(pwszformat : windows_core::PCWSTR) -> u32);
+    unsafe { PrintMessage(pwszformat.param().abi()) }
 }
 #[inline]
-pub unsafe fn PrintMessageFromModule<P0>(hmodule: P0, dwmsgid: u32) -> u32
-where
-    P0: windows_core::Param<super::super::Foundation::HANDLE>,
-{
-    windows_targets::link!("netsh.dll" "cdecl" fn PrintMessageFromModule(hmodule : super::super::Foundation:: HANDLE, dwmsgid : u32) -> u32);
-    PrintMessageFromModule(hmodule.param().abi(), dwmsgid)
+pub unsafe fn PrintMessageFromModule(hmodule: super::super::Foundation::HANDLE, dwmsgid: u32) -> u32 {
+    windows_link::link!("netsh.dll" "C" fn PrintMessageFromModule(hmodule : super::super::Foundation:: HANDLE, dwmsgid : u32) -> u32);
+    unsafe { PrintMessageFromModule(hmodule, dwmsgid) }
 }
 #[inline]
 pub unsafe fn RegisterContext(pchildcontext: *const NS_CONTEXT_ATTRIBUTES) -> u32 {
-    windows_targets::link!("netsh.dll" "system" fn RegisterContext(pchildcontext : *const NS_CONTEXT_ATTRIBUTES) -> u32);
-    RegisterContext(pchildcontext)
+    windows_link::link!("netsh.dll" "system" fn RegisterContext(pchildcontext : *const NS_CONTEXT_ATTRIBUTES) -> u32);
+    unsafe { RegisterContext(pchildcontext) }
 }
 #[inline]
 pub unsafe fn RegisterHelper(pguidparentcontext: *const windows_core::GUID, pfnregistersubcontext: *const NS_HELPER_ATTRIBUTES) -> u32 {
-    windows_targets::link!("netsh.dll" "system" fn RegisterHelper(pguidparentcontext : *const windows_core::GUID, pfnregistersubcontext : *const NS_HELPER_ATTRIBUTES) -> u32);
-    RegisterHelper(pguidparentcontext, pfnregistersubcontext)
+    windows_link::link!("netsh.dll" "system" fn RegisterHelper(pguidparentcontext : *const windows_core::GUID, pfnregistersubcontext : *const NS_HELPER_ATTRIBUTES) -> u32);
+    unsafe { RegisterHelper(pguidparentcontext, pfnregistersubcontext) }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct CMD_ENTRY {
+    pub pwszCmdToken: windows_core::PCWSTR,
+    pub pfnCmdHandler: PFN_HANDLE_CMD,
+    pub dwShortCmdHelpToken: u32,
+    pub dwCmdHlpToken: u32,
+    pub dwFlags: u32,
+    pub pOsVersionCheck: PNS_OSVERSIONCHECK,
+    pub pfnCustomHelpFn: PFN_CUSTOM_HELP,
 }
 pub const CMD_FLAG_HIDDEN: NS_CMD_FLAGS = NS_CMD_FLAGS(32i32);
 pub const CMD_FLAG_INTERACTIVE: NS_CMD_FLAGS = NS_CMD_FLAGS(2i32);
@@ -65,6 +66,21 @@ pub const CMD_FLAG_LOCAL: NS_CMD_FLAGS = NS_CMD_FLAGS(8i32);
 pub const CMD_FLAG_ONLINE: NS_CMD_FLAGS = NS_CMD_FLAGS(16i32);
 pub const CMD_FLAG_PRIORITY: NS_CMD_FLAGS = NS_CMD_FLAGS(-2147483648i32);
 pub const CMD_FLAG_PRIVATE: NS_CMD_FLAGS = NS_CMD_FLAGS(1i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct CMD_GROUP_ENTRY {
+    pub pwszCmdGroupToken: windows_core::PCWSTR,
+    pub dwShortCmdHelpToken: u32,
+    pub ulCmdGroupSize: u32,
+    pub dwFlags: u32,
+    pub pCmdGroup: *mut CMD_ENTRY,
+    pub pOsVersionCheck: PNS_OSVERSIONCHECK,
+}
+impl Default for CMD_GROUP_ENTRY {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 pub const DEFAULT_CONTEXT_PRIORITY: u32 = 100u32;
 pub const ERROR_CMD_NOT_FOUND: u32 = 15004u32;
 pub const ERROR_CONTEXT_ALREADY_REGISTERED: u32 = 15019u32;
@@ -101,97 +117,9 @@ pub const NETSH_MAX_TOKEN_LENGTH: u32 = 64u32;
 pub const NETSH_SAVE: NS_MODE_CHANGE = NS_MODE_CHANGE(4i32);
 pub const NETSH_UNCOMMIT: NS_MODE_CHANGE = NS_MODE_CHANGE(1i32);
 pub const NETSH_VERSION_50: u32 = 20480u32;
-pub const NS_EVENT_FROM_N: NS_EVENTS = NS_EVENTS(4i32);
-pub const NS_EVENT_FROM_START: NS_EVENTS = NS_EVENTS(8i32);
-pub const NS_EVENT_LAST_N: NS_EVENTS = NS_EVENTS(1i32);
-pub const NS_EVENT_LAST_SECS: NS_EVENTS = NS_EVENTS(2i32);
-pub const NS_EVENT_LOOP: NS_EVENTS = NS_EVENTS(65536i32);
-pub const NS_GET_EVENT_IDS_FN_NAME: windows_core::PCSTR = windows_core::s!("GetEventIds");
-pub const NS_REQ_ALLOW_MULTIPLE: NS_REQS = NS_REQS(2i32);
-pub const NS_REQ_ONE_OR_MORE: NS_REQS = NS_REQS(3i32);
-pub const NS_REQ_PRESENT: NS_REQS = NS_REQS(1i32);
-pub const NS_REQ_ZERO: NS_REQS = NS_REQS(0i32);
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct NS_CMD_FLAGS(pub i32);
-impl windows_core::TypeKind for NS_CMD_FLAGS {
-    type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for NS_CMD_FLAGS {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("NS_CMD_FLAGS").field(&self.0).finish()
-    }
-}
-#[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
-pub struct NS_EVENTS(pub i32);
-impl windows_core::TypeKind for NS_EVENTS {
-    type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for NS_EVENTS {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("NS_EVENTS").field(&self.0).finish()
-    }
-}
-#[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
-pub struct NS_MODE_CHANGE(pub i32);
-impl windows_core::TypeKind for NS_MODE_CHANGE {
-    type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for NS_MODE_CHANGE {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("NS_MODE_CHANGE").field(&self.0).finish()
-    }
-}
-#[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
-pub struct NS_REQS(pub i32);
-impl windows_core::TypeKind for NS_REQS {
-    type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for NS_REQS {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("NS_REQS").field(&self.0).finish()
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug)]
-pub struct CMD_ENTRY {
-    pub pwszCmdToken: windows_core::PCWSTR,
-    pub pfnCmdHandler: PFN_HANDLE_CMD,
-    pub dwShortCmdHelpToken: u32,
-    pub dwCmdHlpToken: u32,
-    pub dwFlags: u32,
-    pub pOsVersionCheck: PNS_OSVERSIONCHECK,
-    pub pfnCustomHelpFn: PFN_CUSTOM_HELP,
-}
-impl windows_core::TypeKind for CMD_ENTRY {
-    type TypeKind = windows_core::CopyType;
-}
-impl Default for CMD_ENTRY {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug)]
-pub struct CMD_GROUP_ENTRY {
-    pub pwszCmdGroupToken: windows_core::PCWSTR,
-    pub dwShortCmdHelpToken: u32,
-    pub ulCmdGroupSize: u32,
-    pub dwFlags: u32,
-    pub pCmdGroup: *mut CMD_ENTRY,
-    pub pOsVersionCheck: PNS_OSVERSIONCHECK,
-}
-impl windows_core::TypeKind for CMD_GROUP_ENTRY {
-    type TypeKind = windows_core::CopyType;
-}
-impl Default for CMD_GROUP_ENTRY {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct NS_CONTEXT_ATTRIBUTES {
@@ -210,9 +138,6 @@ pub struct NS_CONTEXT_ATTRIBUTES {
     pub pReserved: *mut core::ffi::c_void,
     pub pfnOsVersionCheck: PNS_OSVERSIONCHECK,
 }
-impl windows_core::TypeKind for NS_CONTEXT_ATTRIBUTES {
-    type TypeKind = windows_core::CopyType;
-}
 impl Default for NS_CONTEXT_ATTRIBUTES {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
@@ -224,28 +149,26 @@ pub union NS_CONTEXT_ATTRIBUTES_0 {
     pub Anonymous: NS_CONTEXT_ATTRIBUTES_0_0,
     pub _ullAlign: u64,
 }
-impl windows_core::TypeKind for NS_CONTEXT_ATTRIBUTES_0 {
-    type TypeKind = windows_core::CopyType;
-}
 impl Default for NS_CONTEXT_ATTRIBUTES_0 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
 }
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct NS_CONTEXT_ATTRIBUTES_0_0 {
     pub dwVersion: u32,
     pub dwReserved: u32,
 }
-impl windows_core::TypeKind for NS_CONTEXT_ATTRIBUTES_0_0 {
-    type TypeKind = windows_core::CopyType;
-}
-impl Default for NS_CONTEXT_ATTRIBUTES_0_0 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct NS_EVENTS(pub i32);
+pub const NS_EVENT_FROM_N: NS_EVENTS = NS_EVENTS(4i32);
+pub const NS_EVENT_FROM_START: NS_EVENTS = NS_EVENTS(8i32);
+pub const NS_EVENT_LAST_N: NS_EVENTS = NS_EVENTS(1i32);
+pub const NS_EVENT_LAST_SECS: NS_EVENTS = NS_EVENTS(2i32);
+pub const NS_EVENT_LOOP: NS_EVENTS = NS_EVENTS(65536i32);
+pub const NS_GET_EVENT_IDS_FN_NAME: windows_core::PCSTR = windows_core::s!("GetEventIds");
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct NS_HELPER_ATTRIBUTES {
@@ -253,9 +176,6 @@ pub struct NS_HELPER_ATTRIBUTES {
     pub guidHelper: windows_core::GUID,
     pub pfnStart: PNS_HELPER_START_FN,
     pub pfnStop: PNS_HELPER_STOP_FN,
-}
-impl windows_core::TypeKind for NS_HELPER_ATTRIBUTES {
-    type TypeKind = windows_core::CopyType;
 }
 impl Default for NS_HELPER_ATTRIBUTES {
     fn default() -> Self {
@@ -268,59 +188,29 @@ pub union NS_HELPER_ATTRIBUTES_0 {
     pub Anonymous: NS_HELPER_ATTRIBUTES_0_0,
     pub _ullAlign: u64,
 }
-impl windows_core::TypeKind for NS_HELPER_ATTRIBUTES_0 {
-    type TypeKind = windows_core::CopyType;
-}
 impl Default for NS_HELPER_ATTRIBUTES_0 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
 }
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct NS_HELPER_ATTRIBUTES_0_0 {
     pub dwVersion: u32,
     pub dwReserved: u32,
 }
-impl windows_core::TypeKind for NS_HELPER_ATTRIBUTES_0_0 {
-    type TypeKind = windows_core::CopyType;
-}
-impl Default for NS_HELPER_ATTRIBUTES_0_0 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct TAG_TYPE {
-    pub pwszTag: windows_core::PCWSTR,
-    pub dwRequired: u32,
-    pub bPresent: super::super::Foundation::BOOL,
-}
-impl windows_core::TypeKind for TAG_TYPE {
-    type TypeKind = windows_core::CopyType;
-}
-impl Default for TAG_TYPE {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct TOKEN_VALUE {
-    pub pwszToken: windows_core::PCWSTR,
-    pub dwValue: u32,
-}
-impl windows_core::TypeKind for TOKEN_VALUE {
-    type TypeKind = windows_core::CopyType;
-}
-impl Default for TOKEN_VALUE {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct NS_MODE_CHANGE(pub i32);
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct NS_REQS(pub i32);
+pub const NS_REQ_ALLOW_MULTIPLE: NS_REQS = NS_REQS(2i32);
+pub const NS_REQ_ONE_OR_MORE: NS_REQS = NS_REQS(3i32);
+pub const NS_REQ_PRESENT: NS_REQS = NS_REQS(1i32);
+pub const NS_REQ_ZERO: NS_REQS = NS_REQS(0i32);
 pub type PFN_CUSTOM_HELP = Option<unsafe extern "system" fn(hmodule: super::super::Foundation::HANDLE, pwszcmdtoken: windows_core::PCWSTR)>;
-pub type PFN_HANDLE_CMD = Option<unsafe extern "system" fn(pwszmachine: windows_core::PCWSTR, ppwcarguments: *mut windows_core::PWSTR, dwcurrentindex: u32, dwargcount: u32, dwflags: u32, pvdata: *const core::ffi::c_void, pbdone: *mut super::super::Foundation::BOOL) -> u32>;
+pub type PFN_HANDLE_CMD = Option<unsafe extern "system" fn(pwszmachine: windows_core::PCWSTR, ppwcarguments: *mut windows_core::PWSTR, dwcurrentindex: u32, dwargcount: u32, dwflags: u32, pvdata: *const core::ffi::c_void, pbdone: *mut windows_core::BOOL) -> u32>;
 pub type PGET_RESOURCE_STRING_FN = Option<unsafe extern "system" fn(dwmsgid: u32, lpbuffer: windows_core::PCWSTR, nbuffermax: u32) -> u32>;
 pub type PNS_CONTEXT_COMMIT_FN = Option<unsafe extern "system" fn(dwaction: u32) -> u32>;
 pub type PNS_CONTEXT_CONNECT_FN = Option<unsafe extern "system" fn(pwszmachine: windows_core::PCWSTR) -> u32>;
@@ -329,4 +219,17 @@ pub type PNS_DLL_INIT_FN = Option<unsafe extern "system" fn(dwnetshversion: u32,
 pub type PNS_DLL_STOP_FN = Option<unsafe extern "system" fn(dwreserved: u32) -> u32>;
 pub type PNS_HELPER_START_FN = Option<unsafe extern "system" fn(pguidparent: *const windows_core::GUID, dwversion: u32) -> u32>;
 pub type PNS_HELPER_STOP_FN = Option<unsafe extern "system" fn(dwreserved: u32) -> u32>;
-pub type PNS_OSVERSIONCHECK = Option<unsafe extern "system" fn(cimostype: u32, cimosproductsuite: u32, cimosversion: windows_core::PCWSTR, cimosbuildnumber: windows_core::PCWSTR, cimservicepackmajorversion: windows_core::PCWSTR, cimservicepackminorversion: windows_core::PCWSTR, uireserved: u32, dwreserved: u32) -> super::super::Foundation::BOOL>;
+pub type PNS_OSVERSIONCHECK = Option<unsafe extern "system" fn(cimostype: u32, cimosproductsuite: u32, cimosversion: windows_core::PCWSTR, cimosbuildnumber: windows_core::PCWSTR, cimservicepackmajorversion: windows_core::PCWSTR, cimservicepackminorversion: windows_core::PCWSTR, uireserved: u32, dwreserved: u32) -> windows_core::BOOL>;
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct TAG_TYPE {
+    pub pwszTag: windows_core::PCWSTR,
+    pub dwRequired: u32,
+    pub bPresent: windows_core::BOOL,
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct TOKEN_VALUE {
+    pub pwszToken: windows_core::PCWSTR,
+    pub dwValue: u32,
+}

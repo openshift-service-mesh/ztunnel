@@ -2,7 +2,7 @@
 
 use time::{Duration, OffsetDateTime};
 
-use rcgen::{BasicConstraints, Certificate, CertificateParams, KeyPair};
+use rcgen::{BasicConstraints, Certificate, CertificateParams, Issuer, KeyPair};
 use rcgen::{
 	CertificateRevocationList, CrlDistributionPoint, CrlIssuingDistributionPoint, CrlScope,
 };
@@ -84,7 +84,11 @@ pub fn default_params() -> (CertificateParams, KeyPair) {
 }
 
 #[allow(unused)] // Used by openssl + x509-parser features.
-pub fn test_crl() -> (CertificateRevocationList, Certificate) {
+pub fn test_crl() -> (
+	CertificateRevocationListParams,
+	CertificateRevocationList,
+	Certificate,
+) {
 	let (mut issuer, key_pair) = default_params();
 	issuer.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
 	issuer.key_usages = vec![
@@ -92,7 +96,8 @@ pub fn test_crl() -> (CertificateRevocationList, Certificate) {
 		KeyUsagePurpose::DigitalSignature,
 		KeyUsagePurpose::CrlSign,
 	];
-	let issuer = issuer.self_signed(&key_pair).unwrap();
+	let issuer_cert = issuer.self_signed(&key_pair).unwrap();
+	let ca = Issuer::new(issuer, key_pair);
 
 	let now = OffsetDateTime::now_utc();
 	let next_week = now + Duration::weeks(1);
@@ -103,7 +108,7 @@ pub fn test_crl() -> (CertificateRevocationList, Certificate) {
 		invalidity_date: None,
 	};
 
-	let crl = CertificateRevocationListParams {
+	let params = CertificateRevocationListParams {
 		this_update: now,
 		next_update: next_week,
 		crl_number: SerialNumber::from(1234),
@@ -115,11 +120,10 @@ pub fn test_crl() -> (CertificateRevocationList, Certificate) {
 		}),
 		revoked_certs: vec![revoked_cert],
 		key_identifier_method: KeyIdMethod::Sha256,
-	}
-	.signed_by(&issuer, &key_pair)
-	.unwrap();
+	};
 
-	(crl, issuer)
+	let crl = params.signed_by(&ca).unwrap();
+	(params, crl, issuer_cert)
 }
 
 #[allow(unused)] // Used by openssl + x509-parser features.

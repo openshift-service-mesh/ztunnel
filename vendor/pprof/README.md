@@ -43,7 +43,7 @@ FRAME: backtrace::backtrace::trace::h3e91a3123a3049a5 -> FRAME: pprof::profiler:
 ## Flamegraph
 
 ```toml
-pprof = { version = "0.14", features = ["flamegraph"] }
+pprof = { version = "0.15", features = ["flamegraph"] }
 ```
 
 If `flamegraph` feature is enabled, you can generate flamegraph from the report. `Report` struct has a method `flamegraph` which can generate flamegraph and write it into a `Write`.
@@ -247,7 +247,7 @@ Unit tests have been added to guarantee there is no `malloc` in sample functions
 
 ## Minimum Supported Rust Version
 
-Rust 1.64 or higher.
+Rust 1.74 or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be done with a minor version bump.
 

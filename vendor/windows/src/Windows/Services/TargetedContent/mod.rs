@@ -3,6 +3,7 @@ impl windows_core::RuntimeType for ITargetedContentAction {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentAction_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub InvokeAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -12,6 +13,7 @@ impl windows_core::RuntimeType for ITargetedContentAvailabilityChangedEventArgs 
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentAvailabilityChangedEventArgs_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub GetDeferral: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -21,6 +23,7 @@ impl windows_core::RuntimeType for ITargetedContentChangedEventArgs {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentChangedEventArgs_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub GetDeferral: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -31,52 +34,50 @@ impl windows_core::RuntimeType for ITargetedContentCollection {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentCollection_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub Id: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Id: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub ReportInteraction: unsafe extern "system" fn(*mut core::ffi::c_void, TargetedContentInteraction) -> windows_core::HRESULT,
-    pub ReportCustomInteraction: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
-    pub Path: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
-    #[cfg(feature = "Foundation_Collections")]
+    pub ReportCustomInteraction: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub Path: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub Properties: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    Properties: usize,
-    #[cfg(feature = "Foundation_Collections")]
     pub Collections: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    Collections: usize,
-    #[cfg(feature = "Foundation_Collections")]
     pub Items: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    Items: usize,
 }
 windows_core::imp::define_interface!(ITargetedContentContainer, ITargetedContentContainer_Vtbl, 0xbc2494c9_8837_47c2_850f_d79d64595926);
 impl windows_core::RuntimeType for ITargetedContentContainer {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentContainer_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub Id: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Id: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub Timestamp: unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::super::Foundation::DateTime) -> windows_core::HRESULT,
     pub Availability: unsafe extern "system" fn(*mut core::ffi::c_void, *mut TargetedContentAvailability) -> windows_core::HRESULT,
     pub Content: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub SelectSingleObject: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub SelectSingleObject: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(ITargetedContentContainerStatics, ITargetedContentContainerStatics_Vtbl, 0x5b47e7fb_2140_4c1f_a736_c59583f227d8);
 impl windows_core::RuntimeType for ITargetedContentContainerStatics {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentContainerStatics_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub GetAsync: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
+#[cfg(feature = "Storage_Streams")]
 windows_core::imp::define_interface!(ITargetedContentImage, ITargetedContentImage_Vtbl, 0xa7a585d9_779f_4b1e_bbb1_8eaf53fbeab2);
+#[cfg(feature = "Storage_Streams")]
 impl windows_core::RuntimeType for ITargetedContentImage {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
+#[cfg(feature = "Storage_Streams")]
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentImage_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Height: unsafe extern "system" fn(*mut core::ffi::c_void, *mut u32) -> windows_core::HRESULT,
@@ -87,26 +88,22 @@ impl windows_core::RuntimeType for ITargetedContentItem {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentItem_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub Path: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Path: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub ReportInteraction: unsafe extern "system" fn(*mut core::ffi::c_void, TargetedContentInteraction) -> windows_core::HRESULT,
-    pub ReportCustomInteraction: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub ReportCustomInteraction: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub State: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(feature = "Foundation_Collections")]
     pub Properties: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    Properties: usize,
-    #[cfg(feature = "Foundation_Collections")]
     pub Collections: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    Collections: usize,
 }
 windows_core::imp::define_interface!(ITargetedContentItemState, ITargetedContentItemState_Vtbl, 0x73935454_4c65_4b47_a441_472de53c79b6);
 impl windows_core::RuntimeType for ITargetedContentItemState {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentItemState_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub ShouldDisplay: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
@@ -117,6 +114,7 @@ impl windows_core::RuntimeType for ITargetedContentObject {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentObject_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub ObjectKind: unsafe extern "system" fn(*mut core::ffi::c_void, *mut TargetedContentObjectKind) -> windows_core::HRESULT,
@@ -129,6 +127,7 @@ impl windows_core::RuntimeType for ITargetedContentStateChangedEventArgs {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentStateChangedEventArgs_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub GetDeferral: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -138,35 +137,31 @@ impl windows_core::RuntimeType for ITargetedContentSubscription {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentSubscription_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub Id: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Id: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub GetContentContainerAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub ContentChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
-    pub RemoveContentChanged: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
-    pub AvailabilityChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
-    pub RemoveAvailabilityChanged: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
-    pub StateChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
-    pub RemoveStateChanged: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub ContentChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
+    pub RemoveContentChanged: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
+    pub AvailabilityChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
+    pub RemoveAvailabilityChanged: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
+    pub StateChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
+    pub RemoveStateChanged: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(ITargetedContentSubscriptionOptions, ITargetedContentSubscriptionOptions_Vtbl, 0x61ee6ad0_2c83_421b_8467_413eaf1aeb97);
 impl windows_core::RuntimeType for ITargetedContentSubscriptionOptions {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentSubscriptionOptions_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub SubscriptionId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub SubscriptionId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub AllowPartialContentAvailability: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
     pub SetAllowPartialContentAvailability: unsafe extern "system" fn(*mut core::ffi::c_void, bool) -> windows_core::HRESULT,
-    #[cfg(feature = "Foundation_Collections")]
     pub CloudQueryParameters: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    CloudQueryParameters: usize,
-    #[cfg(feature = "Foundation_Collections")]
     pub LocalFilters: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    LocalFilters: usize,
     pub Update: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(ITargetedContentSubscriptionStatics, ITargetedContentSubscriptionStatics_Vtbl, 0xfaddfe80_360d_4916_b53c_7ea27090d02a);
@@ -174,21 +169,23 @@ impl windows_core::RuntimeType for ITargetedContentSubscriptionStatics {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentSubscriptionStatics_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub GetAsync: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub GetOptions: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetOptions: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(ITargetedContentValue, ITargetedContentValue_Vtbl, 0xaafde4b3_4215_4bf8_867f_43f04865f9bf);
 impl windows_core::RuntimeType for ITargetedContentValue {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ITargetedContentValue_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub ValueKind: unsafe extern "system" fn(*mut core::ffi::c_void, *mut TargetedContentValueKind) -> windows_core::HRESULT,
-    pub Path: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
-    pub String: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Path: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub String: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub Uri: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub Number: unsafe extern "system" fn(*mut core::ffi::c_void, *mut f64) -> windows_core::HRESULT,
     pub Boolean: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
@@ -196,43 +193,31 @@ pub struct ITargetedContentValue_Vtbl {
     pub File: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(not(feature = "Storage_Streams"))]
     File: usize,
+    #[cfg(feature = "Storage_Streams")]
     pub ImageFile: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    #[cfg(not(feature = "Storage_Streams"))]
+    ImageFile: usize,
     pub Action: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(feature = "Foundation_Collections")]
     pub Strings: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    Strings: usize,
-    #[cfg(feature = "Foundation_Collections")]
     pub Uris: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    Uris: usize,
-    #[cfg(feature = "Foundation_Collections")]
     pub Numbers: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    Numbers: usize,
-    #[cfg(feature = "Foundation_Collections")]
     pub Booleans: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    Booleans: usize,
-    #[cfg(all(feature = "Foundation_Collections", feature = "Storage_Streams"))]
+    #[cfg(feature = "Storage_Streams")]
     pub Files: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(all(feature = "Foundation_Collections", feature = "Storage_Streams")))]
+    #[cfg(not(feature = "Storage_Streams"))]
     Files: usize,
-    #[cfg(feature = "Foundation_Collections")]
+    #[cfg(feature = "Storage_Streams")]
     pub ImageFiles: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
+    #[cfg(not(feature = "Storage_Streams"))]
     ImageFiles: usize,
-    #[cfg(feature = "Foundation_Collections")]
     pub Actions: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Foundation_Collections"))]
-    Actions: usize,
 }
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentAction(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentAction, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentAction {
-    pub fn InvokeAsync(&self) -> windows_core::Result<super::super::Foundation::IAsyncAction> {
+    pub fn InvokeAsync(&self) -> windows_core::Result<windows_future::IAsyncAction> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -244,7 +229,7 @@ impl windows_core::RuntimeType for TargetedContentAction {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentAction>();
 }
 unsafe impl windows_core::Interface for TargetedContentAction {
-    type Vtable = ITargetedContentAction_Vtbl;
+    type Vtable = <ITargetedContentAction as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentAction as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentAction {
@@ -253,7 +238,35 @@ impl windows_core::RuntimeName for TargetedContentAction {
 unsafe impl Send for TargetedContentAction {}
 unsafe impl Sync for TargetedContentAction {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct TargetedContentAppInstallationState(pub i32);
+impl TargetedContentAppInstallationState {
+    pub const NotApplicable: Self = Self(0i32);
+    pub const NotInstalled: Self = Self(1i32);
+    pub const Installed: Self = Self(2i32);
+}
+impl windows_core::TypeKind for TargetedContentAppInstallationState {
+    type TypeKind = windows_core::CopyType;
+}
+impl windows_core::RuntimeType for TargetedContentAppInstallationState {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Services.TargetedContent.TargetedContentAppInstallationState;i4)");
+}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct TargetedContentAvailability(pub i32);
+impl TargetedContentAvailability {
+    pub const None: Self = Self(0i32);
+    pub const Partial: Self = Self(1i32);
+    pub const All: Self = Self(2i32);
+}
+impl windows_core::TypeKind for TargetedContentAvailability {
+    type TypeKind = windows_core::CopyType;
+}
+impl windows_core::RuntimeType for TargetedContentAvailability {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Services.TargetedContent.TargetedContentAvailability;i4)");
+}
+#[repr(transparent)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentAvailabilityChangedEventArgs(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentAvailabilityChangedEventArgs, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentAvailabilityChangedEventArgs {
@@ -269,7 +282,7 @@ impl windows_core::RuntimeType for TargetedContentAvailabilityChangedEventArgs {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentAvailabilityChangedEventArgs>();
 }
 unsafe impl windows_core::Interface for TargetedContentAvailabilityChangedEventArgs {
-    type Vtable = ITargetedContentAvailabilityChangedEventArgs_Vtbl;
+    type Vtable = <ITargetedContentAvailabilityChangedEventArgs as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentAvailabilityChangedEventArgs as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentAvailabilityChangedEventArgs {
@@ -278,7 +291,7 @@ impl windows_core::RuntimeName for TargetedContentAvailabilityChangedEventArgs {
 unsafe impl Send for TargetedContentAvailabilityChangedEventArgs {}
 unsafe impl Sync for TargetedContentAvailabilityChangedEventArgs {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentChangedEventArgs(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentChangedEventArgs, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentChangedEventArgs {
@@ -301,7 +314,7 @@ impl windows_core::RuntimeType for TargetedContentChangedEventArgs {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentChangedEventArgs>();
 }
 unsafe impl windows_core::Interface for TargetedContentChangedEventArgs {
-    type Vtable = ITargetedContentChangedEventArgs_Vtbl;
+    type Vtable = <ITargetedContentChangedEventArgs as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentChangedEventArgs as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentChangedEventArgs {
@@ -310,7 +323,7 @@ impl windows_core::RuntimeName for TargetedContentChangedEventArgs {
 unsafe impl Send for TargetedContentChangedEventArgs {}
 unsafe impl Sync for TargetedContentChangedEventArgs {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentCollection(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentCollection, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentCollection {
@@ -318,7 +331,7 @@ impl TargetedContentCollection {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Id)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Id)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn ReportInteraction(&self, interaction: TargetedContentInteraction) -> windows_core::Result<()> {
@@ -333,27 +346,24 @@ impl TargetedContentCollection {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Path)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Path)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn Properties(&self) -> windows_core::Result<super::super::Foundation::Collections::IMapView<windows_core::HSTRING, TargetedContentValue>> {
+    pub fn Properties(&self) -> windows_core::Result<windows_collections::IMapView<windows_core::HSTRING, TargetedContentValue>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).Properties)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn Collections(&self) -> windows_core::Result<super::super::Foundation::Collections::IVectorView<TargetedContentCollection>> {
+    pub fn Collections(&self) -> windows_core::Result<windows_collections::IVectorView<TargetedContentCollection>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).Collections)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn Items(&self) -> windows_core::Result<super::super::Foundation::Collections::IVectorView<TargetedContentItem>> {
+    pub fn Items(&self) -> windows_core::Result<windows_collections::IVectorView<TargetedContentItem>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -365,7 +375,7 @@ impl windows_core::RuntimeType for TargetedContentCollection {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentCollection>();
 }
 unsafe impl windows_core::Interface for TargetedContentCollection {
-    type Vtable = ITargetedContentCollection_Vtbl;
+    type Vtable = <ITargetedContentCollection as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentCollection as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentCollection {
@@ -374,7 +384,7 @@ impl windows_core::RuntimeName for TargetedContentCollection {
 unsafe impl Send for TargetedContentCollection {}
 unsafe impl Sync for TargetedContentCollection {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentContainer(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentContainer, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentContainer {
@@ -382,7 +392,7 @@ impl TargetedContentContainer {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Id)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Id)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn Timestamp(&self) -> windows_core::Result<super::super::Foundation::DateTime> {
@@ -413,14 +423,13 @@ impl TargetedContentContainer {
             (windows_core::Interface::vtable(this).SelectSingleObject)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(path), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn GetAsync(contentid: &windows_core::HSTRING) -> windows_core::Result<super::super::Foundation::IAsyncOperation<TargetedContentContainer>> {
+    pub fn GetAsync(contentid: &windows_core::HSTRING) -> windows_core::Result<windows_future::IAsyncOperation<TargetedContentContainer>> {
         Self::ITargetedContentContainerStatics(|this| unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).GetAsync)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(contentid), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    #[doc(hidden)]
-    pub fn ITargetedContentContainerStatics<R, F: FnOnce(&ITargetedContentContainerStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    fn ITargetedContentContainerStatics<R, F: FnOnce(&ITargetedContentContainerStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<TargetedContentContainer, ITargetedContentContainerStatics> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }
@@ -429,7 +438,7 @@ impl windows_core::RuntimeType for TargetedContentContainer {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentContainer>();
 }
 unsafe impl windows_core::Interface for TargetedContentContainer {
-    type Vtable = ITargetedContentContainer_Vtbl;
+    type Vtable = <ITargetedContentContainer as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentContainer as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentContainer {
@@ -439,16 +448,13 @@ unsafe impl Send for TargetedContentContainer {}
 unsafe impl Sync for TargetedContentContainer {}
 #[cfg(feature = "Storage_Streams")]
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentFile(windows_core::IUnknown);
 #[cfg(feature = "Storage_Streams")]
-windows_core::imp::interface_hierarchy!(TargetedContentFile, windows_core::IUnknown, windows_core::IInspectable);
-#[cfg(feature = "Storage_Streams")]
-windows_core::imp::required_hierarchy!(TargetedContentFile, super::super::Storage::Streams::IRandomAccessStreamReference);
+windows_core::imp::interface_hierarchy!(TargetedContentFile, windows_core::IUnknown, windows_core::IInspectable, super::super::Storage::Streams::IRandomAccessStreamReference);
 #[cfg(feature = "Storage_Streams")]
 impl TargetedContentFile {
-    #[cfg(feature = "Storage_Streams")]
-    pub fn OpenReadAsync(&self) -> windows_core::Result<super::super::Foundation::IAsyncOperation<super::super::Storage::Streams::IRandomAccessStreamWithContentType>> {
+    pub fn OpenReadAsync(&self) -> windows_core::Result<windows_future::IAsyncOperation<super::super::Storage::Streams::IRandomAccessStreamWithContentType>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -462,7 +468,7 @@ impl windows_core::RuntimeType for TargetedContentFile {
 }
 #[cfg(feature = "Storage_Streams")]
 unsafe impl windows_core::Interface for TargetedContentFile {
-    type Vtable = super::super::Storage::Streams::IRandomAccessStreamReference_Vtbl;
+    type Vtable = <super::super::Storage::Streams::IRandomAccessStreamReference as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <super::super::Storage::Streams::IRandomAccessStreamReference as windows_core::Interface>::IID;
 }
 #[cfg(feature = "Storage_Streams")]
@@ -473,15 +479,17 @@ impl windows_core::RuntimeName for TargetedContentFile {
 unsafe impl Send for TargetedContentFile {}
 #[cfg(feature = "Storage_Streams")]
 unsafe impl Sync for TargetedContentFile {}
+#[cfg(feature = "Storage_Streams")]
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentImage(windows_core::IUnknown);
+#[cfg(feature = "Storage_Streams")]
 windows_core::imp::interface_hierarchy!(TargetedContentImage, windows_core::IUnknown, windows_core::IInspectable);
 #[cfg(feature = "Storage_Streams")]
 windows_core::imp::required_hierarchy!(TargetedContentImage, super::super::Storage::Streams::IRandomAccessStreamReference);
+#[cfg(feature = "Storage_Streams")]
 impl TargetedContentImage {
-    #[cfg(feature = "Storage_Streams")]
-    pub fn OpenReadAsync(&self) -> windows_core::Result<super::super::Foundation::IAsyncOperation<super::super::Storage::Streams::IRandomAccessStreamWithContentType>> {
+    pub fn OpenReadAsync(&self) -> windows_core::Result<windows_future::IAsyncOperation<super::super::Storage::Streams::IRandomAccessStreamWithContentType>> {
         let this = &windows_core::Interface::cast::<super::super::Storage::Streams::IRandomAccessStreamReference>(self)?;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -503,20 +511,49 @@ impl TargetedContentImage {
         }
     }
 }
+#[cfg(feature = "Storage_Streams")]
 impl windows_core::RuntimeType for TargetedContentImage {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentImage>();
 }
+#[cfg(feature = "Storage_Streams")]
 unsafe impl windows_core::Interface for TargetedContentImage {
-    type Vtable = ITargetedContentImage_Vtbl;
+    type Vtable = <ITargetedContentImage as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentImage as windows_core::Interface>::IID;
 }
+#[cfg(feature = "Storage_Streams")]
 impl windows_core::RuntimeName for TargetedContentImage {
     const NAME: &'static str = "Windows.Services.TargetedContent.TargetedContentImage";
 }
+#[cfg(feature = "Storage_Streams")]
 unsafe impl Send for TargetedContentImage {}
+#[cfg(feature = "Storage_Streams")]
 unsafe impl Sync for TargetedContentImage {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct TargetedContentInteraction(pub i32);
+impl TargetedContentInteraction {
+    pub const Impression: Self = Self(0i32);
+    pub const ClickThrough: Self = Self(1i32);
+    pub const Hover: Self = Self(2i32);
+    pub const Like: Self = Self(3i32);
+    pub const Dislike: Self = Self(4i32);
+    pub const Dismiss: Self = Self(5i32);
+    pub const Ineligible: Self = Self(6i32);
+    pub const Accept: Self = Self(7i32);
+    pub const Decline: Self = Self(8i32);
+    pub const Defer: Self = Self(9i32);
+    pub const Canceled: Self = Self(10i32);
+    pub const Conversion: Self = Self(11i32);
+    pub const Opportunity: Self = Self(12i32);
+}
+impl windows_core::TypeKind for TargetedContentInteraction {
+    type TypeKind = windows_core::CopyType;
+}
+impl windows_core::RuntimeType for TargetedContentInteraction {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Services.TargetedContent.TargetedContentInteraction;i4)");
+}
+#[repr(transparent)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentItem(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentItem, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentItem {
@@ -524,7 +561,7 @@ impl TargetedContentItem {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Path)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Path)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn ReportInteraction(&self, interaction: TargetedContentInteraction) -> windows_core::Result<()> {
@@ -542,16 +579,14 @@ impl TargetedContentItem {
             (windows_core::Interface::vtable(this).State)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn Properties(&self) -> windows_core::Result<super::super::Foundation::Collections::IMapView<windows_core::HSTRING, TargetedContentValue>> {
+    pub fn Properties(&self) -> windows_core::Result<windows_collections::IMapView<windows_core::HSTRING, TargetedContentValue>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).Properties)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn Collections(&self) -> windows_core::Result<super::super::Foundation::Collections::IVectorView<TargetedContentCollection>> {
+    pub fn Collections(&self) -> windows_core::Result<windows_collections::IVectorView<TargetedContentCollection>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -563,7 +598,7 @@ impl windows_core::RuntimeType for TargetedContentItem {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentItem>();
 }
 unsafe impl windows_core::Interface for TargetedContentItem {
-    type Vtable = ITargetedContentItem_Vtbl;
+    type Vtable = <ITargetedContentItem as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentItem as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentItem {
@@ -572,7 +607,7 @@ impl windows_core::RuntimeName for TargetedContentItem {
 unsafe impl Send for TargetedContentItem {}
 unsafe impl Sync for TargetedContentItem {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentItemState(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentItemState, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentItemState {
@@ -595,7 +630,7 @@ impl windows_core::RuntimeType for TargetedContentItemState {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentItemState>();
 }
 unsafe impl windows_core::Interface for TargetedContentItemState {
-    type Vtable = ITargetedContentItemState_Vtbl;
+    type Vtable = <ITargetedContentItemState as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentItemState as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentItemState {
@@ -604,7 +639,7 @@ impl windows_core::RuntimeName for TargetedContentItemState {
 unsafe impl Send for TargetedContentItemState {}
 unsafe impl Sync for TargetedContentItemState {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentObject(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentObject, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentObject {
@@ -641,7 +676,7 @@ impl windows_core::RuntimeType for TargetedContentObject {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentObject>();
 }
 unsafe impl windows_core::Interface for TargetedContentObject {
-    type Vtable = ITargetedContentObject_Vtbl;
+    type Vtable = <ITargetedContentObject as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentObject as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentObject {
@@ -650,7 +685,21 @@ impl windows_core::RuntimeName for TargetedContentObject {
 unsafe impl Send for TargetedContentObject {}
 unsafe impl Sync for TargetedContentObject {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct TargetedContentObjectKind(pub i32);
+impl TargetedContentObjectKind {
+    pub const Collection: Self = Self(0i32);
+    pub const Item: Self = Self(1i32);
+    pub const Value: Self = Self(2i32);
+}
+impl windows_core::TypeKind for TargetedContentObjectKind {
+    type TypeKind = windows_core::CopyType;
+}
+impl windows_core::RuntimeType for TargetedContentObjectKind {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Services.TargetedContent.TargetedContentObjectKind;i4)");
+}
+#[repr(transparent)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentStateChangedEventArgs(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentStateChangedEventArgs, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentStateChangedEventArgs {
@@ -666,7 +715,7 @@ impl windows_core::RuntimeType for TargetedContentStateChangedEventArgs {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentStateChangedEventArgs>();
 }
 unsafe impl windows_core::Interface for TargetedContentStateChangedEventArgs {
-    type Vtable = ITargetedContentStateChangedEventArgs_Vtbl;
+    type Vtable = <ITargetedContentStateChangedEventArgs as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentStateChangedEventArgs as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentStateChangedEventArgs {
@@ -675,7 +724,7 @@ impl windows_core::RuntimeName for TargetedContentStateChangedEventArgs {
 unsafe impl Send for TargetedContentStateChangedEventArgs {}
 unsafe impl Sync for TargetedContentStateChangedEventArgs {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentSubscription(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentSubscription, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentSubscription {
@@ -683,17 +732,17 @@ impl TargetedContentSubscription {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Id)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Id)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
-    pub fn GetContentContainerAsync(&self) -> windows_core::Result<super::super::Foundation::IAsyncOperation<TargetedContentContainer>> {
+    pub fn GetContentContainerAsync(&self) -> windows_core::Result<windows_future::IAsyncOperation<TargetedContentContainer>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).GetContentContainerAsync)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ContentChanged<P0>(&self, handler: P0) -> windows_core::Result<super::super::Foundation::EventRegistrationToken>
+    pub fn ContentChanged<P0>(&self, handler: P0) -> windows_core::Result<i64>
     where
         P0: windows_core::Param<super::super::Foundation::TypedEventHandler<TargetedContentSubscription, TargetedContentChangedEventArgs>>,
     {
@@ -703,11 +752,11 @@ impl TargetedContentSubscription {
             (windows_core::Interface::vtable(this).ContentChanged)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveContentChanged(&self, cookie: super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
+    pub fn RemoveContentChanged(&self, cookie: i64) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveContentChanged)(windows_core::Interface::as_raw(this), cookie).ok() }
     }
-    pub fn AvailabilityChanged<P0>(&self, handler: P0) -> windows_core::Result<super::super::Foundation::EventRegistrationToken>
+    pub fn AvailabilityChanged<P0>(&self, handler: P0) -> windows_core::Result<i64>
     where
         P0: windows_core::Param<super::super::Foundation::TypedEventHandler<TargetedContentSubscription, TargetedContentAvailabilityChangedEventArgs>>,
     {
@@ -717,11 +766,11 @@ impl TargetedContentSubscription {
             (windows_core::Interface::vtable(this).AvailabilityChanged)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveAvailabilityChanged(&self, cookie: super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
+    pub fn RemoveAvailabilityChanged(&self, cookie: i64) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveAvailabilityChanged)(windows_core::Interface::as_raw(this), cookie).ok() }
     }
-    pub fn StateChanged<P0>(&self, handler: P0) -> windows_core::Result<super::super::Foundation::EventRegistrationToken>
+    pub fn StateChanged<P0>(&self, handler: P0) -> windows_core::Result<i64>
     where
         P0: windows_core::Param<super::super::Foundation::TypedEventHandler<TargetedContentSubscription, TargetedContentStateChangedEventArgs>>,
     {
@@ -731,11 +780,11 @@ impl TargetedContentSubscription {
             (windows_core::Interface::vtable(this).StateChanged)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveStateChanged(&self, cookie: super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
+    pub fn RemoveStateChanged(&self, cookie: i64) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveStateChanged)(windows_core::Interface::as_raw(this), cookie).ok() }
     }
-    pub fn GetAsync(subscriptionid: &windows_core::HSTRING) -> windows_core::Result<super::super::Foundation::IAsyncOperation<TargetedContentSubscription>> {
+    pub fn GetAsync(subscriptionid: &windows_core::HSTRING) -> windows_core::Result<windows_future::IAsyncOperation<TargetedContentSubscription>> {
         Self::ITargetedContentSubscriptionStatics(|this| unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).GetAsync)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(subscriptionid), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
@@ -747,8 +796,7 @@ impl TargetedContentSubscription {
             (windows_core::Interface::vtable(this).GetOptions)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(subscriptionid), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    #[doc(hidden)]
-    pub fn ITargetedContentSubscriptionStatics<R, F: FnOnce(&ITargetedContentSubscriptionStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    fn ITargetedContentSubscriptionStatics<R, F: FnOnce(&ITargetedContentSubscriptionStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<TargetedContentSubscription, ITargetedContentSubscriptionStatics> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }
@@ -757,7 +805,7 @@ impl windows_core::RuntimeType for TargetedContentSubscription {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentSubscription>();
 }
 unsafe impl windows_core::Interface for TargetedContentSubscription {
-    type Vtable = ITargetedContentSubscription_Vtbl;
+    type Vtable = <ITargetedContentSubscription as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentSubscription as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentSubscription {
@@ -766,7 +814,7 @@ impl windows_core::RuntimeName for TargetedContentSubscription {
 unsafe impl Send for TargetedContentSubscription {}
 unsafe impl Sync for TargetedContentSubscription {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentSubscriptionOptions(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentSubscriptionOptions, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentSubscriptionOptions {
@@ -774,7 +822,7 @@ impl TargetedContentSubscriptionOptions {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).SubscriptionId)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).SubscriptionId)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn AllowPartialContentAvailability(&self) -> windows_core::Result<bool> {
@@ -788,16 +836,14 @@ impl TargetedContentSubscriptionOptions {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).SetAllowPartialContentAvailability)(windows_core::Interface::as_raw(this), value).ok() }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn CloudQueryParameters(&self) -> windows_core::Result<super::super::Foundation::Collections::IMap<windows_core::HSTRING, windows_core::HSTRING>> {
+    pub fn CloudQueryParameters(&self) -> windows_core::Result<windows_collections::IMap<windows_core::HSTRING, windows_core::HSTRING>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).CloudQueryParameters)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn LocalFilters(&self) -> windows_core::Result<super::super::Foundation::Collections::IVector<windows_core::HSTRING>> {
+    pub fn LocalFilters(&self) -> windows_core::Result<windows_collections::IVector<windows_core::HSTRING>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -813,7 +859,7 @@ impl windows_core::RuntimeType for TargetedContentSubscriptionOptions {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentSubscriptionOptions>();
 }
 unsafe impl windows_core::Interface for TargetedContentSubscriptionOptions {
-    type Vtable = ITargetedContentSubscriptionOptions_Vtbl;
+    type Vtable = <ITargetedContentSubscriptionOptions as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentSubscriptionOptions as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentSubscriptionOptions {
@@ -822,7 +868,7 @@ impl windows_core::RuntimeName for TargetedContentSubscriptionOptions {
 unsafe impl Send for TargetedContentSubscriptionOptions {}
 unsafe impl Sync for TargetedContentSubscriptionOptions {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TargetedContentValue(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(TargetedContentValue, windows_core::IUnknown, windows_core::IInspectable);
 impl TargetedContentValue {
@@ -837,14 +883,14 @@ impl TargetedContentValue {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Path)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).Path)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn String(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).String)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
+            (windows_core::Interface::vtable(this).String)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
         }
     }
     pub fn Uri(&self) -> windows_core::Result<super::super::Foundation::Uri> {
@@ -876,6 +922,7 @@ impl TargetedContentValue {
             (windows_core::Interface::vtable(this).File)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
+    #[cfg(feature = "Storage_Streams")]
     pub fn ImageFile(&self) -> windows_core::Result<TargetedContentImage> {
         let this = self;
         unsafe {
@@ -890,56 +937,51 @@ impl TargetedContentValue {
             (windows_core::Interface::vtable(this).Action)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn Strings(&self) -> windows_core::Result<super::super::Foundation::Collections::IVectorView<windows_core::HSTRING>> {
+    pub fn Strings(&self) -> windows_core::Result<windows_collections::IVectorView<windows_core::HSTRING>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).Strings)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn Uris(&self) -> windows_core::Result<super::super::Foundation::Collections::IVectorView<super::super::Foundation::Uri>> {
+    pub fn Uris(&self) -> windows_core::Result<windows_collections::IVectorView<super::super::Foundation::Uri>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).Uris)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn Numbers(&self) -> windows_core::Result<super::super::Foundation::Collections::IVectorView<f64>> {
+    pub fn Numbers(&self) -> windows_core::Result<windows_collections::IVectorView<f64>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).Numbers)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn Booleans(&self) -> windows_core::Result<super::super::Foundation::Collections::IVectorView<bool>> {
+    pub fn Booleans(&self) -> windows_core::Result<windows_collections::IVectorView<bool>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).Booleans)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(all(feature = "Foundation_Collections", feature = "Storage_Streams"))]
-    pub fn Files(&self) -> windows_core::Result<super::super::Foundation::Collections::IVectorView<TargetedContentFile>> {
+    #[cfg(feature = "Storage_Streams")]
+    pub fn Files(&self) -> windows_core::Result<windows_collections::IVectorView<TargetedContentFile>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).Files)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn ImageFiles(&self) -> windows_core::Result<super::super::Foundation::Collections::IVectorView<TargetedContentImage>> {
+    #[cfg(feature = "Storage_Streams")]
+    pub fn ImageFiles(&self) -> windows_core::Result<windows_collections::IVectorView<TargetedContentImage>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).ImageFiles)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    #[cfg(feature = "Foundation_Collections")]
-    pub fn Actions(&self) -> windows_core::Result<super::super::Foundation::Collections::IVectorView<TargetedContentAction>> {
+    pub fn Actions(&self) -> windows_core::Result<windows_collections::IVectorView<TargetedContentAction>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -951,7 +993,7 @@ impl windows_core::RuntimeType for TargetedContentValue {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ITargetedContentValue>();
 }
 unsafe impl windows_core::Interface for TargetedContentValue {
-    type Vtable = ITargetedContentValue_Vtbl;
+    type Vtable = <ITargetedContentValue as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <ITargetedContentValue as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for TargetedContentValue {
@@ -960,93 +1002,7 @@ impl windows_core::RuntimeName for TargetedContentValue {
 unsafe impl Send for TargetedContentValue {}
 unsafe impl Sync for TargetedContentValue {}
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
-pub struct TargetedContentAppInstallationState(pub i32);
-impl TargetedContentAppInstallationState {
-    pub const NotApplicable: Self = Self(0i32);
-    pub const NotInstalled: Self = Self(1i32);
-    pub const Installed: Self = Self(2i32);
-}
-impl windows_core::TypeKind for TargetedContentAppInstallationState {
-    type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for TargetedContentAppInstallationState {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("TargetedContentAppInstallationState").field(&self.0).finish()
-    }
-}
-impl windows_core::RuntimeType for TargetedContentAppInstallationState {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Services.TargetedContent.TargetedContentAppInstallationState;i4)");
-}
-#[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
-pub struct TargetedContentAvailability(pub i32);
-impl TargetedContentAvailability {
-    pub const None: Self = Self(0i32);
-    pub const Partial: Self = Self(1i32);
-    pub const All: Self = Self(2i32);
-}
-impl windows_core::TypeKind for TargetedContentAvailability {
-    type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for TargetedContentAvailability {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("TargetedContentAvailability").field(&self.0).finish()
-    }
-}
-impl windows_core::RuntimeType for TargetedContentAvailability {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Services.TargetedContent.TargetedContentAvailability;i4)");
-}
-#[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
-pub struct TargetedContentInteraction(pub i32);
-impl TargetedContentInteraction {
-    pub const Impression: Self = Self(0i32);
-    pub const ClickThrough: Self = Self(1i32);
-    pub const Hover: Self = Self(2i32);
-    pub const Like: Self = Self(3i32);
-    pub const Dislike: Self = Self(4i32);
-    pub const Dismiss: Self = Self(5i32);
-    pub const Ineligible: Self = Self(6i32);
-    pub const Accept: Self = Self(7i32);
-    pub const Decline: Self = Self(8i32);
-    pub const Defer: Self = Self(9i32);
-    pub const Canceled: Self = Self(10i32);
-    pub const Conversion: Self = Self(11i32);
-    pub const Opportunity: Self = Self(12i32);
-}
-impl windows_core::TypeKind for TargetedContentInteraction {
-    type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for TargetedContentInteraction {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("TargetedContentInteraction").field(&self.0).finish()
-    }
-}
-impl windows_core::RuntimeType for TargetedContentInteraction {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Services.TargetedContent.TargetedContentInteraction;i4)");
-}
-#[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
-pub struct TargetedContentObjectKind(pub i32);
-impl TargetedContentObjectKind {
-    pub const Collection: Self = Self(0i32);
-    pub const Item: Self = Self(1i32);
-    pub const Value: Self = Self(2i32);
-}
-impl windows_core::TypeKind for TargetedContentObjectKind {
-    type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for TargetedContentObjectKind {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("TargetedContentObjectKind").field(&self.0).finish()
-    }
-}
-impl windows_core::RuntimeType for TargetedContentObjectKind {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Services.TargetedContent.TargetedContentObjectKind;i4)");
-}
-#[repr(transparent)]
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct TargetedContentValueKind(pub i32);
 impl TargetedContentValueKind {
     pub const String: Self = Self(0i32);
@@ -1066,11 +1022,6 @@ impl TargetedContentValueKind {
 }
 impl windows_core::TypeKind for TargetedContentValueKind {
     type TypeKind = windows_core::CopyType;
-}
-impl core::fmt::Debug for TargetedContentValueKind {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("TargetedContentValueKind").field(&self.0).finish()
-    }
 }
 impl windows_core::RuntimeType for TargetedContentValueKind {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Services.TargetedContent.TargetedContentValueKind;i4)");

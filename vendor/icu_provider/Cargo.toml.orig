@@ -21,16 +21,14 @@ all-features = true
 
 [dependencies]
 displaydoc = { workspace = true }
-icu_locid = { workspace = true }
+icu_locale_core = { workspace = true }
 stable_deref_trait = { workspace = true }
 writeable = { workspace = true }
 tinystr = { workspace = true }
 yoke = { workspace = true, features = ["alloc", "derive"] }
 zerofrom = { workspace = true, features = ["alloc", "derive"] }
 zerovec = { workspace = true, features = ["derive"]}
-
-# macros
-icu_provider_macros = { workspace = true, optional = true }
+zerotrie = { workspace = true, optional = true }
 
 # log
 log = { workspace = true, optional = true }
@@ -41,29 +39,25 @@ postcard = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive", "alloc"], optional = true }
 serde_json = { workspace = true, optional = true }
 
-# datagen
+# export
 erased-serde = { workspace = true, optional = true, features = ["alloc"] }
 databake = { workspace = true, optional = true, features = ["derive"] }
 
 [dev-dependencies]
 serde_json = { workspace = true }
 icu = { path = "../../components/icu", default-features = false }
-icu_provider_adapters = { path = "../adapters" }
-icu_locid_transform = { path = "../../components/locid_transform" }
+icu_locale = { path = "../../components/locale" }
+icu_provider_adapters = { path = "../adapters", default-features = false }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion = { workspace = true }
 
 [features]
-bench = []
-std = ["icu_locid/std"]
+std = ["alloc"]
+alloc = ["icu_locale_core/alloc", "zerovec/alloc", "zerotrie/alloc"]
 sync = []
-experimental = []
-macros = ["dep:icu_provider_macros"]
 # Enable logging of additional context of data errors
 logging = ["dep:log"]
-# Legacy name
-log_error_context = ["logging"]
 
 # Enable BufferProvider and other deserialization infrastructure
 serde = ["dep:serde", "yoke/serde"]
@@ -73,8 +67,11 @@ deserialize_json = ["serde", "dep:serde_json"]
 deserialize_bincode_1 = ["serde", "dep:bincode", "std"]
 deserialize_postcard_1 = ["serde", "dep:postcard"]
 
+# Dependencies for baked provider scaffolding
+baked = ["zerotrie"]
+
 # Dependencies for running data generation
-datagen = ["serde", "dep:erased-serde", "dep:databake", "std", "sync"]
+export = ["serde", "dep:erased-serde", "dep:databake", "std", "sync", "dep:postcard", "zerovec/databake"]
 
 [package.metadata.cargo-all-features]
 denylist = ["macros"]

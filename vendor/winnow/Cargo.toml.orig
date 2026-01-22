@@ -14,12 +14,12 @@ include = [
   "Cargo.lock",
   "LICENSE*",
   "README.md",
-  "benches/**/*",
   "examples/**/*"
 ]
 
 [workspace.lints.rust]
 rust_2018_idioms = { level = "warn", priority = -1 }
+unnameable_types = "warn"
 unreachable_pub = "warn"
 unsafe_op_in_unsafe_fn = "warn"
 unused_lifetimes = "warn"
@@ -61,7 +61,7 @@ lossy_float_literal = "warn"
 macro_use_imports = "warn"
 mem_forget = "warn"
 mutex_integer = "warn"
-needless_continue = "warn"
+needless_continue = "allow"
 needless_for_each = "warn"
 negative_feature_names = "warn"
 path_buf_push_overwrite = "warn"
@@ -86,9 +86,18 @@ verbose_file_reads = "warn"
 wildcard_imports = "allow"
 zero_sized_map_values = "warn"
 
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+# debug = "line-tables-only"  # requires Cargo 1.71
+
 [package]
 name = "winnow"
-version = "0.7.6"
+version = "0.7.12"
 description = "A byte-oriented, zero-copy, parser combinators library"
 categories = ["parsing"]
 keywords = ["parser", "parser-combinators", "parsing", "streaming", "bit"]
@@ -118,7 +127,7 @@ default = ["std"]
 alloc = []
 std = ["alloc", "memchr?/std"]
 simd = ["dep:memchr"]
-debug = ["std", "dep:anstream", "dep:anstyle", "dep:is-terminal", "dep:terminal_size"]
+debug = ["std", "dep:anstream", "dep:anstyle", "dep:is_terminal_polyfill", "dep:terminal_size"]
 unstable-recover = []
 
 unstable-doc = ["alloc", "std", "simd", "unstable-recover"]
@@ -126,7 +135,7 @@ unstable-doc = ["alloc", "std", "simd", "unstable-recover"]
 [dependencies]
 anstream = { version = "0.3.2", optional = true }
 anstyle = { version = "1.0.1", optional = true }
-is-terminal = { version = "0.4.9", optional = true }
+is_terminal_polyfill = { version = "1.48.0", optional = true }
 memchr = { version = "2.5", optional = true, default-features = false }
 terminal_size = { version = "0.4.0", optional = true }
 

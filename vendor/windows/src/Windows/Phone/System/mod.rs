@@ -9,6 +9,7 @@ impl windows_core::RuntimeType for ISystemProtectionStatics {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ISystemProtectionStatics_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub ScreenLocked: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
@@ -18,6 +19,7 @@ impl windows_core::RuntimeType for ISystemProtectionUnlockStatics {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct ISystemProtectionUnlockStatics_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub RequestScreenUnlock: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -33,13 +35,11 @@ impl SystemProtection {
     pub fn RequestScreenUnlock() -> windows_core::Result<()> {
         Self::ISystemProtectionUnlockStatics(|this| unsafe { (windows_core::Interface::vtable(this).RequestScreenUnlock)(windows_core::Interface::as_raw(this)).ok() })
     }
-    #[doc(hidden)]
-    pub fn ISystemProtectionStatics<R, F: FnOnce(&ISystemProtectionStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    fn ISystemProtectionStatics<R, F: FnOnce(&ISystemProtectionStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<SystemProtection, ISystemProtectionStatics> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }
-    #[doc(hidden)]
-    pub fn ISystemProtectionUnlockStatics<R, F: FnOnce(&ISystemProtectionUnlockStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    fn ISystemProtectionUnlockStatics<R, F: FnOnce(&ISystemProtectionUnlockStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<SystemProtection, ISystemProtectionUnlockStatics> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }

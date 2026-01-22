@@ -1,6 +1,6 @@
 [package]
 name = "generator"
-version = "0.8.4"
+version = "0.8.5"
 edition = "2021"
 rust-version = "1.73"
 authors = ["Xudong Huang <huangxu008@hotmail.com>"]
@@ -18,10 +18,11 @@ exclude = [
     "appveyor.yml",
     "benches/**/*",
 ]
+build = "build.rs"
 
 
 [target.'cfg(windows)'.dependencies.windows]
-version = "0.58"
+version = "0.61"
 features = [
     "Win32_System_Memory",
     "Win32_System_Kernel",
@@ -39,7 +40,11 @@ cfg-if = "1.0.0"
 
 [build-dependencies]
 rustversion = "1.0"
+cc = "1.0"
 
 # release build
 [profile.release]
 lto = true
+
+[profile.dev.build-override]
+debug = true

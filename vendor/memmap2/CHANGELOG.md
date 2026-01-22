@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [0.9.7] - 2025-07-13
+### Fixed
+- Fix incomplete validation of mapping length, which could lead to violation of safety requirements of `slice::from_raw_parts` on 32-bit platforms.
+
+## [0.9.6] - 2025-05-14
+### Fixed
+- Fix huge page mappings with non-default page-bits.
 
 ## [0.9.5] - 2024-09-13
 ### Added

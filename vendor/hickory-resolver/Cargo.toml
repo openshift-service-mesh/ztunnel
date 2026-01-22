@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.71.1"
 name = "hickory-resolver"
-version = "0.25.1"
+version = "0.25.2"
 authors = ["The contributors to Hickory DNS"]
 build = false
 autolib = false
@@ -109,10 +109,12 @@ https-ring = [
 quic-aws-lc-rs = [
     "hickory-proto/quic-aws-lc-rs",
     "__quic",
+    "quinn/rustls-aws-lc-rs",
 ]
 quic-ring = [
     "hickory-proto/quic-ring",
     "__quic",
+    "quinn/rustls-ring",
 ]
 rustls-platform-verifier = ["hickory-proto/rustls-platform-verifier"]
 serde = [
@@ -208,7 +210,6 @@ version = "0.11.2"
 features = [
     "log",
     "runtime-tokio",
-    "rustls",
 ]
 optional = true
 default-features = false
@@ -269,6 +270,9 @@ optional = true
 version = "0.3.5"
 features = ["std"]
 default-features = false
+
+[dev-dependencies.serde_json]
+version = "1"
 
 [dev-dependencies.tokio]
 version = "1.21"

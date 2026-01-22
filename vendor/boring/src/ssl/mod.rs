@@ -738,6 +738,12 @@ impl SslCurve {
     ))]
     pub const P256_KYBER768_DRAFT00: SslCurve = SslCurve(ffi::SSL_CURVE_P256_KYBER768_DRAFT00 as _);
 
+    #[cfg(all(
+        not(any(feature = "fips", feature = "fips-precompiled")),
+        feature = "pq-experimental"
+    ))]
+    pub const X25519_MLKEM768: SslCurve = SslCurve(ffi::SSL_CURVE_X25519_MLKEM768 as _);
+
     /// Returns the curve name
     #[corresponds(SSL_get_curve_name)]
     pub fn name(&self) -> Option<&'static str> {
@@ -1627,9 +1633,8 @@ impl SslContextBuilder {
 
     /// Registers a certificate compression algorithm.
     ///
-    /// Corresponds to [`SSL_CTX_add_cert_compression_alg`].
-    ///
     /// [`SSL_CTX_add_cert_compression_alg`]: https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_CTX_add_cert_compression_alg
+    #[corresponds(SSL_CTX_add_cert_compression_alg)]
     pub fn add_certificate_compression_algorithm<C>(
         &mut self,
         compressor: C,
@@ -3784,6 +3789,13 @@ impl SslRef {
             ffi::SSL_set_enable_ech_grease(self.as_ptr(), enable);
         }
     }
+
+    /// Sets the compliance policy on `SSL`.
+    #[cfg(not(feature = "fips-compat"))]
+    #[corresponds(SSL_set_compliance_policy)]
+    pub fn set_compliance_policy(&mut self, policy: CompliancePolicy) -> Result<(), ErrorStack> {
+        unsafe { cvt_0i(ffi::SSL_set_compliance_policy(self.as_ptr(), policy.0)).map(|_| ()) }
+    }
 }
 
 /// An SSL stream midway through the handshake process.
@@ -3930,9 +3942,7 @@ impl<S: Read + Write> SslStream<S> {
                 }
                 Err(ref e) if e.code() == ErrorCode::WANT_READ && e.io_error().is_none() => {}
                 Err(e) => {
-                    return Err(e
-                        .into_io_error()
-                        .unwrap_or_else(|e| io::Error::new(io::ErrorKind::Other, e)));
+                    return Err(e.into_io_error().unwrap_or_else(io::Error::other));
                 }
             }
         }
@@ -4154,9 +4164,7 @@ impl<S: Read + Write> Write for SslStream<S> {
                 Ok(n) => return Ok(n),
                 Err(ref e) if e.code() == ErrorCode::WANT_READ && e.io_error().is_none() => {}
                 Err(e) => {
-                    return Err(e
-                        .into_io_error()
-                        .unwrap_or_else(|e| io::Error::new(io::ErrorKind::Other, e)));
+                    return Err(e.into_io_error().unwrap_or_else(io::Error::other));
                 }
             }
         }

@@ -135,12 +135,12 @@ impl UdpSocket {
     /// # Example
     ///
     /// ```no_run
-    /// # if cfg!(miri) { return } // No `socket` in miri.
     /// use tokio::net::UdpSocket;
     /// use std::io;
     ///
     /// #[tokio::main]
     /// async fn main() -> io::Result<()> {
+    /// #   if cfg!(miri) { return Ok(()); } // No `socket` in miri.
     ///     let sock = UdpSocket::bind("0.0.0.0:8080").await?;
     ///     // use `sock`
     /// #   let _ = sock;
@@ -303,12 +303,12 @@ impl UdpSocket {
     /// # Example
     ///
     /// ```
-    /// # if cfg!(miri) { return } // No `socket` in miri.
     /// use tokio::net::UdpSocket;
     ///
     /// # use std::{io, net::SocketAddr};
     /// # #[tokio::main]
     /// # async fn main() -> io::Result<()> {
+    /// # if cfg!(miri) { return Ok(()); } // No `socket` in miri.
     /// let addr = "0.0.0.0:8080".parse::<SocketAddr>().unwrap();
     /// let peer = "127.0.0.1:11100".parse::<SocketAddr>().unwrap();
     /// let sock = UdpSocket::bind(addr).await?;
@@ -2028,7 +2028,7 @@ impl UdpSocket {
         ))))
     )]
     pub fn tos(&self) -> io::Result<u32> {
-        self.as_socket().tos()
+        self.as_socket().tos_v4()
     }
 
     /// Sets the value for the `IP_TOS` option on this socket.
@@ -2057,7 +2057,7 @@ impl UdpSocket {
         ))))
     )]
     pub fn set_tos(&self, tos: u32) -> io::Result<()> {
-        self.as_socket().set_tos(tos)
+        self.as_socket().set_tos_v4(tos)
     }
 
     /// Gets the value for the `SO_BINDTODEVICE` option on this socket
@@ -2130,12 +2130,12 @@ impl UdpSocket {
     ///
     /// # Examples
     /// ```
-    /// # if cfg!(miri) { return } // No `socket` in miri.
     /// use tokio::net::UdpSocket;
     /// use std::io;
     ///
     /// #[tokio::main]
     /// async fn main() -> io::Result<()> {
+    /// #   if cfg!(miri) { return Ok(()); } // No `socket` in miri.
     ///     // Create a socket
     ///     let socket = UdpSocket::bind("0.0.0.0:8080").await?;
     ///

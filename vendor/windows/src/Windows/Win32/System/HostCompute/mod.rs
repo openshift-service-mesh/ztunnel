@@ -11,6 +11,3 @@ impl Default for HCS_CALLBACK {
         unsafe { core::mem::zeroed() }
     }
 }
-impl windows_core::TypeKind for HCS_CALLBACK {
-    type TypeKind = windows_core::CopyType;
-}

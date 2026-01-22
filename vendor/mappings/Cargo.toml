@@ -12,9 +12,10 @@
 [package]
 edition = "2021"
 name = "mappings"
-version = "0.6.0"
+version = "0.7.1"
 build = false
 publish = true
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -42,5 +43,5 @@ version = "1.19"
 version = "0.1"
 
 [dependencies.util]
-version = "0.6"
+version = "0.8"
 package = "pprof_util"

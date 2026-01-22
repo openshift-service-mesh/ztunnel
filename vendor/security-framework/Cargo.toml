@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.70"
 name = "security-framework"
-version = "3.2.0"
+version = "3.3.0"
 authors = [
     "Steven Fackler <sfackler@gmail.com>",
     "Kornel <kornel@geekhood.net>",
@@ -45,11 +45,37 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/kornelski/rust-security-framework"
 
 [package.metadata.docs.rs]
-features = ["OSX_10_15"]
 targets = [
     "x86_64-apple-darwin",
     "aarch64-apple-ios",
 ]
+features = ["OSX_10_15"]
+
+[badges.maintenance]
+status = "looking-for-maintainer"
+
+[features]
+OSX_10_12 = ["security-framework-sys/OSX_10_12"]
+OSX_10_13 = [
+    "OSX_10_12",
+    "security-framework-sys/OSX_10_13",
+    "alpn",
+    "session-tickets",
+]
+OSX_10_14 = [
+    "OSX_10_13",
+    "security-framework-sys/OSX_10_14",
+]
+OSX_10_15 = [
+    "OSX_10_14",
+    "security-framework-sys/OSX_10_15",
+]
+alpn = []
+default = ["OSX_10_12"]
+job-bless = []
+nightly = []
+session-tickets = []
+sync-keychain = ["OSX_10_13"]
 
 [lib]
 name = "security_framework"
@@ -101,32 +127,6 @@ version = "0.3.23"
 
 [dev-dependencies.x509-parser]
 version = "0.16"
-
-[features]
-OSX_10_12 = ["security-framework-sys/OSX_10_12"]
-OSX_10_13 = [
-    "OSX_10_12",
-    "security-framework-sys/OSX_10_13",
-    "alpn",
-    "session-tickets",
-]
-OSX_10_14 = [
-    "OSX_10_13",
-    "security-framework-sys/OSX_10_14",
-]
-OSX_10_15 = [
-    "OSX_10_14",
-    "security-framework-sys/OSX_10_15",
-]
-alpn = []
-default = ["OSX_10_12"]
-job-bless = []
-nightly = []
-session-tickets = []
-sync-keychain = ["OSX_10_13"]
-
-[badges.maintenance]
-status = "looking-for-maintainer"
 
 [lints.clippy]
 cast_possible_truncation = "allow"

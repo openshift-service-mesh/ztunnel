@@ -57,7 +57,7 @@ async fn main() {
     }
 
     let app = axum::Router::new()
-        .route("/debug/pprof/heap", axum::routing::get(handle_get_heap));
+        .route("/debug/pprof/allocs", axum::routing::get(handle_get_heap));
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
@@ -89,11 +89,55 @@ fn require_profiling_activated(prof_ctl: &jemalloc_pprof::JemallocProfCtl) -> Re
 Then running the application, we can capture a profile and view it the pprof toolchain.
 
 ```shell
-curl localhost:3000/debug/pprof/heap > heap.pb.gz
+curl localhost:3000/debug/pprof/allocs > heap.pb.gz
 pprof -http=:8080 heap.pb.gz
 ```
 
-> Note: The profiling data is not symbolized, so either `addr2line` or `llvm-addr2line` needs to be available in the path and pprof needs to be able to discover the respective debuginfos.
+> Note: if symbolization is not enabled, either `addr2line` or `llvm-addr2line` needs to be available in the path and pprof needs to be able to discover the respective debuginfos.
+
+To generate symbolized profiles, enable the `symbolize` crate feature:
+
+```toml
+[dependencies]
+jemalloc_pprof = { version = "0.7", features = ["symbolize"] }
+```
+
+### Flamegraph SVGs
+
+The `flamegraph` crate feature can also be enabled to generate interactive flamegraph SVGs directly
+(implies the `symbolize` feature):
+
+```toml
+jemalloc_pprof = { version = "0.7", features = ["flamegraph"] }
+```
+
+We can then adjust the example above to also emit a flamegraph SVG:
+
+```rust,ignore
+#[tokio::main]
+async fn main() {
+    let app = axum::Router::new()
+        .route("/debug/pprof/allocs", axum::routing::get(handle_get_heap))
+        .route("/debug/pprof/allocs/flamegraph", axum::routing::get(handle_get_heap_flamegraph));
+    // ...
+}
+
+pub async fn handle_get_heap_flamegraph() -> Result<impl IntoResponse, (StatusCode, String)> {
+    use axum::body::Body;
+    use axum::http::header::CONTENT_TYPE;
+    use axum::response::Response;
+
+    let mut prof_ctl = jemalloc_pprof::PROF_CTL.as_ref().unwrap().lock().await;
+    require_profiling_activated(&prof_ctl)?;
+    let svg = prof_ctl
+        .dump_flamegraph()
+        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?;
+    Response::builder()
+        .header(CONTENT_TYPE, "image/svg+xml")
+        .body(Body::from(svg))
+        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))
+}
+```
 
 ### Writeable temporary directory
 

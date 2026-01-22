@@ -39,34 +39,6 @@ mod test_key_params_mismatch {
 }
 
 #[cfg(feature = "x509-parser")]
-mod test_convert_x509_subject_alternative_name {
-	use rcgen::{BasicConstraints, CertificateParams, IsCa, SanType};
-	use std::net::{IpAddr, Ipv4Addr};
-
-	#[test]
-	fn converts_from_ip() {
-		let ip = Ipv4Addr::new(2, 4, 6, 8);
-		let ip_san = SanType::IpAddress(IpAddr::V4(ip));
-
-		let (mut params, ca_key) = super::util::default_params();
-
-		// Add the SAN we want to test the parsing for
-		params.subject_alt_names.push(ip_san.clone());
-
-		// Because we're using a function for CA certificates
-		params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
-
-		let cert = params.self_signed(&ca_key).unwrap();
-
-		// Serialize our cert that has our chosen san, so we can testing parsing/deserializing it.
-		let ca_der = cert.der();
-
-		let actual = CertificateParams::from_ca_cert_der(ca_der).unwrap();
-		assert!(actual.subject_alt_names.contains(&ip_san));
-	}
-}
-
-#[cfg(feature = "x509-parser")]
 mod test_x509_custom_ext {
 	use crate::util;
 
@@ -107,7 +79,7 @@ mod test_x509_custom_ext {
 		assert_eq!(favorite_drink_ext.value, test_ext);
 
 		// Generate a CSR with the custom extension, parse it with x509-parser.
-		let test_cert_csr = test_cert.params().serialize_request(&test_key).unwrap();
+		let test_cert_csr = params.serialize_request(&test_key).unwrap();
 		let (_, x509_csr) = X509CertificationRequest::from_der(test_cert_csr.der()).unwrap();
 
 		// We should find that the CSR contains requested extensions.
@@ -204,8 +176,8 @@ mod test_x509_parser_crl {
 	#[test]
 	fn parse_crl() {
 		// Create a CRL with one revoked cert, and an issuer to sign the CRL.
-		let (crl, issuer) = util::test_crl();
-		let revoked_cert = crl.params().revoked_certs.first().unwrap();
+		let (crl_params, crl, issuer) = util::test_crl();
+		let revoked_cert = crl_params.revoked_certs.first().unwrap();
 		let revoked_cert_serial = BigUint::from_bytes_be(revoked_cert.serial_number.as_ref());
 		let (_, x509_issuer) = X509Certificate::from_der(issuer.der()).unwrap();
 
@@ -218,7 +190,7 @@ mod test_x509_parser_crl {
 		assert_eq!(x509_crl.issuer(), x509_issuer.subject());
 		assert_eq!(
 			x509_crl.last_update().to_datetime().unix_timestamp(),
-			crl.params().this_update.unix_timestamp()
+			crl_params.this_update.unix_timestamp()
 		);
 		assert_eq!(
 			x509_crl
@@ -226,9 +198,9 @@ mod test_x509_parser_crl {
 				.unwrap()
 				.to_datetime()
 				.unix_timestamp(),
-			crl.params().next_update.unix_timestamp()
+			crl_params.next_update.unix_timestamp()
 		);
-		let crl_number = BigUint::from_bytes_be(crl.params().crl_number.as_ref());
+		let crl_number = BigUint::from_bytes_be(crl_params.crl_number.as_ref());
 		assert_eq!(x509_crl.crl_number().unwrap(), &crl_number);
 
 		// We should find the expected revoked certificate serial with the correct reason code.
@@ -344,74 +316,6 @@ mod test_parse_crl_dps {
 				"ldap://example.com/crl.der"
 			]
 		);
-	}
-}
-
-#[cfg(feature = "x509-parser")]
-mod test_parse_ia5string_subject {
-	use crate::util;
-	use rcgen::DnType::CustomDnType;
-	use rcgen::{CertificateParams, DistinguishedName, DnValue};
-
-	#[test]
-	fn parse_ia5string_subject() {
-		// Create and serialize a certificate with a subject containing an IA5String email address.
-		let email_address_dn_type = CustomDnType(vec![1, 2, 840, 113549, 1, 9, 1]); // id-emailAddress
-		let email_address_dn_value = DnValue::Ia5String("foo@bar.com".try_into().unwrap());
-		let (mut params, key_pair) = util::default_params();
-		params.distinguished_name = DistinguishedName::new();
-		params.distinguished_name.push(
-			email_address_dn_type.clone(),
-			email_address_dn_value.clone(),
-		);
-		let cert = params.self_signed(&key_pair).unwrap();
-		let cert_der = cert.der();
-
-		// We should be able to parse the certificate with x509-parser.
-		assert!(x509_parser::parse_x509_certificate(cert_der).is_ok());
-
-		// We should be able to reconstitute params from the DER using x509-parser.
-		let params_from_cert = CertificateParams::from_ca_cert_der(cert_der).unwrap();
-
-		// We should find the expected distinguished name in the reconstituted params.
-		let expected_names = &[(&email_address_dn_type, &email_address_dn_value)];
-		let names = params_from_cert
-			.distinguished_name
-			.iter()
-			.collect::<Vec<(_, _)>>();
-		assert_eq!(names, expected_names);
-	}
-}
-
-#[cfg(feature = "x509-parser")]
-mod test_parse_other_name_alt_name {
-	use rcgen::{CertificateParams, KeyPair, SanType};
-
-	#[test]
-	fn parse_other_name_alt_name() {
-		// Create and serialize a certificate with an alternative name containing an "OtherName".
-		let mut params = CertificateParams::default();
-		let other_name = SanType::OtherName((vec![1, 2, 3, 4], "Foo".into()));
-		params.subject_alt_names.push(other_name.clone());
-		let key_pair = KeyPair::generate().unwrap();
-
-		let cert = params.self_signed(&key_pair).unwrap();
-
-		let cert_der = cert.der();
-
-		// We should be able to parse the certificate with x509-parser.
-		assert!(x509_parser::parse_x509_certificate(cert_der).is_ok());
-
-		// We should be able to reconstitute params from the DER using x509-parser.
-		let params_from_cert = CertificateParams::from_ca_cert_der(cert_der).unwrap();
-
-		// We should find the expected distinguished name in the reconstituted params.
-		let expected_alt_names = &[&other_name];
-		let subject_alt_names = params_from_cert
-			.subject_alt_names
-			.iter()
-			.collect::<Vec<_>>();
-		assert_eq!(subject_alt_names, expected_alt_names);
 	}
 }
 

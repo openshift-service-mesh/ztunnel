@@ -32,7 +32,11 @@ pub trait Frame: Sized + Clone {
     type S: Symbol;
 
     fn resolve_symbol<F: FnMut(&Self::S)>(&self, cb: F);
+
+    #[allow(dead_code)]
     fn symbol_address(&self) -> *mut c_void;
+
+    #[allow(dead_code)]
     fn ip(&self) -> usize;
 }
 
@@ -51,7 +55,7 @@ pub trait Trace {
         target_arch = "riscv64",
         target_arch = "loongarch64"
     ),
-    feature = "frame-pointer"
+    any(feature = "frame-pointer", feature = "framehop-unwinder")
 )))]
 mod backtrace_rs;
 #[cfg(not(all(
@@ -61,7 +65,7 @@ mod backtrace_rs;
         target_arch = "riscv64",
         target_arch = "loongarch64"
     ),
-    feature = "frame-pointer"
+    any(feature = "frame-pointer", feature = "framehop-unwinder")
 )))]
 pub use backtrace_rs::Trace as TraceImpl;
 
@@ -85,3 +89,17 @@ pub mod frame_pointer;
     feature = "frame-pointer"
 ))]
 pub use frame_pointer::Trace as TraceImpl;
+
+#[cfg(all(
+    any(target_arch = "x86_64", target_arch = "aarch64",),
+    any(target_os = "linux", target_os = "macos",),
+    feature = "framehop-unwinder"
+))]
+pub mod framehop_unwinder;
+
+#[cfg(all(
+    any(target_arch = "x86_64", target_arch = "aarch64",),
+    any(target_os = "linux", target_os = "macos",),
+    feature = "framehop-unwinder"
+))]
+pub use framehop_unwinder::Trace as TraceImpl;

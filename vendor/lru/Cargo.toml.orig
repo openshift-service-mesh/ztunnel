@@ -1,7 +1,8 @@
 [package]
 name = "lru"
-version = "0.13.0"
+version = "0.16.0"
 authors = ["Jerome Froelich <jeromefroelic@hotmail.com>"]
+rust-version = "1.70.0"
 categories = ["caching", "no-std"]
 description = "A LRU cache implementation"
 homepage = "https://github.com/jeromefroe/lru-rs"

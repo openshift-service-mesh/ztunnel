@@ -47,8 +47,33 @@ pub(crate) struct AfInetInfo {
 
 impl AfInetInfo {
     /// Determines if an interface is used for mobile_data
+    /// https://chromium.googlesource.com/external/webrtc/+/branch-heads/m73/rtc_base/network.cc#205
+    #[cfg(target_os = "android")]
     pub(crate) fn is_mobile_data(&self) -> bool {
         self.iname.contains("rmnet_data")
+    }
+
+    #[cfg(target_os = "ios")]
+    pub(crate) fn is_mobile_data(&self) -> bool {
+        self.iname.contains("pdp_ip")
+    }
+
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "windows",
+        target_os = "macos",
+        target_os = "freebsd",
+        target_os = "openbsd",
+        target_os = "netbsd",
+        target_os = "dragonfly",
+    ))]
+    pub(crate) fn is_mobile_data(&self) -> bool {
+        false
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn is_local_network(&self) -> bool {
+        self.iname.contains("eth") || self.iname.contains("wlan") || self.iname.contains("en")
     }
 }
 
@@ -134,20 +159,24 @@ pub(crate) fn list_afinet_netifas_info() -> Result<Vec<AfInetInfo>, Error> {
 
 /// Retrieves the name of a interface address
 unsafe fn get_ifa_name(ifa: *mut *mut ifaddrs) -> Result<String, Error> {
-    let str = (*(*ifa)).ifa_name;
-    let len = strlen(str as *const c_char);
-    let slice = std::slice::from_raw_parts(str as *mut u8, len);
-    match String::from_utf8(slice.to_vec()) {
-        Ok(s) => Ok(s),
-        Err(e) => Err(Error::StrategyError(format!(
-            "Failed to retrieve interface name. The name is not a valid UTF-8 string. {}",
-            e
-        ))),
+    unsafe {
+        let str = (*(*ifa)).ifa_name;
+        let len = strlen(str as *const c_char);
+        let slice = std::slice::from_raw_parts(str as *mut u8, len);
+        match String::from_utf8(slice.to_vec()) {
+            Ok(s) => Ok(s),
+            Err(e) => Err(Error::StrategyError(format!(
+                "Failed to retrieve interface name. The name is not a valid UTF-8 string. {}",
+                e
+            ))),
+        }
     }
 }
 
 /// Determines if an interface address is a loopback address
 unsafe fn is_loopback_addr(ifa: *mut *mut ifaddrs) -> bool {
-    let iflags = (*(*ifa)).ifa_flags as i32;
-    (iflags & IFF_LOOPBACK) != 0
+    unsafe {
+        let iflags = (*(*ifa)).ifa_flags as i32;
+        (iflags & IFF_LOOPBACK) != 0
+    }
 }

@@ -351,14 +351,6 @@ fn test_get_nameservers_or_local() {
 }
 
 #[test]
-#[cfg(feature = "system")]
-#[ignore]
-fn test_get_system_domain() {
-    let config = resolv_conf::Config::new();
-    assert_eq!(Some("lan".into()), config.get_system_domain());
-}
-
-#[test]
 fn test_default_display() {
     let original_config = resolv_conf::Config::new();
     let output = original_config.to_string();
@@ -410,7 +402,7 @@ fn test_non_default_display() {
     original_config.use_vc = true;
 
     let output = original_config.to_string();
-    println!("Output:\n\n{}", output);
+    println!("Output:\n\n{output}");
     let restored_config = resolv_conf::Config::parse(&output).unwrap();
 
     assert_eq!(original_config, restored_config);
@@ -430,7 +422,7 @@ fn test_display_preservers_last_search() {
     original_config.set_domain("my.domain".to_owned());
 
     let output = original_config.to_string();
-    println!("Output:\n\n{}", output);
+    println!("Output:\n\n{output}");
     let restored_config = resolv_conf::Config::parse(&output).unwrap();
 
     assert_eq!(original_config, restored_config);

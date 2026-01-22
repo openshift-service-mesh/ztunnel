@@ -30,8 +30,7 @@ supported but not tested as part of the automatic builds. This library will also
 work as expected in both `bin` and `cdylib` outputs, ie: the `ctor` and `dtor`
 will run at executable or library startup/shutdown respectively.
 
-This library supports WASM targets, but note that only a single `#[ctor]` function is
-supported due to platform limitations.
+This library supports WASM targets, but the MSRV for this target is 1.85.
 
 ## Warnings
 
@@ -109,8 +108,8 @@ The above example translates into the following Rust code (approximately):
 
 ```rust
     #[used]
-    #[cfg_attr(target_os = "linux"), link_section = ".init_array")]
-    #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func")]
+    #[cfg_attr(target_os = "linux", link_section = ".init_array")]
+    #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func,mod_init_funcs")]
     #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
     /* ... other platforms elided ... */
     static FOO: extern fn() = {

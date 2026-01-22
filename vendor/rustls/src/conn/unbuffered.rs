@@ -80,7 +80,13 @@ impl<Data> UnbufferedConnectionCommon<Data> {
                 );
             }
 
-            let deframer_output =
+            let deframer_output = if self
+                .core
+                .common_state
+                .has_received_close_notify
+            {
+                None
+            } else {
                 match self
                     .core
                     .deframe(None, buffer.filled_mut(), &mut buffer_progress)
@@ -93,7 +99,8 @@ impl<Data> UnbufferedConnectionCommon<Data> {
                         };
                     }
                     Ok(r) => r,
-                };
+                }
+            };
 
             if let Some(msg) = deframer_output {
                 let mut state =
@@ -564,8 +571,7 @@ impl fmt::Display for EncodeError {
         match self {
             Self::InsufficientSize(InsufficientSizeError { required_size }) => write!(
                 f,
-                "cannot encode due to insufficient size, {} bytes are required",
-                required_size
+                "cannot encode due to insufficient size, {required_size} bytes are required"
             ),
             Self::AlreadyEncoded => "cannot encode, data has already been encoded".fmt(f),
         }

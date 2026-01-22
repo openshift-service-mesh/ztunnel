@@ -72,7 +72,7 @@ impl Context {
     /// judge it's generator context
     #[inline]
     pub fn is_generator(&self) -> bool {
-        self.parent != self as *const _ as *mut _
+        !std::ptr::eq(self.parent, self)
     }
 
     /// get current generator send para
@@ -164,16 +164,24 @@ pub struct ContextStack {
 }
 
 impl ContextStack {
+    #[cold]
+    fn init_root() -> *mut Context {
+        let root = {
+            let mut root = Box::new(Context::new());
+            let p = &mut *root as *mut _;
+            root.parent = p; // init top to current
+            Box::leak(root)
+        };
+        ROOT_CONTEXT_P.set(root);
+        root
+    }
+
+    /// get the current context stack
     pub fn current() -> ContextStack {
         let mut root = ROOT_CONTEXT_P.get();
+
         if root.is_null() {
-            root = {
-                let mut root = Box::new(Context::new());
-                let p = &mut *root as *mut _;
-                root.parent = p; // init top to current
-                Box::leak(root)
-            };
-            ROOT_CONTEXT_P.set(root);
+            root = Self::init_root();
         }
         ContextStack { root }
     }
@@ -192,7 +200,7 @@ impl ContextStack {
 
         // search from top
         let mut ctx = unsafe { &mut *root.parent };
-        while ctx as *const _ != root as *const _ {
+        while !std::ptr::eq(ctx, root) {
             if !ctx.local_data.is_null() {
                 return Some(ctx);
             }
@@ -261,7 +269,7 @@ pub fn get_local_data() -> *mut u8 {
 
     // search from top
     let mut ctx = unsafe { &mut *root.parent };
-    while ctx as *const _ != root as *const _ {
+    while !std::ptr::eq(ctx, root) {
         if !ctx.local_data.is_null() {
             return ctx.local_data;
         }

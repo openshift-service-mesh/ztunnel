@@ -6,27 +6,22 @@ impl windows_core::RuntimeType for IRetailModeStatics {
 }
 #[cfg(feature = "deprecated")]
 #[repr(C)]
+#[doc(hidden)]
 pub struct IRetailModeStatics_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    #[cfg(feature = "deprecated")]
     pub RetailModeEnabled: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
-    #[cfg(not(feature = "deprecated"))]
-    RetailModeEnabled: usize,
 }
 #[cfg(feature = "deprecated")]
 pub struct RetailMode;
 #[cfg(feature = "deprecated")]
 impl RetailMode {
-    #[cfg(feature = "deprecated")]
     pub fn RetailModeEnabled() -> windows_core::Result<bool> {
         Self::IRetailModeStatics(|this| unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).RetailModeEnabled)(windows_core::Interface::as_raw(this), &mut result__).map(|| result__)
         })
     }
-    #[doc(hidden)]
-    #[cfg(feature = "deprecated")]
-    pub fn IRetailModeStatics<R, F: FnOnce(&IRetailModeStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    fn IRetailModeStatics<R, F: FnOnce(&IRetailModeStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<RetailMode, IRetailModeStatics> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }

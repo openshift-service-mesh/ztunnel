@@ -3,6 +3,7 @@ impl windows_core::RuntimeType for IRadialControllerIndependentInputSource {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IRadialControllerIndependentInputSource_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Controller: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -16,6 +17,7 @@ impl windows_core::RuntimeType for IRadialControllerIndependentInputSource2 {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IRadialControllerIndependentInputSource2_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     #[cfg(feature = "System")]
@@ -28,6 +30,7 @@ impl windows_core::RuntimeType for IRadialControllerIndependentInputSourceStatic
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
+#[doc(hidden)]
 pub struct IRadialControllerIndependentInputSourceStatics_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     #[cfg(feature = "ApplicationModel_Core")]
@@ -36,7 +39,7 @@ pub struct IRadialControllerIndependentInputSourceStatics_Vtbl {
     CreateForView: usize,
 }
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RadialControllerIndependentInputSource(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(RadialControllerIndependentInputSource, windows_core::IUnknown, windows_core::IInspectable);
 impl RadialControllerIndependentInputSource {
@@ -73,8 +76,7 @@ impl RadialControllerIndependentInputSource {
             (windows_core::Interface::vtable(this).CreateForView)(windows_core::Interface::as_raw(this), view.param().abi(), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    #[doc(hidden)]
-    pub fn IRadialControllerIndependentInputSourceStatics<R, F: FnOnce(&IRadialControllerIndependentInputSourceStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    fn IRadialControllerIndependentInputSourceStatics<R, F: FnOnce(&IRadialControllerIndependentInputSourceStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<RadialControllerIndependentInputSource, IRadialControllerIndependentInputSourceStatics> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }
@@ -83,7 +85,7 @@ impl windows_core::RuntimeType for RadialControllerIndependentInputSource {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IRadialControllerIndependentInputSource>();
 }
 unsafe impl windows_core::Interface for RadialControllerIndependentInputSource {
-    type Vtable = IRadialControllerIndependentInputSource_Vtbl;
+    type Vtable = <IRadialControllerIndependentInputSource as windows_core::Interface>::Vtable;
     const IID: windows_core::GUID = <IRadialControllerIndependentInputSource as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for RadialControllerIndependentInputSource {

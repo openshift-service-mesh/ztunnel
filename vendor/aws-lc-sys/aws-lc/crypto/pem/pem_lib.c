@@ -72,10 +72,9 @@
 
 #include "internal.h"
 #include "../internal.h"
+#include "../console/internal.h"
 #include "../fipsmodule/evp/internal.h"
 
-
-#define MIN_LENGTH 4
 
 static int load_iv(char **fromp, unsigned char *to, size_t num);
 static int check_pem(const char *nm, const char *name);
@@ -284,7 +283,7 @@ int PEM_ASN1_write_bio(i2d_of_void *i2d, const char *name, BIO *bp, void *x,
                        const EVP_CIPHER *enc, const unsigned char *pass,
                        int pass_len, pem_password_cb *callback, void *u) {
   EVP_CIPHER_CTX ctx;
-  int dsize = 0, i, j, ret = 0;
+  int i, j, ret = 0;
   unsigned char *p, *data = NULL;
   const char *objstr = NULL;
   char buf[PEM_BUFSIZE];
@@ -300,9 +299,10 @@ int PEM_ASN1_write_bio(i2d_of_void *i2d, const char *name, BIO *bp, void *x,
     }
   }
 
-  if ((dsize = i2d(x, NULL)) < 0) {
+  int dsize = i2d(x, NULL);
+  if (dsize < 0) {
     OPENSSL_PUT_ERROR(PEM, ERR_R_ASN1_LIB);
-    dsize = 0;
+    OPENSSL_cleanse(&dsize, sizeof(dsize));
     goto err;
   }
   // dzise + 8 bytes are needed
@@ -318,7 +318,6 @@ int PEM_ASN1_write_bio(i2d_of_void *i2d, const char *name, BIO *bp, void *x,
     const unsigned iv_len = EVP_CIPHER_iv_length(enc);
 
     if (pass == NULL) {
-      pass_len = 0;
       if (!callback) {
         callback = PEM_def_callback;
       }
@@ -394,7 +393,6 @@ int PEM_do_header(EVP_CIPHER_INFO *cipher, unsigned char *data, long *plen,
     return 1;
   }
 
-  pass_len = 0;
   if (!callback) {
     callback = PEM_def_callback;
   }
@@ -786,13 +784,40 @@ err:
 }
 
 int PEM_def_callback(char *buf, int size, int rwflag, void *userdata) {
-  if (!buf || !userdata || size < 0) {
+  if (!buf || size <= 0) {
     return 0;
   }
-  size_t len = strlen((char *)userdata);
-  if (len >= (size_t)size) {
+
+  // Proactively zeroize |buf|
+  OPENSSL_cleanse(buf, size);
+
+  if (userdata) {
+    size_t len =  strlen((char *)userdata);
+    if (len >= (size_t)size) {
+      return 0;
+    }
+    OPENSSL_strlcpy(buf, userdata, (size_t)size);
+    return (int)len;
+  }
+
+  const char *prompt = EVP_get_pw_prompt();
+  if (prompt == NULL) {
+    prompt = "Enter PEM pass phrase:";
+  }
+
+  /*
+     * rwflag == 0 means decryption
+     * rwflag == 1 means encryption
+     *
+     * We assume that for encryption, we want a minimum length, while for
+     * decryption, we cannot know any minimum length, so we assume zero.
+     */
+  int min_len = rwflag ? MIN_LENGTH : 0;
+
+  int ret = EVP_read_pw_string_min(buf, min_len, size, prompt, rwflag);
+  if (ret != 0 || size > INT_MAX) {
     return 0;
   }
-  OPENSSL_strlcpy(buf, userdata, (size_t)size);
-  return (int)len;
+
+  return (int)OPENSSL_strnlen(buf, size);
 }
