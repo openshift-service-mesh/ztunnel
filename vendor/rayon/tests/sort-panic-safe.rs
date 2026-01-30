@@ -1,5 +1,5 @@
-use rand::distr::Uniform;
-use rand::{rng, Rng};
+use rand::distributions::Uniform;
+use rand::{thread_rng, Rng};
 use rayon::prelude::*;
 use std::cell::Cell;
 use std::cmp::Ordering;
@@ -8,11 +8,14 @@ use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::Relaxed;
 use std::thread;
 
+// const is needed for array initializer
+#[allow(clippy::declare_interior_mutable_const)]
+const ZERO: AtomicUsize = AtomicUsize::new(0);
 const LEN: usize = 20_000;
 
-static VERSIONS: AtomicUsize = AtomicUsize::new(0);
+static VERSIONS: AtomicUsize = ZERO;
 
-static DROP_COUNTS: [AtomicUsize; LEN] = [const { AtomicUsize::new(0) }; LEN];
+static DROP_COUNTS: [AtomicUsize; LEN] = [ZERO; LEN];
 
 #[derive(Clone, Eq)]
 struct DropCounter {
@@ -83,7 +86,7 @@ macro_rules! test {
                 let panic_countdown = AtomicUsize::new(panic_countdown);
                 v.$func(|a, b| {
                     if panic_countdown.fetch_sub(1, Relaxed) == 1 {
-                        SILENCE_PANIC.set(true);
+                        SILENCE_PANIC.with(|s| s.set(true));
                         panic!();
                     }
                     a.cmp(b)
@@ -122,19 +125,19 @@ thread_local!(static SILENCE_PANIC: Cell<bool> = const { Cell::new(false) });
 fn sort_panic_safe() {
     let prev = panic::take_hook();
     panic::set_hook(Box::new(move |info| {
-        if !SILENCE_PANIC.get() {
+        if !SILENCE_PANIC.with(Cell::get) {
             prev(info);
         }
     }));
 
     for &len in &[1, 2, 3, 4, 5, 10, 20, 100, 500, 5_000, 20_000] {
-        let len_dist = Uniform::new(0, len).unwrap();
+        let len_dist = Uniform::new(0, len);
         for &modulus in &[5, 30, 1_000, 20_000] {
             for &has_runs in &[false, true] {
-                let mut rng = rng();
+                let mut rng = thread_rng();
                 let mut input = (0..len)
                     .map(|id| DropCounter {
-                        x: rng.random_range(0..modulus),
+                        x: rng.gen_range(0..modulus),
                         id,
                         version: Cell::new(0),
                     })

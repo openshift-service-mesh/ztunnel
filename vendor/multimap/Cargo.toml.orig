@@ -1,7 +1,6 @@
 [package]
 name = "multimap"
-version = "0.10.1"
-edition = "2015"
+version = "0.10.0"
 description = "A multimap implementation."
 readme = "README.md"
 repository = "https://github.com/havarnov/multimap"

@@ -23,16 +23,10 @@ static SIG_ACTION: Mutex<MaybeUninit<sigaction>> = Mutex::new(MaybeUninit::unini
 // out many large systems and all implementations allow returning from a
 // signal handler to work. For a more detailed explanation see the
 // comments on https://github.com/rust-lang/rust/issues/26458.
-//
-// A pointer to the exception context is passed as the third argument. This
-// context is usually compatible with libc::ucontext_t. However some architectures
-// (like powerpc64) do not provide the ucontext_t type in glibc. Since we do not
-// use the context information, it is represented as a generic pointer.
-// see: https://github.com/rust-lang/libc/pull/3986 / https://github.com/rust-lang/libc/pull/3986
 unsafe extern "C" fn signal_handler(
     signum: libc::c_int,
     info: *mut libc::siginfo_t,
-    ctx: *mut libc::c_void, // workaroung for ppc64le missing ucontext_t in rust libc. See: https://github.com/rust-lang/libc/issues/3964
+    ctx: *mut libc::ucontext_t,
 ) {
     let _ctx = &mut *ctx;
     let addr = (*info).si_addr() as usize;

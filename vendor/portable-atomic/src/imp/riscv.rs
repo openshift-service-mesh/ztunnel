@@ -70,9 +70,8 @@ macro_rules! w {
     portable_atomic_target_feature = "zaamo",
 ))]
 macro_rules! atomic_rmw_amo_ext {
-    // Use +a also for zaamo because `option arch +zaamo` requires LLVM 19.
-    // https://github.com/llvm/llvm-project/commit/8be079cdddfd628d356d9ddb5ab397ea95fb1030
     ("w") => {
+        // Use +a also for zaamo because `option arch +zaamo` requires LLVM 19 https://github.com/llvm/llvm-project/commit/8be079cdddfd628d356d9ddb5ab397ea95fb1030
         "+a"
     };
     ("d") => {
@@ -760,7 +759,6 @@ mod tests {
             use crate::tests::helper::{self, *};
             ::quickcheck::quickcheck! {
                 fn quickcheck_fetch_and(x: $int_type, y: $int_type) -> bool {
-                    let mut rng = fastrand::Rng::new();
                     for &order in &helper::SWAP_ORDERINGS {
                         for base in [0, !0] {
                             let mut arr = Align16([
@@ -775,7 +773,7 @@ mod tests {
                                 <$atomic_type>::new(base),
                                 <$atomic_type>::new(base),
                             ]);
-                            let a_idx = rng.usize(3..=6);
+                            let a_idx = fastrand::usize(3..=6);
                             arr.0[a_idx] = <$atomic_type>::new(x);
                             let a = &arr.0[a_idx];
                             assert_eq!(a.fetch_and(y, order), x);
@@ -801,7 +799,6 @@ mod tests {
                     true
                 }
                 fn quickcheck_fetch_or(x: $int_type, y: $int_type) -> bool {
-                    let mut rng = fastrand::Rng::new();
                     for &order in &helper::SWAP_ORDERINGS {
                         for base in [0, !0] {
                             let mut arr = Align16([
@@ -816,7 +813,7 @@ mod tests {
                                 <$atomic_type>::new(base),
                                 <$atomic_type>::new(base),
                             ]);
-                            let a_idx = rng.usize(3..=6);
+                            let a_idx = fastrand::usize(3..=6);
                             arr.0[a_idx] = <$atomic_type>::new(x);
                             let a = &arr.0[a_idx];
                             assert_eq!(a.fetch_or(y, order), x);
@@ -842,7 +839,6 @@ mod tests {
                     true
                 }
                 fn quickcheck_fetch_xor(x: $int_type, y: $int_type) -> bool {
-                    let mut rng = fastrand::Rng::new();
                     for &order in &helper::SWAP_ORDERINGS {
                         for base in [0, !0] {
                             let mut arr = Align16([
@@ -857,7 +853,7 @@ mod tests {
                                 <$atomic_type>::new(base),
                                 <$atomic_type>::new(base),
                             ]);
-                            let a_idx = rng.usize(3..=6);
+                            let a_idx = fastrand::usize(3..=6);
                             arr.0[a_idx] = <$atomic_type>::new(x);
                             let a = &arr.0[a_idx];
                             assert_eq!(a.fetch_xor(y, order), x);
@@ -883,7 +879,6 @@ mod tests {
                     true
                 }
                 fn quickcheck_fetch_not(x: $int_type) -> bool {
-                    let mut rng = fastrand::Rng::new();
                     for &order in &helper::SWAP_ORDERINGS {
                         for base in [0, !0] {
                             let mut arr = Align16([
@@ -898,7 +893,7 @@ mod tests {
                                 <$atomic_type>::new(base),
                                 <$atomic_type>::new(base),
                             ]);
-                            let a_idx = rng.usize(3..=6);
+                            let a_idx = fastrand::usize(3..=6);
                             arr.0[a_idx] = <$atomic_type>::new(x);
                             let a = &arr.0[a_idx];
                             assert_eq!(a.fetch_not(order), x);

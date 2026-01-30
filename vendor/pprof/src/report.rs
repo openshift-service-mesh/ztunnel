@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 
-use spin::RwLock;
+use parking_lot::RwLock;
 
 use crate::frames::{Frames, UnresolvedFrames};
 use crate::profiler::Profiler;

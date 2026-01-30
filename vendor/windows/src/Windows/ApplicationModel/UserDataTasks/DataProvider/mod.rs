@@ -3,19 +3,18 @@ impl windows_core::RuntimeType for IUserDataTaskDataProviderConnection {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskDataProviderConnection_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub CreateOrUpdateTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
-    pub RemoveCreateOrUpdateTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
-    pub SyncRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
-    pub RemoveSyncRequested: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
-    pub SkipOccurrenceRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
-    pub RemoveSkipOccurrenceRequested: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
-    pub CompleteTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
-    pub RemoveCompleteTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
-    pub DeleteTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
-    pub RemoveDeleteTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
+    pub CreateOrUpdateTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub RemoveCreateOrUpdateTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub SyncRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub RemoveSyncRequested: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub SkipOccurrenceRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub RemoveSkipOccurrenceRequested: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub CompleteTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub RemoveCompleteTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub DeleteTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub RemoveDeleteTaskRequested: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
     pub Start: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(IUserDataTaskDataProviderTriggerDetails, IUserDataTaskDataProviderTriggerDetails_Vtbl, 0xae273202_b1c9_453e_afc5_b30af3bd217d);
@@ -23,7 +22,6 @@ impl windows_core::RuntimeType for IUserDataTaskDataProviderTriggerDetails {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskDataProviderTriggerDetails_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Connection: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -33,12 +31,11 @@ impl windows_core::RuntimeType for IUserDataTaskListCompleteTaskRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskListCompleteTaskRequest_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub TaskListId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub TaskId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub ReportCompletedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub TaskListId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub TaskId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub ReportCompletedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub ReportFailedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(IUserDataTaskListCompleteTaskRequestEventArgs, IUserDataTaskListCompleteTaskRequestEventArgs_Vtbl, 0xd77c393d_4cf2_48ad_87fd_963f0eaa7a95);
@@ -46,7 +43,6 @@ impl windows_core::RuntimeType for IUserDataTaskListCompleteTaskRequestEventArgs
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskListCompleteTaskRequestEventArgs_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Request: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -57,10 +53,9 @@ impl windows_core::RuntimeType for IUserDataTaskListCreateOrUpdateTaskRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskListCreateOrUpdateTaskRequest_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub TaskListId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub TaskListId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
     pub Task: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub ReportCompletedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub ReportFailedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -70,7 +65,6 @@ impl windows_core::RuntimeType for IUserDataTaskListCreateOrUpdateTaskRequestEve
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskListCreateOrUpdateTaskRequestEventArgs_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Request: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -81,11 +75,10 @@ impl windows_core::RuntimeType for IUserDataTaskListDeleteTaskRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskListDeleteTaskRequest_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub TaskListId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub TaskId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub TaskListId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub TaskId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
     pub ReportCompletedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub ReportFailedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
@@ -94,7 +87,6 @@ impl windows_core::RuntimeType for IUserDataTaskListDeleteTaskRequestEventArgs {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskListDeleteTaskRequestEventArgs_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Request: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -105,11 +97,10 @@ impl windows_core::RuntimeType for IUserDataTaskListSkipOccurrenceRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskListSkipOccurrenceRequest_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub TaskListId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub TaskId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub TaskListId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub TaskId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
     pub ReportCompletedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub ReportFailedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
@@ -118,7 +109,6 @@ impl windows_core::RuntimeType for IUserDataTaskListSkipOccurrenceRequestEventAr
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskListSkipOccurrenceRequestEventArgs_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Request: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -129,10 +119,9 @@ impl windows_core::RuntimeType for IUserDataTaskListSyncManagerSyncRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskListSyncManagerSyncRequest_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub TaskListId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub TaskListId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
     pub ReportCompletedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub ReportFailedAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
@@ -141,18 +130,17 @@ impl windows_core::RuntimeType for IUserDataTaskListSyncManagerSyncRequestEventA
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IUserDataTaskListSyncManagerSyncRequestEventArgs_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Request: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub GetDeferral: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskDataProviderConnection(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskDataProviderConnection, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskDataProviderConnection {
-    pub fn CreateOrUpdateTaskRequested<P0>(&self, handler: P0) -> windows_core::Result<i64>
+    pub fn CreateOrUpdateTaskRequested<P0>(&self, handler: P0) -> windows_core::Result<super::super::super::Foundation::EventRegistrationToken>
     where
         P0: windows_core::Param<super::super::super::Foundation::TypedEventHandler<UserDataTaskDataProviderConnection, UserDataTaskListCreateOrUpdateTaskRequestEventArgs>>,
     {
@@ -162,11 +150,11 @@ impl UserDataTaskDataProviderConnection {
             (windows_core::Interface::vtable(this).CreateOrUpdateTaskRequested)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveCreateOrUpdateTaskRequested(&self, token: i64) -> windows_core::Result<()> {
+    pub fn RemoveCreateOrUpdateTaskRequested(&self, token: super::super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveCreateOrUpdateTaskRequested)(windows_core::Interface::as_raw(this), token).ok() }
     }
-    pub fn SyncRequested<P0>(&self, handler: P0) -> windows_core::Result<i64>
+    pub fn SyncRequested<P0>(&self, handler: P0) -> windows_core::Result<super::super::super::Foundation::EventRegistrationToken>
     where
         P0: windows_core::Param<super::super::super::Foundation::TypedEventHandler<UserDataTaskDataProviderConnection, UserDataTaskListSyncManagerSyncRequestEventArgs>>,
     {
@@ -176,11 +164,11 @@ impl UserDataTaskDataProviderConnection {
             (windows_core::Interface::vtable(this).SyncRequested)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveSyncRequested(&self, token: i64) -> windows_core::Result<()> {
+    pub fn RemoveSyncRequested(&self, token: super::super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveSyncRequested)(windows_core::Interface::as_raw(this), token).ok() }
     }
-    pub fn SkipOccurrenceRequested<P0>(&self, handler: P0) -> windows_core::Result<i64>
+    pub fn SkipOccurrenceRequested<P0>(&self, handler: P0) -> windows_core::Result<super::super::super::Foundation::EventRegistrationToken>
     where
         P0: windows_core::Param<super::super::super::Foundation::TypedEventHandler<UserDataTaskDataProviderConnection, UserDataTaskListSkipOccurrenceRequestEventArgs>>,
     {
@@ -190,11 +178,11 @@ impl UserDataTaskDataProviderConnection {
             (windows_core::Interface::vtable(this).SkipOccurrenceRequested)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveSkipOccurrenceRequested(&self, token: i64) -> windows_core::Result<()> {
+    pub fn RemoveSkipOccurrenceRequested(&self, token: super::super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveSkipOccurrenceRequested)(windows_core::Interface::as_raw(this), token).ok() }
     }
-    pub fn CompleteTaskRequested<P0>(&self, handler: P0) -> windows_core::Result<i64>
+    pub fn CompleteTaskRequested<P0>(&self, handler: P0) -> windows_core::Result<super::super::super::Foundation::EventRegistrationToken>
     where
         P0: windows_core::Param<super::super::super::Foundation::TypedEventHandler<UserDataTaskDataProviderConnection, UserDataTaskListCompleteTaskRequestEventArgs>>,
     {
@@ -204,11 +192,11 @@ impl UserDataTaskDataProviderConnection {
             (windows_core::Interface::vtable(this).CompleteTaskRequested)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveCompleteTaskRequested(&self, token: i64) -> windows_core::Result<()> {
+    pub fn RemoveCompleteTaskRequested(&self, token: super::super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveCompleteTaskRequested)(windows_core::Interface::as_raw(this), token).ok() }
     }
-    pub fn DeleteTaskRequested<P0>(&self, handler: P0) -> windows_core::Result<i64>
+    pub fn DeleteTaskRequested<P0>(&self, handler: P0) -> windows_core::Result<super::super::super::Foundation::EventRegistrationToken>
     where
         P0: windows_core::Param<super::super::super::Foundation::TypedEventHandler<UserDataTaskDataProviderConnection, UserDataTaskListDeleteTaskRequestEventArgs>>,
     {
@@ -218,7 +206,7 @@ impl UserDataTaskDataProviderConnection {
             (windows_core::Interface::vtable(this).DeleteTaskRequested)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveDeleteTaskRequested(&self, token: i64) -> windows_core::Result<()> {
+    pub fn RemoveDeleteTaskRequested(&self, token: super::super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveDeleteTaskRequested)(windows_core::Interface::as_raw(this), token).ok() }
     }
@@ -231,7 +219,7 @@ impl windows_core::RuntimeType for UserDataTaskDataProviderConnection {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskDataProviderConnection>();
 }
 unsafe impl windows_core::Interface for UserDataTaskDataProviderConnection {
-    type Vtable = <IUserDataTaskDataProviderConnection as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskDataProviderConnection_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskDataProviderConnection as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskDataProviderConnection {
@@ -240,7 +228,7 @@ impl windows_core::RuntimeName for UserDataTaskDataProviderConnection {
 unsafe impl Send for UserDataTaskDataProviderConnection {}
 unsafe impl Sync for UserDataTaskDataProviderConnection {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskDataProviderTriggerDetails(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskDataProviderTriggerDetails, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskDataProviderTriggerDetails {
@@ -256,7 +244,7 @@ impl windows_core::RuntimeType for UserDataTaskDataProviderTriggerDetails {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskDataProviderTriggerDetails>();
 }
 unsafe impl windows_core::Interface for UserDataTaskDataProviderTriggerDetails {
-    type Vtable = <IUserDataTaskDataProviderTriggerDetails as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskDataProviderTriggerDetails_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskDataProviderTriggerDetails as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskDataProviderTriggerDetails {
@@ -265,7 +253,7 @@ impl windows_core::RuntimeName for UserDataTaskDataProviderTriggerDetails {
 unsafe impl Send for UserDataTaskDataProviderTriggerDetails {}
 unsafe impl Sync for UserDataTaskDataProviderTriggerDetails {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskListCompleteTaskRequest(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskListCompleteTaskRequest, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskListCompleteTaskRequest {
@@ -273,24 +261,24 @@ impl UserDataTaskListCompleteTaskRequest {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).TaskListId)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).TaskListId)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
     pub fn TaskId(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).TaskId)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).TaskId)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ReportCompletedAsync(&self, completedtaskid: &windows_core::HSTRING) -> windows_core::Result<windows_future::IAsyncAction> {
+    pub fn ReportCompletedAsync(&self, completedtaskid: &windows_core::HSTRING) -> windows_core::Result<super::super::super::Foundation::IAsyncAction> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).ReportCompletedAsync)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(completedtaskid), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ReportFailedAsync(&self) -> windows_core::Result<windows_future::IAsyncAction> {
+    pub fn ReportFailedAsync(&self) -> windows_core::Result<super::super::super::Foundation::IAsyncAction> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -302,7 +290,7 @@ impl windows_core::RuntimeType for UserDataTaskListCompleteTaskRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskListCompleteTaskRequest>();
 }
 unsafe impl windows_core::Interface for UserDataTaskListCompleteTaskRequest {
-    type Vtable = <IUserDataTaskListCompleteTaskRequest as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskListCompleteTaskRequest_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskListCompleteTaskRequest as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskListCompleteTaskRequest {
@@ -311,7 +299,7 @@ impl windows_core::RuntimeName for UserDataTaskListCompleteTaskRequest {
 unsafe impl Send for UserDataTaskListCompleteTaskRequest {}
 unsafe impl Sync for UserDataTaskListCompleteTaskRequest {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskListCompleteTaskRequestEventArgs(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskListCompleteTaskRequestEventArgs, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskListCompleteTaskRequestEventArgs {
@@ -334,7 +322,7 @@ impl windows_core::RuntimeType for UserDataTaskListCompleteTaskRequestEventArgs 
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskListCompleteTaskRequestEventArgs>();
 }
 unsafe impl windows_core::Interface for UserDataTaskListCompleteTaskRequestEventArgs {
-    type Vtable = <IUserDataTaskListCompleteTaskRequestEventArgs as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskListCompleteTaskRequestEventArgs_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskListCompleteTaskRequestEventArgs as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskListCompleteTaskRequestEventArgs {
@@ -343,7 +331,7 @@ impl windows_core::RuntimeName for UserDataTaskListCompleteTaskRequestEventArgs 
 unsafe impl Send for UserDataTaskListCompleteTaskRequestEventArgs {}
 unsafe impl Sync for UserDataTaskListCompleteTaskRequestEventArgs {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskListCreateOrUpdateTaskRequest(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskListCreateOrUpdateTaskRequest, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskListCreateOrUpdateTaskRequest {
@@ -351,7 +339,7 @@ impl UserDataTaskListCreateOrUpdateTaskRequest {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).TaskListId)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).TaskListId)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
     pub fn Task(&self) -> windows_core::Result<super::UserDataTask> {
@@ -361,7 +349,7 @@ impl UserDataTaskListCreateOrUpdateTaskRequest {
             (windows_core::Interface::vtable(this).Task)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ReportCompletedAsync<P0>(&self, createdorupdateduserdatatask: P0) -> windows_core::Result<windows_future::IAsyncAction>
+    pub fn ReportCompletedAsync<P0>(&self, createdorupdateduserdatatask: P0) -> windows_core::Result<super::super::super::Foundation::IAsyncAction>
     where
         P0: windows_core::Param<super::UserDataTask>,
     {
@@ -371,7 +359,7 @@ impl UserDataTaskListCreateOrUpdateTaskRequest {
             (windows_core::Interface::vtable(this).ReportCompletedAsync)(windows_core::Interface::as_raw(this), createdorupdateduserdatatask.param().abi(), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ReportFailedAsync(&self) -> windows_core::Result<windows_future::IAsyncAction> {
+    pub fn ReportFailedAsync(&self) -> windows_core::Result<super::super::super::Foundation::IAsyncAction> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -383,7 +371,7 @@ impl windows_core::RuntimeType for UserDataTaskListCreateOrUpdateTaskRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskListCreateOrUpdateTaskRequest>();
 }
 unsafe impl windows_core::Interface for UserDataTaskListCreateOrUpdateTaskRequest {
-    type Vtable = <IUserDataTaskListCreateOrUpdateTaskRequest as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskListCreateOrUpdateTaskRequest_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskListCreateOrUpdateTaskRequest as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskListCreateOrUpdateTaskRequest {
@@ -392,7 +380,7 @@ impl windows_core::RuntimeName for UserDataTaskListCreateOrUpdateTaskRequest {
 unsafe impl Send for UserDataTaskListCreateOrUpdateTaskRequest {}
 unsafe impl Sync for UserDataTaskListCreateOrUpdateTaskRequest {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskListCreateOrUpdateTaskRequestEventArgs(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskListCreateOrUpdateTaskRequestEventArgs, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskListCreateOrUpdateTaskRequestEventArgs {
@@ -415,7 +403,7 @@ impl windows_core::RuntimeType for UserDataTaskListCreateOrUpdateTaskRequestEven
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskListCreateOrUpdateTaskRequestEventArgs>();
 }
 unsafe impl windows_core::Interface for UserDataTaskListCreateOrUpdateTaskRequestEventArgs {
-    type Vtable = <IUserDataTaskListCreateOrUpdateTaskRequestEventArgs as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskListCreateOrUpdateTaskRequestEventArgs_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskListCreateOrUpdateTaskRequestEventArgs as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskListCreateOrUpdateTaskRequestEventArgs {
@@ -424,7 +412,7 @@ impl windows_core::RuntimeName for UserDataTaskListCreateOrUpdateTaskRequestEven
 unsafe impl Send for UserDataTaskListCreateOrUpdateTaskRequestEventArgs {}
 unsafe impl Sync for UserDataTaskListCreateOrUpdateTaskRequestEventArgs {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskListDeleteTaskRequest(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskListDeleteTaskRequest, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskListDeleteTaskRequest {
@@ -432,24 +420,24 @@ impl UserDataTaskListDeleteTaskRequest {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).TaskListId)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).TaskListId)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
     pub fn TaskId(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).TaskId)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).TaskId)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ReportCompletedAsync(&self) -> windows_core::Result<windows_future::IAsyncAction> {
+    pub fn ReportCompletedAsync(&self) -> windows_core::Result<super::super::super::Foundation::IAsyncAction> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).ReportCompletedAsync)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ReportFailedAsync(&self) -> windows_core::Result<windows_future::IAsyncAction> {
+    pub fn ReportFailedAsync(&self) -> windows_core::Result<super::super::super::Foundation::IAsyncAction> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -461,7 +449,7 @@ impl windows_core::RuntimeType for UserDataTaskListDeleteTaskRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskListDeleteTaskRequest>();
 }
 unsafe impl windows_core::Interface for UserDataTaskListDeleteTaskRequest {
-    type Vtable = <IUserDataTaskListDeleteTaskRequest as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskListDeleteTaskRequest_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskListDeleteTaskRequest as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskListDeleteTaskRequest {
@@ -470,7 +458,7 @@ impl windows_core::RuntimeName for UserDataTaskListDeleteTaskRequest {
 unsafe impl Send for UserDataTaskListDeleteTaskRequest {}
 unsafe impl Sync for UserDataTaskListDeleteTaskRequest {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskListDeleteTaskRequestEventArgs(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskListDeleteTaskRequestEventArgs, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskListDeleteTaskRequestEventArgs {
@@ -493,7 +481,7 @@ impl windows_core::RuntimeType for UserDataTaskListDeleteTaskRequestEventArgs {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskListDeleteTaskRequestEventArgs>();
 }
 unsafe impl windows_core::Interface for UserDataTaskListDeleteTaskRequestEventArgs {
-    type Vtable = <IUserDataTaskListDeleteTaskRequestEventArgs as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskListDeleteTaskRequestEventArgs_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskListDeleteTaskRequestEventArgs as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskListDeleteTaskRequestEventArgs {
@@ -502,7 +490,7 @@ impl windows_core::RuntimeName for UserDataTaskListDeleteTaskRequestEventArgs {
 unsafe impl Send for UserDataTaskListDeleteTaskRequestEventArgs {}
 unsafe impl Sync for UserDataTaskListDeleteTaskRequestEventArgs {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskListSkipOccurrenceRequest(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskListSkipOccurrenceRequest, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskListSkipOccurrenceRequest {
@@ -510,24 +498,24 @@ impl UserDataTaskListSkipOccurrenceRequest {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).TaskListId)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).TaskListId)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
     pub fn TaskId(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).TaskId)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).TaskId)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ReportCompletedAsync(&self) -> windows_core::Result<windows_future::IAsyncAction> {
+    pub fn ReportCompletedAsync(&self) -> windows_core::Result<super::super::super::Foundation::IAsyncAction> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).ReportCompletedAsync)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ReportFailedAsync(&self) -> windows_core::Result<windows_future::IAsyncAction> {
+    pub fn ReportFailedAsync(&self) -> windows_core::Result<super::super::super::Foundation::IAsyncAction> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -539,7 +527,7 @@ impl windows_core::RuntimeType for UserDataTaskListSkipOccurrenceRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskListSkipOccurrenceRequest>();
 }
 unsafe impl windows_core::Interface for UserDataTaskListSkipOccurrenceRequest {
-    type Vtable = <IUserDataTaskListSkipOccurrenceRequest as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskListSkipOccurrenceRequest_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskListSkipOccurrenceRequest as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskListSkipOccurrenceRequest {
@@ -548,7 +536,7 @@ impl windows_core::RuntimeName for UserDataTaskListSkipOccurrenceRequest {
 unsafe impl Send for UserDataTaskListSkipOccurrenceRequest {}
 unsafe impl Sync for UserDataTaskListSkipOccurrenceRequest {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskListSkipOccurrenceRequestEventArgs(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskListSkipOccurrenceRequestEventArgs, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskListSkipOccurrenceRequestEventArgs {
@@ -571,7 +559,7 @@ impl windows_core::RuntimeType for UserDataTaskListSkipOccurrenceRequestEventArg
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskListSkipOccurrenceRequestEventArgs>();
 }
 unsafe impl windows_core::Interface for UserDataTaskListSkipOccurrenceRequestEventArgs {
-    type Vtable = <IUserDataTaskListSkipOccurrenceRequestEventArgs as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskListSkipOccurrenceRequestEventArgs_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskListSkipOccurrenceRequestEventArgs as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskListSkipOccurrenceRequestEventArgs {
@@ -580,7 +568,7 @@ impl windows_core::RuntimeName for UserDataTaskListSkipOccurrenceRequestEventArg
 unsafe impl Send for UserDataTaskListSkipOccurrenceRequestEventArgs {}
 unsafe impl Sync for UserDataTaskListSkipOccurrenceRequestEventArgs {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskListSyncManagerSyncRequest(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskListSyncManagerSyncRequest, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskListSyncManagerSyncRequest {
@@ -588,17 +576,17 @@ impl UserDataTaskListSyncManagerSyncRequest {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).TaskListId)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).TaskListId)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ReportCompletedAsync(&self) -> windows_core::Result<windows_future::IAsyncAction> {
+    pub fn ReportCompletedAsync(&self) -> windows_core::Result<super::super::super::Foundation::IAsyncAction> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).ReportCompletedAsync)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ReportFailedAsync(&self) -> windows_core::Result<windows_future::IAsyncAction> {
+    pub fn ReportFailedAsync(&self) -> windows_core::Result<super::super::super::Foundation::IAsyncAction> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -610,7 +598,7 @@ impl windows_core::RuntimeType for UserDataTaskListSyncManagerSyncRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskListSyncManagerSyncRequest>();
 }
 unsafe impl windows_core::Interface for UserDataTaskListSyncManagerSyncRequest {
-    type Vtable = <IUserDataTaskListSyncManagerSyncRequest as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskListSyncManagerSyncRequest_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskListSyncManagerSyncRequest as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskListSyncManagerSyncRequest {
@@ -619,7 +607,7 @@ impl windows_core::RuntimeName for UserDataTaskListSyncManagerSyncRequest {
 unsafe impl Send for UserDataTaskListSyncManagerSyncRequest {}
 unsafe impl Sync for UserDataTaskListSyncManagerSyncRequest {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct UserDataTaskListSyncManagerSyncRequestEventArgs(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(UserDataTaskListSyncManagerSyncRequestEventArgs, windows_core::IUnknown, windows_core::IInspectable);
 impl UserDataTaskListSyncManagerSyncRequestEventArgs {
@@ -642,7 +630,7 @@ impl windows_core::RuntimeType for UserDataTaskListSyncManagerSyncRequestEventAr
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IUserDataTaskListSyncManagerSyncRequestEventArgs>();
 }
 unsafe impl windows_core::Interface for UserDataTaskListSyncManagerSyncRequestEventArgs {
-    type Vtable = <IUserDataTaskListSyncManagerSyncRequestEventArgs as windows_core::Interface>::Vtable;
+    type Vtable = IUserDataTaskListSyncManagerSyncRequestEventArgs_Vtbl;
     const IID: windows_core::GUID = <IUserDataTaskListSyncManagerSyncRequestEventArgs as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for UserDataTaskListSyncManagerSyncRequestEventArgs {

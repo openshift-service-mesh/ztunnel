@@ -631,6 +631,7 @@ fn _verify_positionals(cmd: &Command) -> bool {
                     continue;
                 }
                 found = true;
+                continue;
             } else {
                 found = false;
             }
@@ -655,6 +656,7 @@ fn _verify_positionals(cmd: &Command) -> bool {
                 //      $ prog r1 -- r2
                 //      $ prog r1 o1 -- r2
                 found = true;
+                continue;
             }
         }
     }
@@ -731,7 +733,7 @@ fn assert_arg(arg: &Arg) {
         );
         assert!(
             arg.is_takes_value_set(),
-            "Argument '{}' is positional and it must take a value but action is {:?}{}",
+            "Argument '{}` is positional and it must take a value but action is {:?}{}",
             arg.get_id(),
             arg.get_action(),
             if arg.get_id() == Id::HELP {

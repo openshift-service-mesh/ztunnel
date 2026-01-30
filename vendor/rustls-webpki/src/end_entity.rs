@@ -191,7 +191,7 @@ mod tests {
     fn printable_string_common_name() {
         const DNS_NAME: &str = "test.example.com";
 
-        let issuer = test_utils::make_issuer("Test").0;
+        let issuer = test_utils::make_issuer("Test");
 
         let ee_cert = {
             let mut params = test_utils::end_entity_params(vec![DNS_NAME.to_string()]);
@@ -200,13 +200,14 @@ mod tests {
             params.distinguished_name.push(
                 rcgen::DnType::CommonName,
                 rcgen::DnValue::PrintableString(
-                    rcgen::string::PrintableString::try_from("example.com").unwrap(),
+                    rcgen::PrintableString::try_from("example.com").unwrap(),
                 ),
             );
             params
                 .signed_by(
                     &rcgen::KeyPair::generate_for(RCGEN_SIGNATURE_ALG).unwrap(),
-                    &issuer,
+                    &issuer.cert,
+                    &issuer.key_pair,
                 )
                 .expect("failed to make ee cert (this is a test bug)")
         };

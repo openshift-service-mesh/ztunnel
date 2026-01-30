@@ -15,6 +15,9 @@ use core::{
     ops::{Deref, DerefMut},
 };
 
+#[cfg(doc)]
+use crate::Ref;
+
 // For each trait polyfill, as soon as the corresponding feature is stable, the
 // polyfill import will be unused because method/function resolution will prefer
 // the inherent method/function over a trait method/function. Thus, we suppress
@@ -23,8 +26,6 @@ use core::{
 // See the documentation on `util::polyfills` for more information.
 #[allow(unused_imports)]
 use crate::util::polyfills::{self, NonNullExt as _, NumExt as _};
-#[cfg(doc)]
-use crate::Ref;
 
 /// A mutable or immutable reference to a byte slice.
 ///
@@ -111,7 +112,7 @@ pub unsafe trait SplitByteSlice: ByteSlice {
         if mid <= self.deref().len() {
             // SAFETY: Above, we ensure that `mid <= self.deref().len()`. By
             // invariant on `ByteSlice`, a supertrait of `SplitByteSlice`,
-            // `.deref()` is guaranteed to be "stable"; i.e., it will always
+            // `.deref()` is guranteed to be "stable"; i.e., it will always
             // dereference to a byte slice of the same address and length. Thus,
             // we can be sure that the above precondition remains satisfied
             // through the call to `split_at_unchecked`.
@@ -193,15 +194,15 @@ pub unsafe trait IntoByteSliceMut<'a>: IntoByteSlice<'a> + ByteSliceMut {
     fn into_byte_slice_mut(self) -> &'a mut [u8];
 }
 
-// FIXME(#429): Add a "SAFETY" comment and remove this `allow`.
+// TODO(#429): Add a "SAFETY" comment and remove this `allow`.
 #[allow(clippy::undocumented_unsafe_blocks)]
 unsafe impl ByteSlice for &[u8] {}
 
-// FIXME(#429): Add a "SAFETY" comment and remove this `allow`.
+// TODO(#429): Add a "SAFETY" comment and remove this `allow`.
 #[allow(clippy::undocumented_unsafe_blocks)]
 unsafe impl CopyableByteSlice for &[u8] {}
 
-// FIXME(#429): Add a "SAFETY" comment and remove this `allow`.
+// TODO(#429): Add a "SAFETY" comment and remove this `allow`.
 #[allow(clippy::undocumented_unsafe_blocks)]
 unsafe impl CloneableByteSlice for &[u8] {}
 
@@ -228,7 +229,7 @@ unsafe impl<'a> IntoByteSlice<'a> for &'a [u8] {
     }
 }
 
-// FIXME(#429): Add a "SAFETY" comment and remove this `allow`.
+// TODO(#429): Add a "SAFETY" comment and remove this `allow`.
 #[allow(clippy::undocumented_unsafe_blocks)]
 unsafe impl ByteSlice for &mut [u8] {}
 
@@ -253,8 +254,8 @@ unsafe impl SplitByteSlice for &mut [u8] {
         // SAFETY: By contract on caller, `mid` is not greater than
         // `self.len()`.
         //
-        // FIXME(#67): Remove this allow. See NumExt for more details.
-        #[allow(unstable_name_collisions)]
+        // TODO(#67): Remove this allow. See NumExt for more details.
+        #[allow(unstable_name_collisions, clippy::incompatible_msrv)]
         let r_len = unsafe { self.len().unchecked_sub(mid) };
 
         // SAFETY: These invocations of `from_raw_parts_mut` satisfy its
@@ -313,7 +314,7 @@ unsafe impl<'a> IntoByteSliceMut<'a> for &'a mut [u8] {
     }
 }
 
-// FIXME(#429): Add a "SAFETY" comment and remove this `allow`.
+// TODO(#429): Add a "SAFETY" comment and remove this `allow`.
 #[allow(clippy::undocumented_unsafe_blocks)]
 unsafe impl ByteSlice for cell::Ref<'_, [u8]> {}
 
@@ -333,7 +334,7 @@ unsafe impl SplitByteSlice for cell::Ref<'_, [u8]> {
     }
 }
 
-// FIXME(#429): Add a "SAFETY" comment and remove this `allow`.
+// TODO(#429): Add a "SAFETY" comment and remove this `allow`.
 #[allow(clippy::undocumented_unsafe_blocks)]
 unsafe impl ByteSlice for cell::RefMut<'_, [u8]> {}
 

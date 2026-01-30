@@ -5,8 +5,6 @@ use core::ops::{Deref, DerefMut, Range};
 #[cfg(feature = "std")]
 use std::io;
 
-use kernel::KernelConnection;
-
 use crate::common_state::{CommonState, Context, DEFAULT_BUFFER_LIMIT, IoState, State};
 use crate::enums::{AlertDescription, ContentType, ProtocolVersion};
 use crate::error::{Error, PeerMisbehaved};
@@ -17,11 +15,9 @@ use crate::msgs::deframer::handshake::HandshakeDeframer;
 use crate::msgs::handshake::Random;
 use crate::msgs::message::{InboundPlainMessage, Message, MessagePayload};
 use crate::record_layer::Decrypted;
-use crate::suites::ExtractedSecrets;
+use crate::suites::{ExtractedSecrets, PartiallyExtractedSecrets};
 use crate::vecbuf::ChunkVecBuffer;
 
-// pub so that it can be re-exported from the crate root
-pub mod kernel;
 pub(crate) mod unbuffered;
 
 #[cfg(feature = "std")]
@@ -587,8 +583,9 @@ impl<Data> ConnectionCommon<Data> {
     ///   once.
     ///
     /// The return value is the number of bytes read from and written
-    /// to `io`, respectively. Once both `read()` and `write()` yield `WouldBlock`,
-    /// this function will propagate the error.
+    /// to `io`, respectively.
+    ///
+    /// This function will block if `io` blocks.
     ///
     /// Errors from TLS record handling (i.e., from [`process_new_packets`])
     /// are wrapped in an `io::ErrorKind::InvalidData`-kind error.
@@ -607,8 +604,8 @@ impl<Data> ConnectionCommon<Data> {
         let mut eof = false;
         let mut wrlen = 0;
         let mut rdlen = 0;
+
         loop {
-            let (mut blocked_write, mut blocked_read) = (None, None);
             let until_handshaked = self.is_handshaking();
 
             if !self.wants_write() && !self.wants_read() {
@@ -617,34 +614,18 @@ impl<Data> ConnectionCommon<Data> {
             }
 
             while self.wants_write() {
-                match self.write_tls(io) {
-                    Ok(0) => {
+                match self.write_tls(io)? {
+                    0 => {
                         io.flush()?;
                         return Ok((rdlen, wrlen)); // EOF.
                     }
-                    Ok(n) => wrlen += n,
-                    Err(err) if err.kind() == io::ErrorKind::WouldBlock => {
-                        blocked_write = Some(err);
-                        break;
-                    }
-                    Err(err) => return Err(err),
+                    n => wrlen += n,
                 }
             }
-            if wrlen > 0 {
-                io.flush()?;
-            }
+            io.flush()?;
 
             if !until_handshaked && wrlen > 0 {
                 return Ok((rdlen, wrlen));
-            }
-
-            // If we want to write, but are WouldBlocked by the underlying IO, *and*
-            // have no desire to read; that is everything.
-            if let (Some(_), false) = (&blocked_write, self.wants_read()) {
-                return match wrlen {
-                    0 => Err(blocked_write.unwrap()),
-                    _ => Ok((rdlen, wrlen)),
-                };
             }
 
             while !eof && self.wants_read() {
@@ -657,10 +638,6 @@ impl<Data> ConnectionCommon<Data> {
                         rdlen += n;
                         Some(n)
                     }
-                    Err(err) if err.kind() == io::ErrorKind::WouldBlock => {
-                        blocked_read = Some(err);
-                        break;
-                    }
                     Err(err) if err.kind() == io::ErrorKind::Interrupted => None, // nothing to do
                     Err(err) => return Err(err),
                 };
@@ -669,22 +646,18 @@ impl<Data> ConnectionCommon<Data> {
                 }
             }
 
-            if let Err(e) = self.process_new_packets() {
-                // In case we have an alert to send describing this error, try a last-gasp
-                // write -- but don't predate the primary error.
-                let _ignored = self.write_tls(io);
-                let _ignored = io.flush();
-                return Err(io::Error::new(io::ErrorKind::InvalidData, e));
-            };
+            match self.process_new_packets() {
+                Ok(_) => {}
+                Err(e) => {
+                    // In case we have an alert to send describing this error,
+                    // try a last-gasp write -- but don't predate the primary
+                    // error.
+                    let _ignored = self.write_tls(io);
+                    let _ignored = io.flush();
 
-            // If we want to read, but are WouldBlocked by the underlying IO, *and*
-            // have no desire to write; that is everything.
-            if let (Some(_), false) = (&blocked_read, self.wants_write()) {
-                return match rdlen {
-                    0 => Err(blocked_read.unwrap()),
-                    _ => Ok((rdlen, wrlen)),
-                };
-            }
+                    return Err(io::Error::new(io::ErrorKind::InvalidData, e));
+                }
+            };
 
             // if we're doing IO until handshaked, and we believe we've finished handshaking,
             // but process_new_packets() has queued TLS data to send, loop around again to write
@@ -693,13 +666,11 @@ impl<Data> ConnectionCommon<Data> {
                 continue;
             }
 
-            let blocked = blocked_write.zip(blocked_read);
-            match (eof, until_handshaked, self.is_handshaking(), blocked) {
-                (_, true, false, _) => return Ok((rdlen, wrlen)),
-                (_, _, _, Some((e, _))) if rdlen == 0 && wrlen == 0 => return Err(e),
-                (_, false, _, _) => return Ok((rdlen, wrlen)),
-                (true, true, true, _) => return Err(io::Error::from(io::ErrorKind::UnexpectedEof)),
-                _ => {}
+            match (eof, until_handshaked, self.is_handshaking()) {
+                (_, true, false) => return Ok((rdlen, wrlen)),
+                (_, false, _) => return Ok((rdlen, wrlen)),
+                (true, true, true) => return Err(io::Error::from(io::ErrorKind::UnexpectedEof)),
+                (..) => {}
             }
         }
     }
@@ -1172,7 +1143,7 @@ impl<Data> ConnectionCore<Data> {
             Err(err) => {
                 return Err(self
                     .common_state
-                    .send_fatal_alert(AlertDescription::from(err), err));
+                    .send_fatal_alert(AlertDescription::DecodeError, err));
             }
         };
 
@@ -1187,14 +1158,6 @@ impl<Data> ConnectionCore<Data> {
     }
 
     pub(crate) fn dangerous_extract_secrets(self) -> Result<ExtractedSecrets, Error> {
-        Ok(self
-            .dangerous_into_kernel_connection()?
-            .0)
-    }
-
-    pub(crate) fn dangerous_into_kernel_connection(
-        self,
-    ) -> Result<(ExtractedSecrets, KernelConnection<Data>), Error> {
         if !self
             .common_state
             .enable_secret_extraction
@@ -1202,34 +1165,14 @@ impl<Data> ConnectionCore<Data> {
             return Err(Error::General("Secret extraction is disabled".into()));
         }
 
-        if self.common_state.is_handshaking() {
-            return Err(Error::HandshakeNotComplete);
-        }
+        let st = self.state?;
 
-        if !self
-            .common_state
-            .sendable_tls
-            .is_empty()
-        {
-            return Err(Error::General(
-                "cannot convert into an KernelConnection while there are still buffered TLS records to send"
-                    .into()
-            ));
-        }
-
-        let state = self.state?;
-
-        let record_layer = &self.common_state.record_layer;
-        let secrets = state.extract_secrets()?;
-        let secrets = ExtractedSecrets {
-            tx: (record_layer.write_seq(), secrets.tx),
-            rx: (record_layer.read_seq(), secrets.rx),
-        };
-
-        let state = state.into_external_state()?;
-        let external = KernelConnection::new(state, self.common_state)?;
-
-        Ok((secrets, external))
+        let record_layer = self.common_state.record_layer;
+        let PartiallyExtractedSecrets { tx, rx } = st.extract_secrets()?;
+        Ok(ExtractedSecrets {
+            tx: (record_layer.write_seq(), tx),
+            rx: (record_layer.read_seq(), rx),
+        })
     }
 
     pub(crate) fn export_keying_material<T: AsMut<[u8]>>(

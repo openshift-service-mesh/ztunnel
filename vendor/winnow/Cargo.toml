@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.65.0"
 name = "winnow"
-version = "0.7.12"
+version = "0.7.6"
 build = false
 include = [
     "build.rs",
@@ -22,6 +22,7 @@ include = [
     "Cargo.lock",
     "LICENSE*",
     "README.md",
+    "benches/**/*",
     "examples/**/*",
 ]
 autolib = false
@@ -97,7 +98,7 @@ debug = [
     "std",
     "dep:anstream",
     "dep:anstyle",
-    "dep:is_terminal_polyfill",
+    "dep:is-terminal",
     "dep:terminal_size",
 ]
 default = ["std"]
@@ -185,6 +186,16 @@ harness = false
 required-features = ["alloc"]
 
 [[bench]]
+name = "contains_token"
+path = "benches/contains_token.rs"
+harness = false
+
+[[bench]]
+name = "find_slice"
+path = "benches/find_slice.rs"
+harness = false
+
+[[bench]]
 name = "http"
 path = "examples/http/bench.rs"
 harness = false
@@ -197,10 +208,25 @@ harness = false
 required-features = ["std"]
 
 [[bench]]
+name = "iter"
+path = "benches/iter.rs"
+harness = false
+
+[[bench]]
 name = "json"
 path = "examples/json/bench.rs"
 harness = false
 required-features = ["std"]
+
+[[bench]]
+name = "next_slice"
+path = "benches/next_slice.rs"
+harness = false
+
+[[bench]]
+name = "number"
+path = "benches/number.rs"
+harness = false
 
 [dependencies.anstream]
 version = "0.3.2"
@@ -210,8 +236,8 @@ optional = true
 version = "1.0.1"
 optional = true
 
-[dependencies.is_terminal_polyfill]
-version = "1.48.0"
+[dependencies.is-terminal]
+version = "0.4.9"
 optional = true
 
 [dependencies.memchr]
@@ -290,7 +316,7 @@ lossy_float_literal = "warn"
 macro_use_imports = "warn"
 mem_forget = "warn"
 mutex_integer = "warn"
-needless_continue = "allow"
+needless_continue = "warn"
 needless_for_each = "warn"
 negative_feature_names = "warn"
 path_buf_push_overwrite = "warn"
@@ -315,7 +341,6 @@ wildcard_imports = "allow"
 zero_sized_map_values = "warn"
 
 [lints.rust]
-unnameable_types = "warn"
 unreachable_pub = "warn"
 unsafe_op_in_unsafe_fn = "warn"
 unused_lifetimes = "warn"
@@ -329,11 +354,3 @@ priority = -1
 lto = true
 codegen-units = 1
 debug = 2
-
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-lto = true
-codegen-units = 1
-panic = "abort"

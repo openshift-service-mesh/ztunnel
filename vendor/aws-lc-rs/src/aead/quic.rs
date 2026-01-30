@@ -160,8 +160,10 @@ fn cipher_new_mask(
                 .try_into()
                 .map_err(|_| error::Unspecified)?;
             let input = block::Block::zero();
-            let counter = u32::from_ne_bytes(*counter_bytes).to_le();
-            encrypt_block_chacha20(raw_key, input, nonce, counter)?
+            unsafe {
+                let counter = core::mem::transmute::<[u8; 4], u32>(*counter_bytes).to_le();
+                encrypt_block_chacha20(raw_key, input, nonce, counter)?
+            }
         }
     };
 

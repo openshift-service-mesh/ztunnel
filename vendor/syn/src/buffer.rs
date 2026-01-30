@@ -10,7 +10,6 @@ use proc_macro2::extra::DelimSpan;
 use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use std::cmp::Ordering;
 use std::marker::PhantomData;
-use std::ptr;
 
 /// Internal type which is used instead of `TokenTree` to represent a token tree
 /// within a `TokenBuffer`.
@@ -134,7 +133,7 @@ impl<'a> Cursor<'a> {
         // our cursor's scope. We should only have `ptr != scope` at the exit
         // from None-delimited groups entered with `ignore_none`.
         while let Entry::End(..) = unsafe { &*ptr } {
-            if ptr::eq(ptr, scope) {
+            if ptr == scope {
                 break;
             }
             ptr = unsafe { ptr.add(1) };
@@ -181,7 +180,7 @@ impl<'a> Cursor<'a> {
     /// scope.
     pub fn eof(self) -> bool {
         // We're at eof if we're at the end of our scope.
-        ptr::eq(self.ptr, self.scope)
+        self.ptr == self.scope
     }
 
     /// If the cursor is pointing at a `Ident`, returns it along with a cursor
@@ -391,7 +390,7 @@ impl<'a> Eq for Cursor<'a> {}
 
 impl<'a> PartialEq for Cursor<'a> {
     fn eq(&self, other: &Self) -> bool {
-        ptr::eq(self.ptr, other.ptr)
+        self.ptr == other.ptr
     }
 }
 
@@ -406,11 +405,11 @@ impl<'a> PartialOrd for Cursor<'a> {
 }
 
 pub(crate) fn same_scope(a: Cursor, b: Cursor) -> bool {
-    ptr::eq(a.scope, b.scope)
+    a.scope == b.scope
 }
 
 pub(crate) fn same_buffer(a: Cursor, b: Cursor) -> bool {
-    ptr::eq(start_of_buffer(a), start_of_buffer(b))
+    start_of_buffer(a) == start_of_buffer(b)
 }
 
 fn start_of_buffer(cursor: Cursor) -> *const Entry {

@@ -5,9 +5,7 @@
 )]
 
 #[macro_use]
-mod snapshot;
-
-mod debug;
+mod macros;
 
 use syn::punctuated::Punctuated;
 use syn::{parse_quote, Attribute, Field, Lit, Pat, Stmt, Token};

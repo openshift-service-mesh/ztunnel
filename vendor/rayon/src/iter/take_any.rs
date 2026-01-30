@@ -5,15 +5,19 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 /// `TakeAny` is an iterator that iterates over `n` elements from anywhere in `I`.
 /// This struct is created by the [`take_any()`] method on [`ParallelIterator`]
 ///
-/// [`take_any()`]: ParallelIterator::take_any()
+/// [`take_any()`]: trait.ParallelIterator.html#method.take_any
+/// [`ParallelIterator`]: trait.ParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Clone, Debug)]
-pub struct TakeAny<I> {
+pub struct TakeAny<I: ParallelIterator> {
     base: I,
     count: usize,
 }
 
-impl<I> TakeAny<I> {
+impl<I> TakeAny<I>
+where
+    I: ParallelIterator,
+{
     /// Creates a new `TakeAny` iterator.
     pub(super) fn new(base: I, count: usize) -> Self {
         TakeAny { base, count }
@@ -38,8 +42,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Consumer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Consumer implementation
 
 struct TakeAnyConsumer<'f, C> {
     base: C,

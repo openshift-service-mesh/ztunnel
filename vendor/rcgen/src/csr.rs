@@ -7,13 +7,14 @@ use pki_types::CertificateSigningRequestDer;
 #[cfg(feature = "pem")]
 use crate::ENCODE_CONFIG;
 use crate::{
-	Certificate, CertificateParams, Error, Issuer, PublicKeyData, SignatureAlgorithm, SigningKey,
+	key_pair::serialize_public_key_der, Certificate, CertificateParams, Error, Issuer, KeyPair,
+	PublicKeyData, SignatureAlgorithm,
 };
 #[cfg(feature = "x509-parser")]
 use crate::{DistinguishedName, SanType};
 
 /// A public key, extracted from a CSR
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct PublicKey {
 	raw: Vec<u8>,
 	alg: &'static SignatureAlgorithm,
@@ -31,13 +32,13 @@ impl PublicKeyData for PublicKey {
 		&self.raw
 	}
 
-	fn algorithm(&self) -> &'static SignatureAlgorithm {
+	fn algorithm(&self) -> &SignatureAlgorithm {
 		self.alg
 	}
 }
 
 /// A certificate signing request (CSR) that can be encoded to PEM or DER.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct CertificateSigningRequest {
 	pub(crate) der: CertificateSigningRequestDer<'static>,
 }
@@ -66,7 +67,7 @@ impl From<CertificateSigningRequest> for CertificateSigningRequestDer<'static> {
 }
 
 /// Parameters for a certificate signing request
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct CertificateSigningRequestParams {
 	/// Parameters for the certificate to be signed.
 	pub params: CertificateParams,
@@ -80,7 +81,7 @@ impl CertificateSigningRequestParams {
 	/// See [`from_der`](Self::from_der) for more details.
 	#[cfg(all(feature = "pem", feature = "x509-parser"))]
 	pub fn from_pem(pem_str: &str) -> Result<Self, Error> {
-		let csr = pem::parse(pem_str).map_err(|_| Error::CouldNotParseCertificationRequest)?;
+		let csr = pem::parse(pem_str).or(Err(Error::CouldNotParseCertificationRequest))?;
 		Self::from_der(&csr.contents().into())
 	}
 
@@ -193,57 +194,36 @@ impl CertificateSigningRequestParams {
 	///
 	/// The returned certificate will have its issuer field set to the subject of the provided
 	/// `issuer`, and the authority key identifier extension will be populated using the subject
-	/// public key of `issuer`. It will be signed by `issuer_key`.
+	/// public key of `issuer` (typically either a [`CertificateParams`] or
+	/// [`Certificate`]). It will be signed by `issuer_key`.
 	///
 	/// Note that no validation of the `issuer` certificate is performed. Rcgen will not require
 	/// the certificate to be a CA certificate, or have key usage extensions that allow signing.
 	///
 	/// The returned [`Certificate`] may be serialized using [`Certificate::der`] and
 	/// [`Certificate::pem`].
-	pub fn signed_by(&self, issuer: &Issuer<impl SigningKey>) -> Result<Certificate, Error> {
+	pub fn signed_by(
+		self,
+		issuer: &impl AsRef<CertificateParams>,
+		issuer_key: &KeyPair,
+	) -> Result<Certificate, Error> {
+		let issuer = Issuer {
+			distinguished_name: &issuer.as_ref().distinguished_name,
+			key_identifier_method: &issuer.as_ref().key_identifier_method,
+			key_usages: &issuer.as_ref().key_usages,
+			key_pair: issuer_key,
+		};
+
+		let der = self
+			.params
+			.serialize_der_with_signer(&self.public_key, issuer)?;
+		let subject_public_key_info = yasna::construct_der(|writer| {
+			serialize_public_key_der(&self.public_key, writer);
+		});
 		Ok(Certificate {
-			der: self
-				.params
-				.serialize_der_with_signer(&self.public_key, issuer)?,
+			params: self.params,
+			subject_public_key_info,
+			der,
 		})
-	}
-}
-
-#[cfg(all(test, feature = "x509-parser"))]
-mod tests {
-	use crate::{CertificateParams, ExtendedKeyUsagePurpose, KeyPair, KeyUsagePurpose};
-	use x509_parser::certification_request::X509CertificationRequest;
-	use x509_parser::prelude::{FromDer, ParsedExtension};
-
-	#[test]
-	fn dont_write_sans_extension_if_no_sans_are_present() {
-		let mut params = CertificateParams::default();
-		params.key_usages.push(KeyUsagePurpose::DigitalSignature);
-		let key_pair = KeyPair::generate().unwrap();
-		let csr = params.serialize_request(&key_pair).unwrap();
-		let (_, parsed_csr) = X509CertificationRequest::from_der(csr.der()).unwrap();
-		assert!(!parsed_csr
-			.requested_extensions()
-			.unwrap()
-			.any(|ext| matches!(ext, ParsedExtension::SubjectAlternativeName(_))));
-	}
-
-	#[test]
-	fn write_extension_request_if_ekus_are_present() {
-		let mut params = CertificateParams::default();
-		params
-			.extended_key_usages
-			.push(ExtendedKeyUsagePurpose::ClientAuth);
-		let key_pair = KeyPair::generate().unwrap();
-		let csr = params.serialize_request(&key_pair).unwrap();
-		let (_, parsed_csr) = X509CertificationRequest::from_der(csr.der()).unwrap();
-		let requested_extensions = parsed_csr
-			.requested_extensions()
-			.unwrap()
-			.collect::<Vec<_>>();
-		assert!(matches!(
-			requested_extensions.first().unwrap(),
-			ParsedExtension::ExtendedKeyUsage(_)
-		));
 	}
 }

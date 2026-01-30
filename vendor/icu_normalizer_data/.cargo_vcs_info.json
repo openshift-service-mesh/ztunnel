@@ -1,6 +1,6 @@
 {
   "git": {
-    "sha1": "5e404744dd6c9dd7f86aac82586e3fa98ea75f7f"
+    "sha1": "044c9659f217ad1e197fb778701829e4f597646c"
   },
-  "path_in_vcs": "provider/data/normalizer"
+  "path_in_vcs": "provider/baked/normalizer"
 }

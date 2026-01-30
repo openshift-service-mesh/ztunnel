@@ -12,7 +12,7 @@
 
 include!("include.rs");
 
-// FIXME(#847): Make this test succeed on earlier Rust versions.
+// TODO(#847): Make this test succeed on earlier Rust versions.
 #[::rustversion::stable(1.59)]
 mod test {
     use super::*;

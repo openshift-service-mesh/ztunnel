@@ -183,9 +183,9 @@ impl<'a> Speculative for ParseBuffer<'a> {
                     fork_unexp.set(Unexpected::Chain(self_unexp));
 
                     // Ensure toplevel 'unexpected' tokens from the fork don't
-                    // propagate up the chain by replacing the root `unexpected`
+                    // bubble up the chain by replacing the root `unexpected`
                     // pointer, only 'unexpected' tokens from existing group
-                    // parsers should propagate.
+                    // parsers should bubble.
                     fork.unexpected
                         .set(Some(Rc::new(Cell::new(Unexpected::None))));
                 }

@@ -141,8 +141,7 @@
 #endif
 
 #if defined(OPENSSL_THREADS) && \
-    (!defined(OPENSSL_WINDOWS) || \
-        (defined(__MINGW32__) && !defined(__clang__)))
+    (!defined(OPENSSL_WINDOWS) || defined(__MINGW32__))
 #include <pthread.h>
 #define OPENSSL_PTHREADS
 #endif
@@ -704,15 +703,6 @@ OPENSSL_EXPORT void CRYPTO_STATIC_MUTEX_unlock_read(
 // CRYPTO_STATIC_MUTEX_unlock_write unlocks |lock| for writing.
 OPENSSL_EXPORT void CRYPTO_STATIC_MUTEX_unlock_write(
     struct CRYPTO_STATIC_MUTEX *lock);
-
-#if !defined(NDEBUG)
-// CRYPTO_STATIC_MUTEX_is_write_locked checks whether |lock| has an active write
-// lock. If it does, the function returns 1. If it doesn't, it returns 0. Returns -1
-// on any other error. Note that due to the concurrent nature of locks, the result
-// may be stale by the time it is used.
-OPENSSL_EXPORT int CRYPTO_STATIC_MUTEX_is_write_locked(
-    struct CRYPTO_STATIC_MUTEX *lock);
-#endif
 
 #if defined(__cplusplus)
 extern "C++" {

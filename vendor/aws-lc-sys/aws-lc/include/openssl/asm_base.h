@@ -59,13 +59,8 @@
 // all assembly entry points because it is easier, and allows BoringSSL's ABI
 // tester to call the assembly entry points via an indirect jump.
 #include <cet.h>
-#elif !defined(_CET_ENDBR)
-// If cet.h does not exist, manually define _CET_ENDBR to be the ENDBR64
-// instruction, with an explicit byte sequence for compilers/assemblers that
-// don't know about it. Note that it is safe to use ENDBR64 on all platforms,
-// since the encoding is by design interpreted as a NOP on all pre-CET x86_64
-// processors.
-#define _CET_ENDBR .byte 0xf3,0x0f,0x1e,0xfa
+#else
+#define _CET_ENDBR
 #endif
 
 #if defined(OPENSSL_ARM) || defined(OPENSSL_AARCH64)

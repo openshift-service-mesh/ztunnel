@@ -80,7 +80,7 @@ impl ops::BitOr for SizednessResult {
 
 impl ops::BitOrAssign for SizednessResult {
     fn bitor_assign(&mut self, rhs: SizednessResult) {
-        *self = self.join(rhs);
+        *self = self.join(rhs)
     }
 }
 
@@ -105,7 +105,7 @@ pub(crate) struct SizednessAnalysis<'ctx> {
     sized: HashMap<TypeId, SizednessResult>,
 }
 
-impl SizednessAnalysis<'_> {
+impl<'ctx> SizednessAnalysis<'ctx> {
     fn consider_edge(kind: EdgeKind) -> bool {
         // These are the only edges that can affect whether a type is
         // zero-sized or not.
@@ -127,7 +127,7 @@ impl SizednessAnalysis<'_> {
         id: TypeId,
         result: SizednessResult,
     ) -> ConstrainResult {
-        trace!("inserting {result:?} for {id:?}");
+        trace!("inserting {:?} for {:?}", result, id);
 
         if let SizednessResult::ZeroSized = result {
             return ConstrainResult::Same;
@@ -150,9 +150,9 @@ impl SizednessAnalysis<'_> {
     }
 
     fn forward(&mut self, from: TypeId, to: TypeId) -> ConstrainResult {
-        match self.sized.get(&from) {
+        match self.sized.get(&from).cloned() {
             None => ConstrainResult::Same,
-            Some(r) => self.insert(to, *r),
+            Some(r) => self.insert(to, r),
         }
     }
 }
@@ -191,14 +191,17 @@ impl<'ctx> MonotoneFramework for SizednessAnalysis<'ctx> {
         self.ctx
             .allowlisted_items()
             .iter()
+            .cloned()
             .filter_map(|id| id.as_type_id(self.ctx))
             .collect()
     }
 
     fn constrain(&mut self, id: TypeId) -> ConstrainResult {
-        trace!("constrain {id:?}");
+        trace!("constrain {:?}", id);
 
-        if let Some(SizednessResult::NonZeroSized) = self.sized.get(&id) {
+        if let Some(SizednessResult::NonZeroSized) =
+            self.sized.get(&id).cloned()
+        {
             trace!("    already know it is not zero-sized");
             return ConstrainResult::Same;
         }
@@ -319,7 +322,7 @@ impl<'ctx> MonotoneFramework for SizednessAnalysis<'ctx> {
     {
         if let Some(edges) = self.dependencies.get(&id) {
             for ty in edges {
-                trace!("enqueue {ty:?} into worklist");
+                trace!("enqueue {:?} into worklist", ty);
                 f(*ty);
             }
         }

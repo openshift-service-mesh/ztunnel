@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "dtor-proc-macro"
-version = "0.0.6"
+version = "0.0.5"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 build = false
 autolib = false

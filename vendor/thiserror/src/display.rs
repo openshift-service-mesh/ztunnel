@@ -60,7 +60,6 @@ mod placeholder {
     use super::{AsDisplay, Sealed};
     use core::fmt::{self, Display};
 
-    #[allow(dead_code)]
     pub struct Placeholder;
 
     impl<'a> AsDisplay<'a> for Placeholder {

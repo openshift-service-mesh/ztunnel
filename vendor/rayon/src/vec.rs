@@ -1,9 +1,9 @@
-//! Parallel iterator types for [vectors] (`Vec<T>`)
+//! Parallel iterator types for [vectors][std::vec] (`Vec<T>`)
 //!
 //! You will rarely need to interact with this module directly unless you need
 //! to name one of the iterator types.
 //!
-//! [vectors]: mod@std::vec
+//! [std::vec]: https://doc.rust-lang.org/stable/std/vec/
 
 use crate::iter::plumbing::*;
 use crate::iter::*;
@@ -35,7 +35,7 @@ impl<'data, T: Send + 'data> IntoParallelIterator for &'data mut Vec<T> {
 
 /// Parallel iterator that moves out of a vector.
 #[derive(Debug, Clone)]
-pub struct IntoIter<T> {
+pub struct IntoIter<T: Send> {
     vec: Vec<T>,
 }
 
@@ -45,15 +45,6 @@ impl<T: Send> IntoParallelIterator for Vec<T> {
 
     fn into_par_iter(self) -> Self::Iter {
         IntoIter { vec: self }
-    }
-}
-
-impl<T: Send> IntoParallelIterator for Box<[T]> {
-    type Item = T;
-    type Iter = IntoIter<T>;
-
-    fn into_par_iter(self) -> Self::Iter {
-        IntoIter { vec: self.into() }
     }
 }
 
@@ -183,7 +174,7 @@ impl<'data, T: Send> Drop for Drain<'data, T> {
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////
 
 pub(crate) struct DrainProducer<'data, T: Send> {
     slice: &'data mut [T],
@@ -240,7 +231,7 @@ impl<'data, T: 'data + Send> Drop for DrainProducer<'data, T> {
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////
 
 // like std::vec::Drain, without updating a source Vec
 pub(crate) struct SliceDrain<'data, T> {

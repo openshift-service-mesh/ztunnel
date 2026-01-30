@@ -7,15 +7,16 @@ use std::sync::atomic::{AtomicBool, Ordering};
 /// until the callback returns `false`.
 /// This struct is created by the [`take_any_while()`] method on [`ParallelIterator`]
 ///
-/// [`take_any_while()`]: ParallelIterator::take_any_while()
+/// [`take_any_while()`]: trait.ParallelIterator.html#method.take_any_while
+/// [`ParallelIterator`]: trait.ParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Clone)]
-pub struct TakeAnyWhile<I, P> {
+pub struct TakeAnyWhile<I: ParallelIterator, P> {
     base: I,
     predicate: P,
 }
 
-impl<I: fmt::Debug, P> fmt::Debug for TakeAnyWhile<I, P> {
+impl<I: ParallelIterator + fmt::Debug, P> fmt::Debug for TakeAnyWhile<I, P> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("TakeAnyWhile")
             .field("base", &self.base)
@@ -23,7 +24,10 @@ impl<I: fmt::Debug, P> fmt::Debug for TakeAnyWhile<I, P> {
     }
 }
 
-impl<I, P> TakeAnyWhile<I, P> {
+impl<I, P> TakeAnyWhile<I, P>
+where
+    I: ParallelIterator,
+{
     /// Creates a new `TakeAnyWhile` iterator.
     pub(super) fn new(base: I, predicate: P) -> Self {
         TakeAnyWhile { base, predicate }
@@ -50,8 +54,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Consumer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Consumer implementation
 
 struct TakeAnyWhileConsumer<'p, C, P> {
     base: C,

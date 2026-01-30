@@ -19,7 +19,7 @@ use std::{
     pin::Pin,
     process::ExitStatus,
     sync::atomic::{AtomicBool, Ordering::Relaxed},
-    task::{Context, Poll},
+    task::{ready, Context, Poll},
 };
 
 #[derive(Debug)]
@@ -117,21 +117,17 @@ where
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = Pin::into_inner(self);
 
-        match this.pidfd.registration().poll_read_ready(cx) {
-            Poll::Ready(Ok(evt)) => {
-                if let Some(exit_code) = this.inner.try_wait()? {
-                    return Poll::Ready(Ok(exit_code));
-                }
-                this.pidfd.registration().clear_readiness(evt);
+        match ready!(this.pidfd.poll_read_ready(cx)) {
+            Err(err) if is_rt_shutdown_err(&err) => {
+                this.pidfd.reregister(Interest::READABLE)?;
+                ready!(this.pidfd.poll_read_ready(cx))?
             }
-            Poll::Ready(Err(err)) if is_rt_shutdown_err(&err) => {}
-            Poll::Ready(Err(err)) => return Poll::Ready(Err(err)),
-            Poll::Pending => return Poll::Pending,
-        };
-
-        this.pidfd.reregister(Interest::READABLE)?;
-        cx.waker().wake_by_ref();
-        Poll::Pending
+            res => res?,
+        }
+        Poll::Ready(Ok(this
+            .inner
+            .try_wait()?
+            .expect("pidfd is ready to read, the process should have exited")))
     }
 }
 

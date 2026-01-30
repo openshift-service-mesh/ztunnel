@@ -108,8 +108,6 @@ s! {
         pub ss_size: size_t,
     }
 
-    // FIXME(1.0): This should not implement `PartialEq`
-    #[allow(unpredictable_function_pointer_comparisons)]
     pub struct sigaction {
         pub sa_sigaction: crate::sighandler_t,
         pub sa_mask: crate::sigset_t,
@@ -197,6 +195,7 @@ s! {
 }
 
 s_no_extra_traits! {
+    #[allow(missing_debug_implementations)]
     pub struct ucontext_t {
         pub __uc_flags: c_ulong,
         pub uc_link: *mut ucontext_t,
@@ -205,6 +204,7 @@ s_no_extra_traits! {
         pub uc_mcontext: mcontext_t,
     }
 
+    #[allow(missing_debug_implementations)]
     #[repr(align(16))]
     pub struct mcontext_t {
         pub __gregs: [c_ulong; 32],
@@ -217,16 +217,19 @@ s_no_extra_traits! {
         pub __q: __riscv_mc_q_ext_state,
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct __riscv_mc_f_ext_state {
         pub __f: [c_uint; 32],
         pub __fcsr: c_uint,
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct __riscv_mc_d_ext_state {
         pub __f: [c_ulonglong; 32],
         pub __fcsr: c_uint,
     }
 
+    #[allow(missing_debug_implementations)]
     #[repr(align(16))]
     pub struct __riscv_mc_q_ext_state {
         pub __f: [c_ulonglong; 64],

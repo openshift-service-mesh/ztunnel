@@ -915,11 +915,9 @@ int PKCS7_set_digest(PKCS7 *p7, const EVP_MD *md) {
         OPENSSL_PUT_ERROR(PKCS7, PKCS7_R_UNKNOWN_DIGEST_TYPE);
         return 0;
       }
-      if (p7->d.digest->digest_alg == NULL) {
-        OPENSSL_PUT_ERROR(PKCS7, ERR_R_ASN1_LIB);
-        return 0;
+      if (p7->d.digest->digest_alg) {
+        OPENSSL_free(p7->d.digest->digest_alg->parameter);
       }
-      OPENSSL_free(p7->d.digest->digest_alg->parameter);
       if ((p7->d.digest->digest_alg->parameter = ASN1_TYPE_new()) == NULL) {
         OPENSSL_PUT_ERROR(PKCS7, ERR_R_ASN1_LIB);
         return 0;
@@ -1467,7 +1465,7 @@ static STACK_OF(X509) *pkcs7_get0_certificates(const PKCS7 *p7) {
   }
 }
 
-STACK_OF(X509) *PKCS7_get0_signers(PKCS7 *p7, STACK_OF(X509) *certs,
+static STACK_OF(X509) *pkcs7_get0_signers(PKCS7 *p7, STACK_OF(X509) *certs,
                                           int flags) {
   GUARD_PTR(p7);
   STACK_OF(X509) *signers = NULL;
@@ -1671,7 +1669,7 @@ int PKCS7_verify(PKCS7 *p7, STACK_OF(X509) *certs, X509_STORE *store,
     goto out;
   }
 
-  if ((signers = PKCS7_get0_signers(p7, certs, flags)) == NULL) {
+  if ((signers = pkcs7_get0_signers(p7, certs, flags)) == NULL) {
     goto out;
   }
 

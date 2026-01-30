@@ -241,6 +241,7 @@ where
     I: ParallelIterator,
     OP: UnzipOp<I::Item>,
     CA: UnindexedConsumer<OP::Left>,
+    CA::Result: 'r,
 {
     base: I,
     op: OP,

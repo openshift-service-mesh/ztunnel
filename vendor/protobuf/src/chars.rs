@@ -1,11 +1,12 @@
 #![cfg(feature = "bytes")]
 
-use std::borrow::Borrow;
 use std::fmt;
 use std::ops::Deref;
 use std::str;
 
 use bytes::Bytes;
+
+use crate::clear::Clear;
 
 /// Thin wrapper around `Bytes` which guarantees that bytes are valid UTF-8 string.
 /// Should be API-compatible to `String`.
@@ -14,13 +15,8 @@ pub struct Chars(Bytes);
 
 impl Chars {
     /// New empty object.
-    pub const fn new() -> Chars {
+    pub fn new() -> Chars {
         Chars(Bytes::new())
-    }
-
-    /// Clear the buffer.
-    pub fn clear(&mut self) {
-        self.0.clear();
     }
 
     /// Try convert from `Bytes`
@@ -75,9 +71,9 @@ impl Deref for Chars {
     }
 }
 
-impl Borrow<str> for Chars {
-    fn borrow(&self) -> &str {
-        &*self
+impl Clear for Chars {
+    fn clear(&mut self) {
+        self.0.clear();
     }
 }
 
@@ -100,7 +96,6 @@ mod test {
     use super::Chars;
 
     #[test]
-    #[cfg_attr(miri, ignore)] // bytes violates SB, see https://github.com/tokio-rs/bytes/issues/522
     fn test_display_and_debug() {
         let s = "test";
         let string: String = s.into();

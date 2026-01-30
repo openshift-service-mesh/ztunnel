@@ -541,7 +541,7 @@ fn run_command(command: &mut Command) -> io::Result<Output> {
             None => format!("{:?} was terminated by signal", command),
         };
 
-        return Err(io::Error::other(err));
+        return Err(io::Error::new(io::ErrorKind::Other, err));
     }
 
     Ok(out)
@@ -701,11 +701,6 @@ fn main() {
     println!("cargo:rustc-link-lib=static=crypto");
     println!("cargo:rustc-link-lib=static=ssl");
 
-    if config.target_os == "windows" {
-        // Rust 1.87.0 compat - https://github.com/rust-lang/rust/pull/138233
-        println!("cargo:rustc-link-lib=advapi32");
-    }
-
     let include_path = config.env.include_path.clone().unwrap_or_else(|| {
         if let Some(bssl_path) = &config.env.path {
             return bssl_path.join("include");
@@ -724,12 +719,9 @@ fn main() {
     // bindgen 0.70 replaced the run-time layout tests with compile-time ones,
     // but they depend on std::mem::offset_of, stabilized in 1.77.
     let supports_layout_tests = autocfg::new().probe_rustc_version(1, 77);
-    let Ok(target_rust_version) = bindgen::RustTarget::stable(68, 0) else {
-        panic!("bindgen does not recognize target rust version");
-    };
 
     let mut builder = bindgen::Builder::default()
-        .rust_target(target_rust_version) // bindgen MSRV is 1.70, so this is enough
+        .rust_target(bindgen::RustTarget::Stable_1_68) // bindgen MSRV is 1.70, so this is enough
         .derive_copy(true)
         .derive_debug(true)
         .derive_default(true)

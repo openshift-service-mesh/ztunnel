@@ -1,10 +1,10 @@
 
 [package]
 name = "windows"
-version = "0.61.3"
+version = "0.58.0"
 authors = ["Microsoft"]
 edition = "2021"
-rust-version = "1.74"
+rust-version = "1.70"
 license = "MIT OR Apache-2.0"
 description = "Rust for Windows"
 repository = "https://github.com/microsoft/windows-rs"
@@ -13,14 +13,8 @@ readme = "readme.md"
 categories = ["os::windows-apis"]
 exclude = ["features.json"]
 
-[dependencies]
-windows-collections = { workspace = true }
-windows-core = { workspace = true }
-windows-future = { workspace = true }
-windows-link = { workspace = true }
-windows-numerics = { workspace = true }
-
 [lib]
+# This crate does not contain tests. All tests are in separate crates.
 test = false
 doctest = false
 
@@ -32,10 +26,15 @@ default-target = "x86_64-pc-windows-msvc"
 targets = []
 rustdoc-args = ["--cfg", "docsrs"]
 
+[dependencies]
+windows-core = { path = "../core", version = "0.58.0" }
+windows-targets = { path = "../targets", version = "0.52.6" }
+
 [features]
 default = ["std"]
 docs = []
 deprecated = []
+implement = []
 std = ["windows-core/std"]
 # generated features
 AI = ["Foundation"]
@@ -407,16 +406,13 @@ Win32_Data_Xml_MsXml = ["Win32_Data_Xml"]
 Win32_Data_Xml_XmlLite = ["Win32_Data_Xml"]
 Win32_Devices = ["Win32"]
 Win32_Devices_AllJoyn = ["Win32_Devices"]
-Win32_Devices_Beep = ["Win32_Devices"]
 Win32_Devices_BiometricFramework = ["Win32_Devices"]
 Win32_Devices_Bluetooth = ["Win32_Devices"]
-Win32_Devices_Cdrom = ["Win32_Devices"]
 Win32_Devices_Communication = ["Win32_Devices"]
 Win32_Devices_DeviceAccess = ["Win32_Devices"]
 Win32_Devices_DeviceAndDriverInstallation = ["Win32_Devices"]
 Win32_Devices_DeviceQuery = ["Win32_Devices"]
 Win32_Devices_Display = ["Win32_Devices"]
-Win32_Devices_Dvd = ["Win32_Devices"]
 Win32_Devices_Enumeration = ["Win32_Devices"]
 Win32_Devices_Enumeration_Pnp = ["Win32_Devices_Enumeration"]
 Win32_Devices_Fax = ["Win32_Devices"]
@@ -424,8 +420,6 @@ Win32_Devices_FunctionDiscovery = ["Win32_Devices"]
 Win32_Devices_Geolocation = ["Win32_Devices"]
 Win32_Devices_HumanInterfaceDevice = ["Win32_Devices"]
 Win32_Devices_ImageAcquisition = ["Win32_Devices"]
-Win32_Devices_Nfc = ["Win32_Devices"]
-Win32_Devices_Nfp = ["Win32_Devices"]
 Win32_Devices_PortableDevices = ["Win32_Devices"]
 Win32_Devices_Properties = ["Win32_Devices"]
 Win32_Devices_Pwm = ["Win32_Devices"]

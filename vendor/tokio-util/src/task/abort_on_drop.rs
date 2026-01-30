@@ -5,7 +5,6 @@ use tokio::task::{AbortHandle, JoinError, JoinHandle};
 
 use std::{
     future::Future,
-    mem::ManuallyDrop,
     pin::Pin,
     task::{Context, Poll},
 };
@@ -46,15 +45,6 @@ impl<T> AbortOnDropHandle<T> {
     /// equivalent to [`JoinHandle::abort_handle`].
     pub fn abort_handle(&self) -> AbortHandle {
         self.0.abort_handle()
-    }
-
-    /// Cancels aborting on drop and returns the original [`JoinHandle`].
-    pub fn detach(self) -> JoinHandle<T> {
-        // Avoid invoking `AbortOnDropHandle`'s `Drop` impl
-        let this = ManuallyDrop::new(self);
-        // SAFETY: `&this.0` is a reference, so it is certainly initialized, and
-        // it won't be double-dropped because it's in a `ManuallyDrop`
-        unsafe { std::ptr::read(&this.0) }
     }
 }
 

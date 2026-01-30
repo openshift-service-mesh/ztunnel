@@ -180,32 +180,10 @@ fn test_client_and_server(
     #[case] expected: CipherSuite,
 ) {
     // Run against a server using our default provider
-    let (port, certificate) = start_server(alg, None);
+    let (port, certificate) = start_server(alg);
     let provider = custom_provider(vec![suite], vec![group]);
     let actual_suite = test_with_provider(provider, port, vec![certificate]);
     assert_eq!(actual_suite, expected);
-}
-
-#[cfg(ossl350)]
-#[test]
-fn test_classical_completion() {
-    // Run against a server that only supports the classical component
-    let provider = custom_provider(
-        rustls_openssl::ALL_CIPHER_SUITES.to_vec(),
-        vec![rustls_openssl::kx_group::X25519],
-    );
-
-    let (port, certificate) = start_server(server::Alg::PKCS_ECDSA_P256_SHA256, Some(provider));
-    let provider = custom_provider(
-        vec![rustls_openssl::cipher_suite::TLS13_AES_256_GCM_SHA384],
-        // specifying both, with the hybrid first, causes rustls to reuse the classical component from the hybrid
-        vec![
-            rustls_openssl::kx_group::X25519MLKEM768,
-            rustls_openssl::kx_group::X25519,
-        ],
-    );
-    let actual_suite = test_with_provider(provider, port, vec![certificate]);
-    assert_eq!(actual_suite, CipherSuite::TLS13_AES_256_GCM_SHA384);
 }
 
 #[rstest]
@@ -291,7 +269,7 @@ fn test_to_internet(
 /// Test that the default provider returns the highest priority cipher suite
 #[test]
 fn test_default_client() {
-    let (port, certificate) = start_server(server::Alg::PKCS_RSA_SHA512, None);
+    let (port, certificate) = start_server(server::Alg::PKCS_RSA_SHA512);
     let actual_suite = test_with_provider(default_provider(), port, vec![certificate]);
     assert_eq!(actual_suite, CipherSuite::TLS13_AES_256_GCM_SHA384);
 }
@@ -442,10 +420,9 @@ fn sign_and_verify(
         .map(|(_k, v)| *v)
         .expect("verifying provider supports this scheme");
     assert!(!algs.is_empty());
-    assert!(
-        algs.iter()
-            .any(|alg| { alg.verify_signature(pub_key, data, &signature).is_ok() })
-    );
+    assert!(algs
+        .iter()
+        .any(|alg| { alg.verify_signature(pub_key, data, &signature).is_ok() }));
 }
 
 #[cfg(feature = "fips")]

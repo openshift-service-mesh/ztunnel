@@ -10,20 +10,15 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
 name = "protobuf-codegen"
-version = "3.7.2"
+version = "2.28.0"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
-build = false
-autolib = false
-autobins = false
-autoexamples = false
-autotests = false
-autobenches = false
 description = """
 Code generator for rust-protobuf.
 
-Includes a library to invoke programmatically (e. g. from `build.rs`) and `protoc-gen-rs` binary.
+Includes a library and `protoc-gen-rust` binary.
+
+See `protoc-rust` and `protobuf-codegen-pure` crates.
 """
 homepage = "https://github.com/stepancheg/rust-protobuf/"
 readme = "README.md"
@@ -34,32 +29,17 @@ repository = "https://github.com/stepancheg/rust-protobuf/"
 all-features = true
 
 [lib]
-name = "protobuf_codegen"
-path = "src/lib.rs"
 bench = false
 
 [[bin]]
-name = "protoc-gen-rs"
-path = "src/bin/protoc-gen-rs.rs"
+name = "protoc-gen-rust"
+path = "src/bin/protoc-gen-rust.rs"
 test = false
 
-[dependencies.anyhow]
-version = "1.0.53"
-
-[dependencies.once_cell]
-version = "1.10.0"
+[[bin]]
+name = "protobuf-bin-gen-rust-do-not-use"
+path = "src/bin/protobuf-bin-gen-rust-do-not-use.rs"
+test = false
 
 [dependencies.protobuf]
-version = "=3.7.2"
-
-[dependencies.protobuf-parse]
-version = "=3.7.2"
-
-[dependencies.regex]
-version = "1.5.5"
-
-[dependencies.tempfile]
-version = "3"
-
-[dependencies.thiserror]
-version = "1.0.30"
+version = "=2.28.0"

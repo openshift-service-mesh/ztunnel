@@ -5,11 +5,16 @@ impl windows_core::RuntimeType for IWiFiDirectAdvertisement {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectAdvertisement_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
+    #[cfg(feature = "Foundation_Collections")]
     pub InformationElements: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    #[cfg(not(feature = "Foundation_Collections"))]
+    InformationElements: usize,
+    #[cfg(feature = "Foundation_Collections")]
     pub SetInformationElements: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void) -> windows_core::HRESULT,
+    #[cfg(not(feature = "Foundation_Collections"))]
+    SetInformationElements: usize,
     pub ListenStateDiscoverability: unsafe extern "system" fn(*mut core::ffi::c_void, *mut WiFiDirectAdvertisementListenStateDiscoverability) -> windows_core::HRESULT,
     pub SetListenStateDiscoverability: unsafe extern "system" fn(*mut core::ffi::c_void, WiFiDirectAdvertisementListenStateDiscoverability) -> windows_core::HRESULT,
     pub IsAutonomousGroupOwnerEnabled: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
@@ -21,23 +26,24 @@ impl windows_core::RuntimeType for IWiFiDirectAdvertisement2 {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectAdvertisement2_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
+    #[cfg(feature = "Foundation_Collections")]
     pub SupportedConfigurationMethods: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    #[cfg(not(feature = "Foundation_Collections"))]
+    SupportedConfigurationMethods: usize,
 }
 windows_core::imp::define_interface!(IWiFiDirectAdvertisementPublisher, IWiFiDirectAdvertisementPublisher_Vtbl, 0xb35a2d1a_9b1f_45d9_925a_694d66df68ef);
 impl windows_core::RuntimeType for IWiFiDirectAdvertisementPublisher {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectAdvertisementPublisher_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Advertisement: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub Status: unsafe extern "system" fn(*mut core::ffi::c_void, *mut WiFiDirectAdvertisementPublisherStatus) -> windows_core::HRESULT,
-    pub StatusChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
-    pub RemoveStatusChanged: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
+    pub StatusChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub RemoveStatusChanged: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
     pub Start: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::HRESULT,
     pub Stop: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::HRESULT,
 }
@@ -46,7 +52,6 @@ impl windows_core::RuntimeType for IWiFiDirectAdvertisementPublisherStatusChange
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectAdvertisementPublisherStatusChangedEventArgs_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub Status: unsafe extern "system" fn(*mut core::ffi::c_void, *mut WiFiDirectAdvertisementPublisherStatus) -> windows_core::HRESULT,
@@ -57,18 +62,16 @@ impl windows_core::RuntimeType for IWiFiDirectConnectionListener {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectConnectionListener_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub ConnectionRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
-    pub RemoveConnectionRequested: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
+    pub ConnectionRequested: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub RemoveConnectionRequested: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(IWiFiDirectConnectionParameters, IWiFiDirectConnectionParameters_Vtbl, 0xb2e55405_5702_4b16_a02c_bbcd21ef6098);
 impl windows_core::RuntimeType for IWiFiDirectConnectionParameters {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectConnectionParameters_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub GroupOwnerIntent: unsafe extern "system" fn(*mut core::ffi::c_void, *mut i16) -> windows_core::HRESULT,
@@ -79,10 +82,12 @@ impl windows_core::RuntimeType for IWiFiDirectConnectionParameters2 {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectConnectionParameters2_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
+    #[cfg(feature = "Foundation_Collections")]
     pub PreferenceOrderedConfigurationMethods: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    #[cfg(not(feature = "Foundation_Collections"))]
+    PreferenceOrderedConfigurationMethods: usize,
     pub PreferredPairingProcedure: unsafe extern "system" fn(*mut core::ffi::c_void, *mut WiFiDirectPairingProcedure) -> windows_core::HRESULT,
     pub SetPreferredPairingProcedure: unsafe extern "system" fn(*mut core::ffi::c_void, WiFiDirectPairingProcedure) -> windows_core::HRESULT,
 }
@@ -91,7 +96,6 @@ impl windows_core::RuntimeType for IWiFiDirectConnectionParametersStatics {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectConnectionParametersStatics_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     #[cfg(feature = "Devices_Enumeration")]
@@ -104,7 +108,6 @@ impl windows_core::RuntimeType for IWiFiDirectConnectionRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectConnectionRequest_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     #[cfg(feature = "Devices_Enumeration")]
@@ -117,7 +120,6 @@ impl windows_core::RuntimeType for IWiFiDirectConnectionRequestedEventArgs {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectConnectionRequestedEventArgs_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub GetConnectionRequest: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
@@ -127,16 +129,15 @@ impl windows_core::RuntimeType for IWiFiDirectDevice {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectDevice_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub ConnectionStatus: unsafe extern "system" fn(*mut core::ffi::c_void, *mut WiFiDirectConnectionStatus) -> windows_core::HRESULT,
-    pub DeviceId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub ConnectionStatusChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
-    pub RemoveConnectionStatusChanged: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
-    #[cfg(feature = "Networking")]
+    pub DeviceId: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub ConnectionStatusChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub RemoveConnectionStatusChanged: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    #[cfg(all(feature = "Foundation_Collections", feature = "Networking"))]
     pub GetConnectionEndpointPairs: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Networking"))]
+    #[cfg(not(all(feature = "Foundation_Collections", feature = "Networking")))]
     GetConnectionEndpointPairs: usize,
 }
 windows_core::imp::define_interface!(IWiFiDirectDeviceStatics, IWiFiDirectDeviceStatics_Vtbl, 0xe86cb57c_3aac_4851_a792_482aaf931b04);
@@ -144,32 +145,26 @@ impl windows_core::RuntimeType for IWiFiDirectDeviceStatics {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectDeviceStatics_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub GetDeviceSelector: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub FromIdAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub GetDeviceSelector: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub FromIdAsync: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(IWiFiDirectDeviceStatics2, IWiFiDirectDeviceStatics2_Vtbl, 0x1a953e49_b103_437e_9226_ab67971342f9);
 impl windows_core::RuntimeType for IWiFiDirectDeviceStatics2 {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectDeviceStatics2_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    pub GetDeviceSelector: unsafe extern "system" fn(*mut core::ffi::c_void, WiFiDirectDeviceSelectorType, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(feature = "Devices_Enumeration")]
-    pub FromIdAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Devices_Enumeration"))]
-    FromIdAsync: usize,
+    pub GetDeviceSelector: unsafe extern "system" fn(*mut core::ffi::c_void, WiFiDirectDeviceSelectorType, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub FromIdAsync: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(IWiFiDirectInformationElement, IWiFiDirectInformationElement_Vtbl, 0xaffb72d6_76bb_497e_ac8b_dc72838bc309);
 impl windows_core::RuntimeType for IWiFiDirectInformationElement {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectInformationElement_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     #[cfg(feature = "Storage_Streams")]
@@ -196,16 +191,15 @@ impl windows_core::RuntimeType for IWiFiDirectInformationElementStatics {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectInformationElementStatics_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
-    #[cfg(feature = "Storage_Streams")]
+    #[cfg(all(feature = "Foundation_Collections", feature = "Storage_Streams"))]
     pub CreateFromBuffer: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Storage_Streams"))]
+    #[cfg(not(all(feature = "Foundation_Collections", feature = "Storage_Streams")))]
     CreateFromBuffer: usize,
-    #[cfg(feature = "Devices_Enumeration")]
+    #[cfg(all(feature = "Devices_Enumeration", feature = "Foundation_Collections"))]
     pub CreateFromDeviceInformation: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    #[cfg(not(feature = "Devices_Enumeration"))]
+    #[cfg(not(all(feature = "Devices_Enumeration", feature = "Foundation_Collections")))]
     CreateFromDeviceInformation: usize,
 }
 windows_core::imp::define_interface!(IWiFiDirectLegacySettings, IWiFiDirectLegacySettings_Vtbl, 0xa64fdbba_f2fd_4567_a91b_f5c2f5321057);
@@ -213,13 +207,12 @@ impl windows_core::RuntimeType for IWiFiDirectLegacySettings {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IWiFiDirectLegacySettings_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub IsEnabled: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
     pub SetIsEnabled: unsafe extern "system" fn(*mut core::ffi::c_void, bool) -> windows_core::HRESULT,
-    pub Ssid: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub SetSsid: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub Ssid: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub SetSsid: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
     #[cfg(feature = "Security_Credentials")]
     pub Passphrase: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     #[cfg(not(feature = "Security_Credentials"))]
@@ -230,20 +223,22 @@ pub struct IWiFiDirectLegacySettings_Vtbl {
     SetPassphrase: usize,
 }
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct WiFiDirectAdvertisement(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(WiFiDirectAdvertisement, windows_core::IUnknown, windows_core::IInspectable);
 impl WiFiDirectAdvertisement {
-    pub fn InformationElements(&self) -> windows_core::Result<windows_collections::IVector<WiFiDirectInformationElement>> {
+    #[cfg(feature = "Foundation_Collections")]
+    pub fn InformationElements(&self) -> windows_core::Result<super::super::Foundation::Collections::IVector<WiFiDirectInformationElement>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).InformationElements)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
+    #[cfg(feature = "Foundation_Collections")]
     pub fn SetInformationElements<P0>(&self, value: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<windows_collections::IVector<WiFiDirectInformationElement>>,
+        P0: windows_core::Param<super::super::Foundation::Collections::IVector<WiFiDirectInformationElement>>,
     {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).SetInformationElements)(windows_core::Interface::as_raw(this), value.param().abi()).ok() }
@@ -277,7 +272,8 @@ impl WiFiDirectAdvertisement {
             (windows_core::Interface::vtable(this).LegacySettings)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn SupportedConfigurationMethods(&self) -> windows_core::Result<windows_collections::IVector<WiFiDirectConfigurationMethod>> {
+    #[cfg(feature = "Foundation_Collections")]
+    pub fn SupportedConfigurationMethods(&self) -> windows_core::Result<super::super::Foundation::Collections::IVector<WiFiDirectConfigurationMethod>> {
         let this = &windows_core::Interface::cast::<IWiFiDirectAdvertisement2>(self)?;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -289,7 +285,7 @@ impl windows_core::RuntimeType for WiFiDirectAdvertisement {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWiFiDirectAdvertisement>();
 }
 unsafe impl windows_core::Interface for WiFiDirectAdvertisement {
-    type Vtable = <IWiFiDirectAdvertisement as windows_core::Interface>::Vtable;
+    type Vtable = IWiFiDirectAdvertisement_Vtbl;
     const IID: windows_core::GUID = <IWiFiDirectAdvertisement as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for WiFiDirectAdvertisement {
@@ -298,21 +294,7 @@ impl windows_core::RuntimeName for WiFiDirectAdvertisement {
 unsafe impl Send for WiFiDirectAdvertisement {}
 unsafe impl Sync for WiFiDirectAdvertisement {}
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct WiFiDirectAdvertisementListenStateDiscoverability(pub i32);
-impl WiFiDirectAdvertisementListenStateDiscoverability {
-    pub const None: Self = Self(0i32);
-    pub const Normal: Self = Self(1i32);
-    pub const Intensive: Self = Self(2i32);
-}
-impl windows_core::TypeKind for WiFiDirectAdvertisementListenStateDiscoverability {
-    type TypeKind = windows_core::CopyType;
-}
-impl windows_core::RuntimeType for WiFiDirectAdvertisementListenStateDiscoverability {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectAdvertisementListenStateDiscoverability;i4)");
-}
-#[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct WiFiDirectAdvertisementPublisher(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(WiFiDirectAdvertisementPublisher, windows_core::IUnknown, windows_core::IInspectable);
 impl WiFiDirectAdvertisementPublisher {
@@ -337,7 +319,7 @@ impl WiFiDirectAdvertisementPublisher {
             (windows_core::Interface::vtable(this).Status)(windows_core::Interface::as_raw(this), &mut result__).map(|| result__)
         }
     }
-    pub fn StatusChanged<P0>(&self, handler: P0) -> windows_core::Result<i64>
+    pub fn StatusChanged<P0>(&self, handler: P0) -> windows_core::Result<super::super::Foundation::EventRegistrationToken>
     where
         P0: windows_core::Param<super::super::Foundation::TypedEventHandler<WiFiDirectAdvertisementPublisher, WiFiDirectAdvertisementPublisherStatusChangedEventArgs>>,
     {
@@ -347,7 +329,7 @@ impl WiFiDirectAdvertisementPublisher {
             (windows_core::Interface::vtable(this).StatusChanged)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveStatusChanged(&self, token: i64) -> windows_core::Result<()> {
+    pub fn RemoveStatusChanged(&self, token: super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveStatusChanged)(windows_core::Interface::as_raw(this), token).ok() }
     }
@@ -364,7 +346,7 @@ impl windows_core::RuntimeType for WiFiDirectAdvertisementPublisher {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWiFiDirectAdvertisementPublisher>();
 }
 unsafe impl windows_core::Interface for WiFiDirectAdvertisementPublisher {
-    type Vtable = <IWiFiDirectAdvertisementPublisher as windows_core::Interface>::Vtable;
+    type Vtable = IWiFiDirectAdvertisementPublisher_Vtbl;
     const IID: windows_core::GUID = <IWiFiDirectAdvertisementPublisher as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for WiFiDirectAdvertisementPublisher {
@@ -373,22 +355,7 @@ impl windows_core::RuntimeName for WiFiDirectAdvertisementPublisher {
 unsafe impl Send for WiFiDirectAdvertisementPublisher {}
 unsafe impl Sync for WiFiDirectAdvertisementPublisher {}
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct WiFiDirectAdvertisementPublisherStatus(pub i32);
-impl WiFiDirectAdvertisementPublisherStatus {
-    pub const Created: Self = Self(0i32);
-    pub const Started: Self = Self(1i32);
-    pub const Stopped: Self = Self(2i32);
-    pub const Aborted: Self = Self(3i32);
-}
-impl windows_core::TypeKind for WiFiDirectAdvertisementPublisherStatus {
-    type TypeKind = windows_core::CopyType;
-}
-impl windows_core::RuntimeType for WiFiDirectAdvertisementPublisherStatus {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectAdvertisementPublisherStatus;i4)");
-}
-#[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct WiFiDirectAdvertisementPublisherStatusChangedEventArgs(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(WiFiDirectAdvertisementPublisherStatusChangedEventArgs, windows_core::IUnknown, windows_core::IInspectable);
 impl WiFiDirectAdvertisementPublisherStatusChangedEventArgs {
@@ -411,7 +378,7 @@ impl windows_core::RuntimeType for WiFiDirectAdvertisementPublisherStatusChanged
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWiFiDirectAdvertisementPublisherStatusChangedEventArgs>();
 }
 unsafe impl windows_core::Interface for WiFiDirectAdvertisementPublisherStatusChangedEventArgs {
-    type Vtable = <IWiFiDirectAdvertisementPublisherStatusChangedEventArgs as windows_core::Interface>::Vtable;
+    type Vtable = IWiFiDirectAdvertisementPublisherStatusChangedEventArgs_Vtbl;
     const IID: windows_core::GUID = <IWiFiDirectAdvertisementPublisherStatusChangedEventArgs as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for WiFiDirectAdvertisementPublisherStatusChangedEventArgs {
@@ -420,21 +387,7 @@ impl windows_core::RuntimeName for WiFiDirectAdvertisementPublisherStatusChanged
 unsafe impl Send for WiFiDirectAdvertisementPublisherStatusChangedEventArgs {}
 unsafe impl Sync for WiFiDirectAdvertisementPublisherStatusChangedEventArgs {}
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct WiFiDirectConfigurationMethod(pub i32);
-impl WiFiDirectConfigurationMethod {
-    pub const ProvidePin: Self = Self(0i32);
-    pub const DisplayPin: Self = Self(1i32);
-    pub const PushButton: Self = Self(2i32);
-}
-impl windows_core::TypeKind for WiFiDirectConfigurationMethod {
-    type TypeKind = windows_core::CopyType;
-}
-impl windows_core::RuntimeType for WiFiDirectConfigurationMethod {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectConfigurationMethod;i4)");
-}
-#[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct WiFiDirectConnectionListener(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(WiFiDirectConnectionListener, windows_core::IUnknown, windows_core::IInspectable);
 impl WiFiDirectConnectionListener {
@@ -445,7 +398,7 @@ impl WiFiDirectConnectionListener {
         static SHARED: windows_core::imp::FactoryCache<WiFiDirectConnectionListener, windows_core::imp::IGenericFactory> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }
-    pub fn ConnectionRequested<P0>(&self, handler: P0) -> windows_core::Result<i64>
+    pub fn ConnectionRequested<P0>(&self, handler: P0) -> windows_core::Result<super::super::Foundation::EventRegistrationToken>
     where
         P0: windows_core::Param<super::super::Foundation::TypedEventHandler<WiFiDirectConnectionListener, WiFiDirectConnectionRequestedEventArgs>>,
     {
@@ -455,7 +408,7 @@ impl WiFiDirectConnectionListener {
             (windows_core::Interface::vtable(this).ConnectionRequested)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveConnectionRequested(&self, token: i64) -> windows_core::Result<()> {
+    pub fn RemoveConnectionRequested(&self, token: super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveConnectionRequested)(windows_core::Interface::as_raw(this), token).ok() }
     }
@@ -464,7 +417,7 @@ impl windows_core::RuntimeType for WiFiDirectConnectionListener {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWiFiDirectConnectionListener>();
 }
 unsafe impl windows_core::Interface for WiFiDirectConnectionListener {
-    type Vtable = <IWiFiDirectConnectionListener as windows_core::Interface>::Vtable;
+    type Vtable = IWiFiDirectConnectionListener_Vtbl;
     const IID: windows_core::GUID = <IWiFiDirectConnectionListener as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for WiFiDirectConnectionListener {
@@ -472,15 +425,12 @@ impl windows_core::RuntimeName for WiFiDirectConnectionListener {
 }
 unsafe impl Send for WiFiDirectConnectionListener {}
 unsafe impl Sync for WiFiDirectConnectionListener {}
-#[cfg(feature = "Devices_Enumeration")]
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct WiFiDirectConnectionParameters(windows_core::IUnknown);
-#[cfg(feature = "Devices_Enumeration")]
 windows_core::imp::interface_hierarchy!(WiFiDirectConnectionParameters, windows_core::IUnknown, windows_core::IInspectable);
 #[cfg(feature = "Devices_Enumeration")]
 windows_core::imp::required_hierarchy!(WiFiDirectConnectionParameters, super::Enumeration::IDevicePairingSettings);
-#[cfg(feature = "Devices_Enumeration")]
 impl WiFiDirectConnectionParameters {
     pub fn new() -> windows_core::Result<Self> {
         Self::IActivationFactory(|f| f.ActivateInstance::<Self>())
@@ -500,7 +450,8 @@ impl WiFiDirectConnectionParameters {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).SetGroupOwnerIntent)(windows_core::Interface::as_raw(this), value).ok() }
     }
-    pub fn PreferenceOrderedConfigurationMethods(&self) -> windows_core::Result<windows_collections::IVector<WiFiDirectConfigurationMethod>> {
+    #[cfg(feature = "Foundation_Collections")]
+    pub fn PreferenceOrderedConfigurationMethods(&self) -> windows_core::Result<super::super::Foundation::Collections::IVector<WiFiDirectConfigurationMethod>> {
         let this = &windows_core::Interface::cast::<IWiFiDirectConnectionParameters2>(self)?;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -518,36 +469,33 @@ impl WiFiDirectConnectionParameters {
         let this = &windows_core::Interface::cast::<IWiFiDirectConnectionParameters2>(self)?;
         unsafe { (windows_core::Interface::vtable(this).SetPreferredPairingProcedure)(windows_core::Interface::as_raw(this), value).ok() }
     }
+    #[cfg(feature = "Devices_Enumeration")]
     pub fn GetDevicePairingKinds(configurationmethod: WiFiDirectConfigurationMethod) -> windows_core::Result<super::Enumeration::DevicePairingKinds> {
         Self::IWiFiDirectConnectionParametersStatics(|this| unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).GetDevicePairingKinds)(windows_core::Interface::as_raw(this), configurationmethod, &mut result__).map(|| result__)
         })
     }
-    fn IWiFiDirectConnectionParametersStatics<R, F: FnOnce(&IWiFiDirectConnectionParametersStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    #[doc(hidden)]
+    pub fn IWiFiDirectConnectionParametersStatics<R, F: FnOnce(&IWiFiDirectConnectionParametersStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<WiFiDirectConnectionParameters, IWiFiDirectConnectionParametersStatics> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }
 }
-#[cfg(feature = "Devices_Enumeration")]
 impl windows_core::RuntimeType for WiFiDirectConnectionParameters {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWiFiDirectConnectionParameters>();
 }
-#[cfg(feature = "Devices_Enumeration")]
 unsafe impl windows_core::Interface for WiFiDirectConnectionParameters {
-    type Vtable = <IWiFiDirectConnectionParameters as windows_core::Interface>::Vtable;
+    type Vtable = IWiFiDirectConnectionParameters_Vtbl;
     const IID: windows_core::GUID = <IWiFiDirectConnectionParameters as windows_core::Interface>::IID;
 }
-#[cfg(feature = "Devices_Enumeration")]
 impl windows_core::RuntimeName for WiFiDirectConnectionParameters {
     const NAME: &'static str = "Windows.Devices.WiFiDirect.WiFiDirectConnectionParameters";
 }
-#[cfg(feature = "Devices_Enumeration")]
 unsafe impl Send for WiFiDirectConnectionParameters {}
-#[cfg(feature = "Devices_Enumeration")]
 unsafe impl Sync for WiFiDirectConnectionParameters {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct WiFiDirectConnectionRequest(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(WiFiDirectConnectionRequest, windows_core::IUnknown, windows_core::IInspectable);
 windows_core::imp::required_hierarchy!(WiFiDirectConnectionRequest, super::super::Foundation::IClosable);
@@ -569,7 +517,7 @@ impl windows_core::RuntimeType for WiFiDirectConnectionRequest {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWiFiDirectConnectionRequest>();
 }
 unsafe impl windows_core::Interface for WiFiDirectConnectionRequest {
-    type Vtable = <IWiFiDirectConnectionRequest as windows_core::Interface>::Vtable;
+    type Vtable = IWiFiDirectConnectionRequest_Vtbl;
     const IID: windows_core::GUID = <IWiFiDirectConnectionRequest as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for WiFiDirectConnectionRequest {
@@ -578,7 +526,7 @@ impl windows_core::RuntimeName for WiFiDirectConnectionRequest {
 unsafe impl Send for WiFiDirectConnectionRequest {}
 unsafe impl Sync for WiFiDirectConnectionRequest {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct WiFiDirectConnectionRequestedEventArgs(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(WiFiDirectConnectionRequestedEventArgs, windows_core::IUnknown, windows_core::IInspectable);
 impl WiFiDirectConnectionRequestedEventArgs {
@@ -594,7 +542,7 @@ impl windows_core::RuntimeType for WiFiDirectConnectionRequestedEventArgs {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWiFiDirectConnectionRequestedEventArgs>();
 }
 unsafe impl windows_core::Interface for WiFiDirectConnectionRequestedEventArgs {
-    type Vtable = <IWiFiDirectConnectionRequestedEventArgs as windows_core::Interface>::Vtable;
+    type Vtable = IWiFiDirectConnectionRequestedEventArgs_Vtbl;
     const IID: windows_core::GUID = <IWiFiDirectConnectionRequestedEventArgs as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for WiFiDirectConnectionRequestedEventArgs {
@@ -603,20 +551,7 @@ impl windows_core::RuntimeName for WiFiDirectConnectionRequestedEventArgs {
 unsafe impl Send for WiFiDirectConnectionRequestedEventArgs {}
 unsafe impl Sync for WiFiDirectConnectionRequestedEventArgs {}
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct WiFiDirectConnectionStatus(pub i32);
-impl WiFiDirectConnectionStatus {
-    pub const Disconnected: Self = Self(0i32);
-    pub const Connected: Self = Self(1i32);
-}
-impl windows_core::TypeKind for WiFiDirectConnectionStatus {
-    type TypeKind = windows_core::CopyType;
-}
-impl windows_core::RuntimeType for WiFiDirectConnectionStatus {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectConnectionStatus;i4)");
-}
-#[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct WiFiDirectDevice(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(WiFiDirectDevice, windows_core::IUnknown, windows_core::IInspectable);
 windows_core::imp::required_hierarchy!(WiFiDirectDevice, super::super::Foundation::IClosable);
@@ -636,10 +571,10 @@ impl WiFiDirectDevice {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).DeviceId)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).DeviceId)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
-    pub fn ConnectionStatusChanged<P0>(&self, handler: P0) -> windows_core::Result<i64>
+    pub fn ConnectionStatusChanged<P0>(&self, handler: P0) -> windows_core::Result<super::super::Foundation::EventRegistrationToken>
     where
         P0: windows_core::Param<super::super::Foundation::TypedEventHandler<WiFiDirectDevice, windows_core::IInspectable>>,
     {
@@ -649,12 +584,12 @@ impl WiFiDirectDevice {
             (windows_core::Interface::vtable(this).ConnectionStatusChanged)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveConnectionStatusChanged(&self, token: i64) -> windows_core::Result<()> {
+    pub fn RemoveConnectionStatusChanged(&self, token: super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveConnectionStatusChanged)(windows_core::Interface::as_raw(this), token).ok() }
     }
-    #[cfg(feature = "Networking")]
-    pub fn GetConnectionEndpointPairs(&self) -> windows_core::Result<windows_collections::IVectorView<super::super::Networking::EndpointPair>> {
+    #[cfg(all(feature = "Foundation_Collections", feature = "Networking"))]
+    pub fn GetConnectionEndpointPairs(&self) -> windows_core::Result<super::super::Foundation::Collections::IVectorView<super::super::Networking::EndpointPair>> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
@@ -664,10 +599,10 @@ impl WiFiDirectDevice {
     pub fn GetDeviceSelector() -> windows_core::Result<windows_core::HSTRING> {
         Self::IWiFiDirectDeviceStatics(|this| unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).GetDeviceSelector)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).GetDeviceSelector)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    pub fn FromIdAsync(deviceid: &windows_core::HSTRING) -> windows_core::Result<windows_future::IAsyncOperation<WiFiDirectDevice>> {
+    pub fn FromIdAsync(deviceid: &windows_core::HSTRING) -> windows_core::Result<super::super::Foundation::IAsyncOperation<WiFiDirectDevice>> {
         Self::IWiFiDirectDeviceStatics(|this| unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).FromIdAsync)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(deviceid), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
@@ -676,24 +611,25 @@ impl WiFiDirectDevice {
     pub fn GetDeviceSelector2(r#type: WiFiDirectDeviceSelectorType) -> windows_core::Result<windows_core::HSTRING> {
         Self::IWiFiDirectDeviceStatics2(|this| unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).GetDeviceSelector)(windows_core::Interface::as_raw(this), r#type, &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).GetDeviceSelector)(windows_core::Interface::as_raw(this), r#type, &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    #[cfg(feature = "Devices_Enumeration")]
-    pub fn FromIdAsync2<P1>(deviceid: &windows_core::HSTRING, connectionparameters: P1) -> windows_core::Result<windows_future::IAsyncOperation<WiFiDirectDevice>>
+    pub fn FromIdAsync2<P0>(deviceid: &windows_core::HSTRING, connectionparameters: P0) -> windows_core::Result<super::super::Foundation::IAsyncOperation<WiFiDirectDevice>>
     where
-        P1: windows_core::Param<WiFiDirectConnectionParameters>,
+        P0: windows_core::Param<WiFiDirectConnectionParameters>,
     {
         Self::IWiFiDirectDeviceStatics2(|this| unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).FromIdAsync)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(deviceid), connectionparameters.param().abi(), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    fn IWiFiDirectDeviceStatics<R, F: FnOnce(&IWiFiDirectDeviceStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    #[doc(hidden)]
+    pub fn IWiFiDirectDeviceStatics<R, F: FnOnce(&IWiFiDirectDeviceStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<WiFiDirectDevice, IWiFiDirectDeviceStatics> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }
-    fn IWiFiDirectDeviceStatics2<R, F: FnOnce(&IWiFiDirectDeviceStatics2) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    #[doc(hidden)]
+    pub fn IWiFiDirectDeviceStatics2<R, F: FnOnce(&IWiFiDirectDeviceStatics2) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<WiFiDirectDevice, IWiFiDirectDeviceStatics2> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }
@@ -702,7 +638,7 @@ impl windows_core::RuntimeType for WiFiDirectDevice {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWiFiDirectDevice>();
 }
 unsafe impl windows_core::Interface for WiFiDirectDevice {
-    type Vtable = <IWiFiDirectDevice as windows_core::Interface>::Vtable;
+    type Vtable = IWiFiDirectDevice_Vtbl;
     const IID: windows_core::GUID = <IWiFiDirectDevice as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for WiFiDirectDevice {
@@ -711,34 +647,7 @@ impl windows_core::RuntimeName for WiFiDirectDevice {
 unsafe impl Send for WiFiDirectDevice {}
 unsafe impl Sync for WiFiDirectDevice {}
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct WiFiDirectDeviceSelectorType(pub i32);
-impl WiFiDirectDeviceSelectorType {
-    pub const DeviceInterface: Self = Self(0i32);
-    pub const AssociationEndpoint: Self = Self(1i32);
-}
-impl windows_core::TypeKind for WiFiDirectDeviceSelectorType {
-    type TypeKind = windows_core::CopyType;
-}
-impl windows_core::RuntimeType for WiFiDirectDeviceSelectorType {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectDeviceSelectorType;i4)");
-}
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct WiFiDirectError(pub i32);
-impl WiFiDirectError {
-    pub const Success: Self = Self(0i32);
-    pub const RadioNotAvailable: Self = Self(1i32);
-    pub const ResourceInUse: Self = Self(2i32);
-}
-impl windows_core::TypeKind for WiFiDirectError {
-    type TypeKind = windows_core::CopyType;
-}
-impl windows_core::RuntimeType for WiFiDirectError {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectError;i4)");
-}
-#[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct WiFiDirectInformationElement(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(WiFiDirectInformationElement, windows_core::IUnknown, windows_core::IInspectable);
 impl WiFiDirectInformationElement {
@@ -792,8 +701,8 @@ impl WiFiDirectInformationElement {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).SetValue)(windows_core::Interface::as_raw(this), value.param().abi()).ok() }
     }
-    #[cfg(feature = "Storage_Streams")]
-    pub fn CreateFromBuffer<P0>(buffer: P0) -> windows_core::Result<windows_collections::IVector<WiFiDirectInformationElement>>
+    #[cfg(all(feature = "Foundation_Collections", feature = "Storage_Streams"))]
+    pub fn CreateFromBuffer<P0>(buffer: P0) -> windows_core::Result<super::super::Foundation::Collections::IVector<WiFiDirectInformationElement>>
     where
         P0: windows_core::Param<super::super::Storage::Streams::IBuffer>,
     {
@@ -802,8 +711,8 @@ impl WiFiDirectInformationElement {
             (windows_core::Interface::vtable(this).CreateFromBuffer)(windows_core::Interface::as_raw(this), buffer.param().abi(), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    #[cfg(feature = "Devices_Enumeration")]
-    pub fn CreateFromDeviceInformation<P0>(deviceinformation: P0) -> windows_core::Result<windows_collections::IVector<WiFiDirectInformationElement>>
+    #[cfg(all(feature = "Devices_Enumeration", feature = "Foundation_Collections"))]
+    pub fn CreateFromDeviceInformation<P0>(deviceinformation: P0) -> windows_core::Result<super::super::Foundation::Collections::IVector<WiFiDirectInformationElement>>
     where
         P0: windows_core::Param<super::Enumeration::DeviceInformation>,
     {
@@ -812,7 +721,8 @@ impl WiFiDirectInformationElement {
             (windows_core::Interface::vtable(this).CreateFromDeviceInformation)(windows_core::Interface::as_raw(this), deviceinformation.param().abi(), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    fn IWiFiDirectInformationElementStatics<R, F: FnOnce(&IWiFiDirectInformationElementStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    #[doc(hidden)]
+    pub fn IWiFiDirectInformationElementStatics<R, F: FnOnce(&IWiFiDirectInformationElementStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<WiFiDirectInformationElement, IWiFiDirectInformationElementStatics> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }
@@ -821,7 +731,7 @@ impl windows_core::RuntimeType for WiFiDirectInformationElement {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWiFiDirectInformationElement>();
 }
 unsafe impl windows_core::Interface for WiFiDirectInformationElement {
-    type Vtable = <IWiFiDirectInformationElement as windows_core::Interface>::Vtable;
+    type Vtable = IWiFiDirectInformationElement_Vtbl;
     const IID: windows_core::GUID = <IWiFiDirectInformationElement as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for WiFiDirectInformationElement {
@@ -830,7 +740,7 @@ impl windows_core::RuntimeName for WiFiDirectInformationElement {
 unsafe impl Send for WiFiDirectInformationElement {}
 unsafe impl Sync for WiFiDirectInformationElement {}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct WiFiDirectLegacySettings(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(WiFiDirectLegacySettings, windows_core::IUnknown, windows_core::IInspectable);
 impl WiFiDirectLegacySettings {
@@ -849,7 +759,7 @@ impl WiFiDirectLegacySettings {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Ssid)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).Ssid)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
     pub fn SetSsid(&self, value: &windows_core::HSTRING) -> windows_core::Result<()> {
@@ -877,7 +787,7 @@ impl windows_core::RuntimeType for WiFiDirectLegacySettings {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IWiFiDirectLegacySettings>();
 }
 unsafe impl windows_core::Interface for WiFiDirectLegacySettings {
-    type Vtable = <IWiFiDirectLegacySettings as windows_core::Interface>::Vtable;
+    type Vtable = IWiFiDirectLegacySettings_Vtbl;
     const IID: windows_core::GUID = <IWiFiDirectLegacySettings as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for WiFiDirectLegacySettings {
@@ -886,7 +796,120 @@ impl windows_core::RuntimeName for WiFiDirectLegacySettings {
 unsafe impl Send for WiFiDirectLegacySettings {}
 unsafe impl Sync for WiFiDirectLegacySettings {}
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct WiFiDirectAdvertisementListenStateDiscoverability(pub i32);
+impl WiFiDirectAdvertisementListenStateDiscoverability {
+    pub const None: Self = Self(0i32);
+    pub const Normal: Self = Self(1i32);
+    pub const Intensive: Self = Self(2i32);
+}
+impl windows_core::TypeKind for WiFiDirectAdvertisementListenStateDiscoverability {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for WiFiDirectAdvertisementListenStateDiscoverability {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("WiFiDirectAdvertisementListenStateDiscoverability").field(&self.0).finish()
+    }
+}
+impl windows_core::RuntimeType for WiFiDirectAdvertisementListenStateDiscoverability {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectAdvertisementListenStateDiscoverability;i4)");
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct WiFiDirectAdvertisementPublisherStatus(pub i32);
+impl WiFiDirectAdvertisementPublisherStatus {
+    pub const Created: Self = Self(0i32);
+    pub const Started: Self = Self(1i32);
+    pub const Stopped: Self = Self(2i32);
+    pub const Aborted: Self = Self(3i32);
+}
+impl windows_core::TypeKind for WiFiDirectAdvertisementPublisherStatus {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for WiFiDirectAdvertisementPublisherStatus {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("WiFiDirectAdvertisementPublisherStatus").field(&self.0).finish()
+    }
+}
+impl windows_core::RuntimeType for WiFiDirectAdvertisementPublisherStatus {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectAdvertisementPublisherStatus;i4)");
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct WiFiDirectConfigurationMethod(pub i32);
+impl WiFiDirectConfigurationMethod {
+    pub const ProvidePin: Self = Self(0i32);
+    pub const DisplayPin: Self = Self(1i32);
+    pub const PushButton: Self = Self(2i32);
+}
+impl windows_core::TypeKind for WiFiDirectConfigurationMethod {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for WiFiDirectConfigurationMethod {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("WiFiDirectConfigurationMethod").field(&self.0).finish()
+    }
+}
+impl windows_core::RuntimeType for WiFiDirectConfigurationMethod {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectConfigurationMethod;i4)");
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct WiFiDirectConnectionStatus(pub i32);
+impl WiFiDirectConnectionStatus {
+    pub const Disconnected: Self = Self(0i32);
+    pub const Connected: Self = Self(1i32);
+}
+impl windows_core::TypeKind for WiFiDirectConnectionStatus {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for WiFiDirectConnectionStatus {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("WiFiDirectConnectionStatus").field(&self.0).finish()
+    }
+}
+impl windows_core::RuntimeType for WiFiDirectConnectionStatus {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectConnectionStatus;i4)");
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct WiFiDirectDeviceSelectorType(pub i32);
+impl WiFiDirectDeviceSelectorType {
+    pub const DeviceInterface: Self = Self(0i32);
+    pub const AssociationEndpoint: Self = Self(1i32);
+}
+impl windows_core::TypeKind for WiFiDirectDeviceSelectorType {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for WiFiDirectDeviceSelectorType {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("WiFiDirectDeviceSelectorType").field(&self.0).finish()
+    }
+}
+impl windows_core::RuntimeType for WiFiDirectDeviceSelectorType {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectDeviceSelectorType;i4)");
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct WiFiDirectError(pub i32);
+impl WiFiDirectError {
+    pub const Success: Self = Self(0i32);
+    pub const RadioNotAvailable: Self = Self(1i32);
+    pub const ResourceInUse: Self = Self(2i32);
+}
+impl windows_core::TypeKind for WiFiDirectError {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for WiFiDirectError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("WiFiDirectError").field(&self.0).finish()
+    }
+}
+impl windows_core::RuntimeType for WiFiDirectError {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectError;i4)");
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
 pub struct WiFiDirectPairingProcedure(pub i32);
 impl WiFiDirectPairingProcedure {
     pub const GroupOwnerNegotiation: Self = Self(0i32);
@@ -894,6 +917,11 @@ impl WiFiDirectPairingProcedure {
 }
 impl windows_core::TypeKind for WiFiDirectPairingProcedure {
     type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for WiFiDirectPairingProcedure {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("WiFiDirectPairingProcedure").field(&self.0).finish()
+    }
 }
 impl windows_core::RuntimeType for WiFiDirectPairingProcedure {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.WiFiDirect.WiFiDirectPairingProcedure;i4)");

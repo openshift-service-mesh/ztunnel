@@ -2,12 +2,10 @@
 // in `mod libs_dl_iterate_phdr` (e.g. linux, freebsd, ...); it may be more
 // general purpose, but it hasn't been tested elsewhere.
 
-use super::mystd::ffi::OsString;
 use super::mystd::fs::File;
 use super::mystd::io::Read;
-use alloc::string::String;
-use alloc::vec::Vec;
-use core::str::FromStr;
+use super::mystd::str::FromStr;
+use super::{OsString, String, Vec};
 
 #[derive(PartialEq, Eq, Debug)]
 pub(super) struct MapsEntry {
@@ -22,7 +20,7 @@ pub(super) struct MapsEntry {
     /// p = private (copy on write)
     perms: [char; 4],
     /// Offset into the file (or "whatever").
-    offset: u64,
+    offset: usize,
     /// device (major, minor)
     dev: (usize, usize),
     /// inode on the device. 0 indicates that no inode is associated with the memory region (e.g. uninitalized data aka BSS).
@@ -78,11 +76,6 @@ impl MapsEntry {
     pub(super) fn ip_matches(&self, ip: usize) -> bool {
         self.address.0 <= ip && ip < self.address.1
     }
-
-    #[cfg(target_os = "android")]
-    pub(super) fn offset(&self) -> u64 {
-        self.offset
-    }
 }
 
 impl FromStr for MapsEntry {
@@ -125,8 +118,6 @@ impl FromStr for MapsEntry {
         let pathname_str = s.trim_start();
 
         let hex = |s| usize::from_str_radix(s, 16).map_err(|_| "Couldn't parse hex number");
-        let hex64 = |s| u64::from_str_radix(s, 16).map_err(|_| "Couldn't parse hex number");
-
         let address = if let Some((start, limit)) = range_str.split_once('-') {
             (hex(start)?, hex(limit)?)
         } else {
@@ -141,7 +132,7 @@ impl FromStr for MapsEntry {
             }
             perms
         };
-        let offset = hex64(offset_str)?;
+        let offset = hex(offset_str)?;
         let dev = if let Some((major, minor)) = dev_str.split_once(':') {
             (hex(major)?, hex(minor)?)
         } else {

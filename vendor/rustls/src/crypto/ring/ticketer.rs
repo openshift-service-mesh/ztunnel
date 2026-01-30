@@ -31,6 +31,21 @@ impl Ticketer {
             make_ticket_generator,
         )?))
     }
+
+    /// Make the recommended `Ticketer`.  This produces tickets
+    /// with a 12 hour life and randomly generated keys.
+    ///
+    /// The encryption mechanism used is Chacha20Poly1305.
+    #[cfg(not(feature = "std"))]
+    pub fn new<M: crate::lock::MakeMutex>(
+        time_provider: &'static dyn TimeProvider,
+    ) -> Result<Arc<dyn ProducesTickets>, Error> {
+        Ok(Arc::new(crate::ticketer::TicketSwitcher::new::<M>(
+            6 * 60 * 60,
+            make_ticket_generator,
+            time_provider,
+        )?))
+    }
 }
 
 fn make_ticket_generator() -> Result<Box<dyn ProducesTickets>, GetRandomFailed> {
@@ -355,7 +370,7 @@ mod tests {
         let t = make_ticket_generator().unwrap();
 
         let expect = format!("AeadTicketer {{ alg: {TICKETER_AEAD:?}, lifetime: 43200 }}");
-        assert_eq!(format!("{t:?}"), expect);
+        assert_eq!(format!("{:?}", t), expect);
         assert!(t.enabled());
         assert_eq!(t.lifetime(), 43200);
     }

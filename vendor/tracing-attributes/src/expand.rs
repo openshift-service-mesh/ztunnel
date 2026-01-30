@@ -1,7 +1,6 @@
 use std::iter;
 
 use proc_macro2::TokenStream;
-use quote::TokenStreamExt;
 use quote::{quote, quote_spanned, ToTokens};
 use syn::visit_mut::VisitMut;
 use syn::{
@@ -30,7 +29,6 @@ pub(crate) fn gen_function<'a, B: ToTokens + 'a>(
         inner_attrs,
         vis,
         sig,
-        brace_token,
         block,
     } = input;
 
@@ -46,12 +44,9 @@ pub(crate) fn gen_function<'a, B: ToTokens + 'a>(
             syn::Generics {
                 params: gen_params,
                 where_clause,
-                lt_token,
-                gt_token,
+                ..
             },
-        fn_token,
-        paren_token,
-        variadic,
+        ..
     } = sig;
 
     let warnings = args.warnings();
@@ -70,14 +65,9 @@ pub(crate) fn gen_function<'a, B: ToTokens + 'a>(
     // exactly that way for it to do its magic.
     let fake_return_edge = quote_spanned! {return_span=>
         #[allow(
-            unknown_lints,
-            unreachable_code,
-            clippy::diverging_sub_expression,
-            clippy::empty_loop,
-            clippy::let_unit_value,
-            clippy::let_with_type_underscore,
-            clippy::needless_return,
-            clippy::unreachable
+            unknown_lints, unreachable_code, clippy::diverging_sub_expression,
+            clippy::let_unit_value, clippy::unreachable, clippy::let_with_type_underscore,
+            clippy::empty_loop
         )]
         if false {
             let __tracing_attr_fake_return: #return_type = loop {};
@@ -87,7 +77,7 @@ pub(crate) fn gen_function<'a, B: ToTokens + 'a>(
     let block = quote! {
         {
             #fake_return_edge
-            { #block }
+            #block
         }
     };
 
@@ -100,27 +90,16 @@ pub(crate) fn gen_function<'a, B: ToTokens + 'a>(
         self_type,
     );
 
-    let mut result = quote!(
+    quote!(
         #(#outer_attrs) *
-        #vis #constness #asyncness #unsafety #abi #fn_token #ident
-        #lt_token #gen_params #gt_token
-    );
-
-    paren_token.surround(&mut result, |tokens| {
-        params.to_tokens(tokens);
-        variadic.to_tokens(tokens);
-    });
-
-    output.to_tokens(&mut result);
-    where_clause.to_tokens(&mut result);
-
-    brace_token.surround(&mut result, |tokens| {
-        tokens.append_all(inner_attrs);
-        warnings.to_tokens(tokens);
-        body.to_tokens(tokens);
-    });
-
-    result
+        #vis #constness #asyncness #unsafety #abi fn #ident<#gen_params>(#params) #output
+        #where_clause
+        {
+            #(#inner_attrs) *
+            #warnings
+            #body
+        }
+    )
 }
 
 /// Instrument a block
@@ -220,7 +199,7 @@ fn gen_block<B: ToTokens>(
             })
             .map(|(user_name, (real_name, record_type))| match record_type {
                 RecordType::Value => quote!(#user_name = #real_name),
-                RecordType::Debug => quote!(#user_name = ::tracing::field::debug(&#real_name)),
+                RecordType::Debug => quote!(#user_name = tracing::field::debug(&#real_name)),
             })
             .collect();
 
@@ -244,7 +223,7 @@ fn gen_block<B: ToTokens>(
 
         let custom_fields = &args.fields;
 
-        quote!(::tracing::span!(
+        quote!(tracing::span!(
             target: #target,
             #(parent: #parent,)*
             #level,
@@ -262,10 +241,10 @@ fn gen_block<B: ToTokens>(
             let level_tokens = event_args.level(Level::Error);
             match event_args.mode {
                 FormatMode::Default | FormatMode::Display => Some(quote!(
-                    ::tracing::event!(target: #target, #level_tokens, error = %e)
+                    tracing::event!(target: #target, #level_tokens, error = %e)
                 )),
                 FormatMode::Debug => Some(quote!(
-                    ::tracing::event!(target: #target, #level_tokens, error = ?e)
+                    tracing::event!(target: #target, #level_tokens, error = ?e)
                 )),
             }
         }
@@ -277,10 +256,10 @@ fn gen_block<B: ToTokens>(
             let level_tokens = event_args.level(args_level);
             match event_args.mode {
                 FormatMode::Display => Some(quote!(
-                    ::tracing::event!(target: #target, #level_tokens, return = %x)
+                    tracing::event!(target: #target, #level_tokens, return = %x)
                 )),
                 FormatMode::Default | FormatMode::Debug => Some(quote!(
-                    ::tracing::event!(target: #target, #level_tokens, return = ?x)
+                    tracing::event!(target: #target, #level_tokens, return = ?x)
                 )),
             }
         }
@@ -341,7 +320,7 @@ fn gen_block<B: ToTokens>(
             let __tracing_instrument_future = #mk_fut;
             if !__tracing_attr_span.is_disabled() {
                 #follows_from
-                ::tracing::Instrument::instrument(
+                tracing::Instrument::instrument(
                     __tracing_instrument_future,
                     __tracing_attr_span
                 )
@@ -365,7 +344,7 @@ fn gen_block<B: ToTokens>(
         // regression in case the level is enabled.
         let __tracing_attr_span;
         let __tracing_attr_guard;
-        if ::tracing::level_enabled!(#level) || ::tracing::if_log_enabled!(#level, {true} else {false}) {
+        if tracing::level_enabled!(#level) || tracing::if_log_enabled!(#level, {true} else {false}) {
             __tracing_attr_span = #span;
             #follows_from
             __tracing_attr_guard = __tracing_attr_span.enter();
@@ -474,7 +453,7 @@ impl RecordType {
                 if path
                     .segments
                     .iter()
-                    .next_back()
+                    .last()
                     .map(|path_segment| {
                         let ident = path_segment.ident.to_string();
                         Self::TYPES_FOR_VALUE.iter().any(|&t| t == ident)
@@ -745,7 +724,7 @@ impl<'block> AsyncInfo<'block> {
                     let async_attrs = &async_expr.attrs;
                     if pinned_box {
                         quote! {
-                            ::std::boxed::Box::pin(#(#async_attrs) * async move { #instrumented_block })
+                            Box::pin(#(#async_attrs) * async move { #instrumented_block })
                         }
                     } else {
                         quote! {
@@ -793,7 +772,7 @@ struct IdentAndTypesRenamer<'a> {
     idents: Vec<(Ident, Ident)>,
 }
 
-impl VisitMut for IdentAndTypesRenamer<'_> {
+impl<'a> VisitMut for IdentAndTypesRenamer<'a> {
     // we deliberately compare strings because we want to ignore the spans
     // If we apply clippy's lint, the behavior changes
     #[allow(clippy::cmp_owned)]
@@ -822,7 +801,7 @@ struct AsyncTraitBlockReplacer<'a> {
     patched_block: Block,
 }
 
-impl VisitMut for AsyncTraitBlockReplacer<'_> {
+impl<'a> VisitMut for AsyncTraitBlockReplacer<'a> {
     fn visit_block_mut(&mut self, i: &mut Block) {
         if i == self.block {
             *i = self.patched_block.clone();

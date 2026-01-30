@@ -7,16 +7,17 @@ use std::fmt::{self, Debug};
 ///
 /// This struct is created by the [`map_with()`] method on [`ParallelIterator`]
 ///
-/// [`map_with()`]: ParallelIterator::map_with()
+/// [`map_with()`]: trait.ParallelIterator.html#method.map_with
+/// [`ParallelIterator`]: trait.ParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Clone)]
-pub struct MapWith<I, T, F> {
+pub struct MapWith<I: ParallelIterator, T, F> {
     base: I,
     item: T,
     map_op: F,
 }
 
-impl<I: Debug, T: Debug, F> Debug for MapWith<I, T, F> {
+impl<I: ParallelIterator + Debug, T: Debug, F> Debug for MapWith<I, T, F> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("MapWith")
             .field("base", &self.base)
@@ -25,7 +26,10 @@ impl<I: Debug, T: Debug, F> Debug for MapWith<I, T, F> {
     }
 }
 
-impl<I, T, F> MapWith<I, T, F> {
+impl<I, T, F> MapWith<I, T, F>
+where
+    I: ParallelIterator,
+{
     /// Creates a new `MapWith` iterator.
     pub(super) fn new(base: I, item: T, map_op: F) -> Self {
         MapWith { base, item, map_op }
@@ -113,7 +117,7 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////
 
 struct MapWithProducer<'f, P, U, F> {
     base: P,
@@ -219,8 +223,8 @@ where
 {
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Consumer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Consumer implementation
 
 struct MapWithConsumer<'f, C, U, F> {
     base: C,
@@ -335,22 +339,26 @@ where
 ///
 /// This struct is created by the [`map_init()`] method on [`ParallelIterator`]
 ///
-/// [`map_init()`]: ParallelIterator::map_init()
+/// [`map_init()`]: trait.ParallelIterator.html#method.map_init
+/// [`ParallelIterator`]: trait.ParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Clone)]
-pub struct MapInit<I, INIT, F> {
+pub struct MapInit<I: ParallelIterator, INIT, F> {
     base: I,
     init: INIT,
     map_op: F,
 }
 
-impl<I: Debug, INIT, F> Debug for MapInit<I, INIT, F> {
+impl<I: ParallelIterator + Debug, INIT, F> Debug for MapInit<I, INIT, F> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("MapInit").field("base", &self.base).finish()
     }
 }
 
-impl<I, INIT, F> MapInit<I, INIT, F> {
+impl<I, INIT, F> MapInit<I, INIT, F>
+where
+    I: ParallelIterator,
+{
     /// Creates a new `MapInit` iterator.
     pub(super) fn new(base: I, init: INIT, map_op: F) -> Self {
         MapInit { base, init, map_op }
@@ -438,7 +446,7 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////
 
 struct MapInitProducer<'f, P, INIT, F> {
     base: P,
@@ -500,8 +508,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Consumer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Consumer implementation
 
 struct MapInitConsumer<'f, C, INIT, F> {
     base: C,

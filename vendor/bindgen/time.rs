@@ -36,16 +36,16 @@ impl<'a> Timer<'a> {
         if self.output {
             let elapsed = self.elapsed();
             let time = (elapsed.as_secs() as f64) * 1e3 +
-                f64::from(elapsed.subsec_nanos()) / 1e6;
+                (elapsed.subsec_nanos() as f64) / 1e6;
             let stderr = io::stderr();
             // Arbitrary output format, subject to change.
-            writeln!(stderr.lock(), "  time: {time:>9.3} ms.\t{}", self.name)
+            writeln!(stderr.lock(), "  time: {:>9.3} ms.\t{}", time, self.name)
                 .expect("timer write should not fail");
         }
     }
 }
 
-impl Drop for Timer<'_> {
+impl<'a> Drop for Timer<'a> {
     fn drop(&mut self) {
         self.print_elapsed();
     }

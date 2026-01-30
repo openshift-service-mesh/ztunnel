@@ -26,6 +26,9 @@
 
 #include "../test/test_util.h"
 
+
+#include "../test/test_util.h"
+
 const char* SECRET = "test";
 
 static int pem_password_callback(char *buf, int size, int rwflag, void *userdata) {
@@ -449,7 +452,10 @@ TEST(PEMTest, WriteReadTraditionalPem) {
   ASSERT_TRUE(pkey_read);
 
   DSA *pkey_dsa = EVP_PKEY_get0_DSA(pkey.get());
-  EXPECT_EQ(0, BN_cmp(DSA_get0_priv_key(pkey_dsa), DSA_get0_priv_key(dsa.get())));
+  EXPECT_EQ(0,
+            BN_cmp(DSA_get0_priv_key(pkey_dsa), DSA_get0_priv_key(dsa.get())));
+  EXPECT_EQ(0,
+            BN_cmp(DSA_get0_priv_key(pkey_dsa), DSA_get0_priv_key(dsa.get())));
 
   // Test |PEM_write_bio_PrivateKey_traditional| with |DH|. This should fail,
   // since it's not supported by the API.

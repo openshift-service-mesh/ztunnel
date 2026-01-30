@@ -1,4 +1,4 @@
-//! Parallel iterator types for [strings]
+//! Parallel iterator types for [strings][std::str]
 //!
 //! You will rarely need to interact with this module directly unless you need
 //! to name one of the iterator types.
@@ -9,8 +9,10 @@
 //! It is implemented for `char`, `&[char]`, `[char; N]`, `&[char; N]`,
 //! and any function or closure `F: Fn(char) -> bool + Sync + Send`.
 //!
-//! [`par_split_terminator()`]: ParallelString::par_split_terminator()
-//! [strings]: std::str
+//! [`ParallelString::par_split()`]: trait.ParallelString.html#method.par_split
+//! [`par_split_terminator()`]: trait.ParallelString.html#method.par_split_terminator
+//!
+//! [std::str]: https://doc.rust-lang.org/stable/std/str/
 
 use crate::iter::plumbing::*;
 use crate::iter::*;
@@ -448,12 +450,15 @@ impl Pattern for &[char] {
     impl_pattern!(&self => *self);
 }
 
+// TODO (MSRV 1.75): use `*self` for array patterns too.
+// - Needs `DoubleEndedSearcher` so `split.next_back()` works.
+
 impl<const N: usize> Pattern for [char; N] {
-    impl_pattern!(&self => *self);
+    impl_pattern!(&self => self.as_slice());
 }
 
 impl<const N: usize> Pattern for &[char; N] {
-    impl_pattern!(&self => *self);
+    impl_pattern!(&self => self.as_slice());
 }
 
 impl<FN: Sync + Send + Fn(char) -> bool> Pattern for FN {
@@ -676,7 +681,7 @@ impl<'ch, P: Pattern> ParallelIterator for Split<'ch, P> {
 }
 
 /// Implement support for `SplitProducer`.
-impl<P: Pattern> Fissile<P> for &str {
+impl<'ch, P: Pattern> Fissile<P> for &'ch str {
     fn length(&self) -> usize {
         self.len()
     }

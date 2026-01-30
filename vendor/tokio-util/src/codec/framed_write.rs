@@ -47,21 +47,6 @@ where
             },
         }
     }
-
-    /// Creates a new `FramedWrite` with the given `encoder` and a buffer of `capacity`
-    /// initial size.
-    pub fn with_capacity(inner: T, encoder: E, capacity: usize) -> FramedWrite<T, E> {
-        FramedWrite {
-            inner: FramedImpl {
-                inner,
-                codec: encoder,
-                state: WriteFrame {
-                    buffer: BytesMut::with_capacity(capacity),
-                    backpressure_boundary: capacity,
-                },
-            },
-        }
-    }
 }
 
 impl<T, E> FramedWrite<T, E> {

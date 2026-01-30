@@ -128,9 +128,7 @@ impl EcdsaKeyPair {
     ///
     pub fn to_pkcs8v1(&self) -> Result<Document, Unspecified> {
         Ok(Document::new(
-            self.evp_pkey
-                .as_const()
-                .marshal_rfc5208_private_key(Version::V1)?,
+            self.evp_pkey.marshal_rfc5208_private_key(Version::V1)?,
         ))
     }
 
@@ -199,12 +197,6 @@ impl EcdsaKeyPair {
     #[must_use]
     pub fn private_key(&self) -> PrivateKey<'_> {
         PrivateKey(self)
-    }
-
-    /// [`EcdsaSigningAlgorithm`] which was used to create this [`EcdsaKeyPair`]
-    #[must_use]
-    pub fn algorithm(&self) -> &'static EcdsaSigningAlgorithm {
-        self.algorithm
     }
 
     /// Returns the signature of the message using a random nonce.
@@ -324,6 +316,5 @@ mod tests {
         assert_eq!(key_pair.evp_pkey, key_pair_5208.evp_pkey);
         assert_eq!(key_pair.evp_pkey, key_pair_5915.evp_pkey);
         assert_eq!(key_pair_5208.evp_pkey, key_pair_5915.evp_pkey);
-        assert_eq!(key_pair_5915.algorithm, &ECDSA_P256_SHA256_FIXED_SIGNING);
     }
 }

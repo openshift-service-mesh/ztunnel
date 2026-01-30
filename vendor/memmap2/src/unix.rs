@@ -1,3 +1,5 @@
+extern crate libc;
+
 use std::fs::File;
 use std::mem::ManuallyDrop;
 use std::os::unix::io::{FromRawFd, RawFd};
@@ -94,6 +96,8 @@ impl MmapInner {
     }
 
     fn adjust_mmap_params(len: usize, alignment: usize) -> io::Result<(usize, usize)> {
+        use std::isize;
+
         // Rust's slice cannot be larger than isize::MAX.
         // See https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html
         //
@@ -284,15 +288,15 @@ impl MmapInner {
         let stack = if stack { MAP_STACK } else { 0 };
         let populate = if populate { MAP_POPULATE } else { 0 };
         let hugetlb = if huge.is_some() { MAP_HUGETLB } else { 0 };
-        let hugetlb_size = huge.map_or(0, |mask| {
-            (u64::from(mask) & (MAP_HUGE_MASK as u64)) << MAP_HUGE_SHIFT
-        }) as i32;
+        let offset = huge
+            .map(|mask| ((mask as u64) & (MAP_HUGE_MASK as u64)) << MAP_HUGE_SHIFT)
+            .unwrap_or(0);
         MmapInner::new(
             len,
             libc::PROT_READ | libc::PROT_WRITE,
-            libc::MAP_PRIVATE | libc::MAP_ANON | stack | populate | hugetlb | hugetlb_size,
+            libc::MAP_PRIVATE | libc::MAP_ANON | stack | populate | hugetlb,
             -1,
-            0,
+            offset,
         )
     }
 
@@ -355,7 +359,7 @@ impl MmapInner {
 
     #[inline]
     pub fn mut_ptr(&mut self) -> *mut u8 {
-        self.ptr.cast()
+        self.ptr as *mut u8
     }
 
     #[inline]

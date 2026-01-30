@@ -7,24 +7,24 @@
 
 use std::{io, net::SocketAddr, sync::Arc};
 
-use bytes::Bytes;
+use bytes::{Bytes, BytesMut};
 use futures_util::lock::Mutex;
 use tokio_util::sync::CancellationToken;
-use tracing::{debug, error, warn};
+use tracing::{debug, warn};
 
 use crate::{
     access::AccessControl,
     authority::MessageResponse,
     proto::{
         ProtoError,
-        quic::{DoqErrorCode, QuicStream, QuicStreams},
+        quic::QuicStreams,
+        quic::{DoqErrorCode, QuicStream},
         rr::Record,
         xfer::Protocol,
     },
     server::{
-        ResponseInfo,
-        request_handler::RequestHandler,
-        response_handler::{ResponseHandler, encode_fallback_servfail_response},
+        ResponseInfo, request_handler::RequestHandler, response_handler::ResponseHandler,
+        server_future,
     },
 };
 
@@ -72,15 +72,7 @@ where
         let stream = Arc::new(Mutex::new(request_stream));
         let responder = QuicResponseHandle(stream.clone());
 
-        super::handle_request(
-            &request,
-            src_addr,
-            Protocol::Quic,
-            access,
-            handler,
-            responder,
-        )
-        .await;
+        handle_request(request, src_addr, access, handler, responder).await;
 
         max_requests -= 1;
         if max_requests == 0 {
@@ -93,6 +85,19 @@ where
     }
 
     Ok(())
+}
+
+async fn handle_request<T>(
+    bytes: BytesMut,
+    src_addr: SocketAddr,
+    access: Arc<AccessControl>,
+    handler: Arc<T>,
+    responder: QuicResponseHandle,
+) where
+    T: RequestHandler,
+{
+    server_future::handle_request(&bytes, src_addr, Protocol::Quic, access, handler, responder)
+        .await
 }
 
 #[derive(Clone)]
@@ -117,14 +122,10 @@ impl ResponseHandler for QuicResponseHandle {
         // The id should always be 0 in DoQ
         response.header_mut().set_id(0);
 
-        let id = response.header().id();
         let mut bytes = Vec::with_capacity(512);
         let info = {
             let mut encoder = BinEncoder::new(&mut bytes);
-            response.destructive_emit(&mut encoder).or_else(|error| {
-                error!(%error, "error encoding message");
-                encode_fallback_servfail_response(id, &mut bytes)
-            })?
+            response.destructive_emit(&mut encoder)?
         };
         let bytes = Bytes::from(bytes);
 

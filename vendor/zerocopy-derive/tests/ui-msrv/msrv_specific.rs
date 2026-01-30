@@ -15,9 +15,8 @@ extern crate zerocopy;
 #[path = "../include.rs"]
 mod util;
 
-use zerocopy::IntoBytes;
-
 use self::util::util::AU16;
+use zerocopy::IntoBytes;
 
 fn main() {}
 

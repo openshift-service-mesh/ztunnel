@@ -5,7 +5,7 @@ use core::fmt::{self, Debug, Display};
 use alloc::boxed::Box;
 
 #[cfg(error_generic_member_access)]
-use crate::nightly::{self, Request};
+use core::error::Request;
 
 #[repr(transparent)]
 pub struct MessageError<M>(pub M);
@@ -79,6 +79,6 @@ impl StdError for BoxedError {
 
     #[cfg(error_generic_member_access)]
     fn provide<'a>(&'a self, request: &mut Request<'a>) {
-        nightly::provide(&*self.0, request);
+        self.0.provide(request);
     }
 }

@@ -46,9 +46,6 @@
 //! numbers of the `char` type; in contrast [`StandardUniform`] may sample any valid
 //! `char`.
 //!
-//! There's also an [`Alphabetic`] distribution which acts similarly to [`Alphanumeric`] but
-//! doesn't include digits.
-//!
 //! For floats (`f32`, `f64`), [`StandardUniform`] samples from `[0, 1)`. Also
 //! provided are [`Open01`] (samples from `(0, 1)`) and [`OpenClosed01`]
 //! (samples from `(0, 1]`). No option is provided to sample from `[0, 1]`; it
@@ -107,7 +104,7 @@ pub use self::bernoulli::{Bernoulli, BernoulliError};
 pub use self::distribution::SampleString;
 pub use self::distribution::{Distribution, Iter, Map};
 pub use self::float::{Open01, OpenClosed01};
-pub use self::other::{Alphabetic, Alphanumeric};
+pub use self::other::Alphanumeric;
 #[doc(inline)]
 pub use self::uniform::Uniform;
 
@@ -129,8 +126,7 @@ use crate::Rng;
 ///   code points in the range `0...0x10_FFFF`, except for the range
 ///   `0xD800...0xDFFF` (the surrogate code points). This includes
 ///   unassigned/reserved code points.
-///   For some uses, the [`Alphanumeric`] or [`Alphabetic`] distribution will be more
-///   appropriate.
+///   For some uses, the [`Alphanumeric`] distribution will be more appropriate.
 /// * `bool` samples `false` or `true`, each with probability 0.5.
 /// * Floating point types (`f32` and `f64`) are uniformly distributed in the
 ///   half-open range `[0, 1)`. See also the [notes below](#floating-point-implementation).

@@ -352,6 +352,7 @@ fn get_smt_threads_aix() -> Option<usize> {
 }
 
 #[cfg(any(
+    target_os = "nacl",
     target_os = "macos",
     target_os = "ios",
     target_os = "android",
@@ -433,6 +434,7 @@ fn get_num_cpus() -> usize {
 }
 
 #[cfg(not(any(
+    target_os = "nacl",
     target_os = "macos",
     target_os = "ios",
     target_os = "android",

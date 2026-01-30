@@ -23,3 +23,6 @@ impl super::Trace for Trace {
         unsafe { backtrace::trace_unsynchronized(cb) }
     }
 }
+
+pub use backtrace::Frame;
+pub use backtrace::Symbol;

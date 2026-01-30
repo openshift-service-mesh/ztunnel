@@ -27,18 +27,14 @@ pub fn empty<T: Send>() -> Empty<T> {
     }
 }
 
-/// Iterator adaptor for [the `empty()` function].
-///
-/// [the `empty()` function]: empty()
-pub struct Empty<T> {
+/// Iterator adaptor for [the `empty()` function](fn.empty.html).
+pub struct Empty<T: Send> {
     marker: PhantomData<T>,
 }
 
-impl<T> Clone for Empty<T> {
+impl<T: Send> Clone for Empty<T> {
     fn clone(&self) -> Self {
-        Empty {
-            marker: PhantomData,
-        }
+        empty()
     }
 }
 

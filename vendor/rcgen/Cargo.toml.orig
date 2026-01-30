@@ -1,13 +1,12 @@
 [package]
 name = "rcgen"
-version = "0.14.3"
+version = "0.13.3"
 documentation = "https://docs.rs/rcgen"
 description.workspace = true
 repository.workspace = true
 readme.workspace = true
 license.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 keywords.workspace = true
 
 [[example]]
@@ -50,11 +49,9 @@ allowed_external_types = [
 ]
 
 [dev-dependencies]
+openssl = "0.10"
 pki-types = { package = "rustls-pki-types", version = "1" }
 x509-parser = { workspace = true, features = ["verify"] }
 rustls-webpki = { version = "0.103", features = ["ring", "std"] }
 botan = { version = "0.11", features = ["vendored"] }
 ring = { workspace = true }
-
-[target."cfg(unix)".dev-dependencies]
-openssl = "0.10"

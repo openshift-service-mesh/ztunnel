@@ -43,9 +43,8 @@ fn test_gen_custom_zerocopy() {
 }
 
 mod fake_zerocopy {
-    use ::std::{io, ptr::NonNull, unimplemented};
-
     pub use super::imp::*;
+    use ::std::{io, ptr::NonNull, unimplemented};
 
     pub fn assert<T>()
     where

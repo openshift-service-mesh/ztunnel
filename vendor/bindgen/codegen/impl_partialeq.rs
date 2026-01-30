@@ -23,7 +23,7 @@ pub(crate) fn gen_partialeq_impl(
             &self.bindgen_union_field[..] == &other.bindgen_union_field[..]
         });
     } else {
-        for base in comp_info.base_members() {
+        for base in comp_info.base_members().iter() {
             if !base.requires_storage(ctx) {
                 continue;
             }

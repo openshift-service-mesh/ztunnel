@@ -1,3 +1,8 @@
+#![deny(missing_debug_implementations)]
+#![deny(missing_docs)]
+#![deny(unreachable_pub)]
+#![warn(rust_2018_idioms)]
+
 //! Rayon is a data-parallelism library that makes it easy to convert sequential
 //! computations into parallel.
 //!
@@ -11,7 +16,7 @@
 //!
 //! - **High-level parallel constructs** are the simplest way to use Rayon and also
 //!   typically the most efficient.
-//!   - [Parallel iterators] make it easy to convert a sequential iterator to
+//!   - [Parallel iterators][iter module] make it easy to convert a sequential iterator to
 //!     execute in parallel.
 //!     - The [`ParallelIterator`] trait defines general methods for all parallel iterators.
 //!     - The [`IndexedParallelIterator`] trait adds methods for iterators that support random
@@ -25,11 +30,12 @@
 //!   - [`ThreadPoolBuilder`] can be used to create your own thread pools or customize
 //!     the global one.
 //!
-//! [Parallel iterators]: iter
-//! [`par_sort`]: slice::ParallelSliceMut::par_sort
-//! [`par_extend`]: iter::ParallelExtend::par_extend
-//! [`ParallelIterator`]: iter::ParallelIterator
-//! [`IndexedParallelIterator`]: iter::IndexedParallelIterator
+//! [iter module]: iter/index.html
+//! [`join`]: fn.join.html
+//! [`scope`]: fn.scope.html
+//! [`par_sort`]: slice/trait.ParallelSliceMut.html#method.par_sort
+//! [`par_extend`]: iter/trait.ParallelExtend.html#tymethod.par_extend
+//! [`ThreadPoolBuilder`]: struct.ThreadPoolBuilder.html
 //!
 //! # Basic usage and the Rayon prelude
 //!
@@ -45,12 +51,14 @@
 //! parallel implementations of many iterative functions such as [`map`],
 //! [`for_each`], [`filter`], [`fold`], and [more].
 //!
-//! [`rayon::prelude`]: prelude
-//! [`map`]: iter::ParallelIterator::map
-//! [`for_each`]: iter::ParallelIterator::for_each
-//! [`filter`]: iter::ParallelIterator::filter
-//! [`fold`]: iter::ParallelIterator::fold
-//! [more]: iter::ParallelIterator#provided-methods
+//! [`rayon::prelude`]: prelude/index.html
+//! [`map`]: iter/trait.ParallelIterator.html#method.map
+//! [`for_each`]: iter/trait.ParallelIterator.html#method.for_each
+//! [`filter`]: iter/trait.ParallelIterator.html#method.filter
+//! [`fold`]: iter/trait.ParallelIterator.html#method.fold
+//! [more]: iter/trait.ParallelIterator.html#provided-methods
+//! [`ParallelIterator`]: iter/trait.ParallelIterator.html
+//! [`IndexedParallelIterator`]: iter/trait.IndexedParallelIterator.html
 //!
 //! # Crate Layout
 //!
@@ -64,8 +72,9 @@
 //! these submodules unless you need to name iterator types
 //! explicitly.
 //!
-//! [the `option` module of `std`]: std::option
-//! [the `collections` from `std`]: std::collections
+//! [the `option` module of `std`]: https://doc.rust-lang.org/std/option/index.html
+//! [the `collections` from `std`]: https://doc.rust-lang.org/std/collections/index.html
+//! [`std`]: https://doc.rust-lang.org/std/
 //!
 //! # Targets without threading
 //!
@@ -77,11 +86,6 @@
 //! See [the Rayon FAQ][faq].
 //!
 //! [faq]: https://github.com/rayon-rs/rayon/blob/main/FAQ.md
-
-#![deny(missing_debug_implementations)]
-#![deny(missing_docs)]
-#![deny(unreachable_pub)]
-#![warn(rust_2018_idioms)]
 
 #[macro_use]
 mod delegate;

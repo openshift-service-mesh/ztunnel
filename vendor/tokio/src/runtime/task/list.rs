@@ -8,7 +8,7 @@
 
 use crate::future::Future;
 use crate::loom::cell::UnsafeCell;
-use crate::runtime::task::{JoinHandle, LocalNotified, Notified, Schedule, SpawnLocation, Task};
+use crate::runtime::task::{JoinHandle, LocalNotified, Notified, Schedule, Task};
 use crate::util::linked_list::{Link, LinkedList};
 use crate::util::sharded_list;
 
@@ -91,14 +91,13 @@ impl<S: 'static> OwnedTasks<S> {
         task: T,
         scheduler: S,
         id: super::Id,
-        spawned_at: SpawnLocation,
     ) -> (JoinHandle<T::Output>, Option<Notified<S>>)
     where
         S: Schedule,
         T: Future + Send + 'static,
         T::Output: Send + 'static,
     {
-        let (task, notified, join) = super::new_task(task, scheduler, id, spawned_at);
+        let (task, notified, join) = super::new_task(task, scheduler, id);
         let notified = unsafe { self.bind_inner(task, notified) };
         (join, notified)
     }
@@ -112,14 +111,13 @@ impl<S: 'static> OwnedTasks<S> {
         task: T,
         scheduler: S,
         id: super::Id,
-        spawned_at: SpawnLocation,
     ) -> (JoinHandle<T::Output>, Option<Notified<S>>)
     where
         S: Schedule,
         T: Future + 'static,
         T::Output: 'static,
     {
-        let (task, notified, join) = super::new_task(task, scheduler, id, spawned_at);
+        let (task, notified, join) = super::new_task(task, scheduler, id);
         let notified = unsafe { self.bind_inner(task, notified) };
         (join, notified)
     }
@@ -260,14 +258,13 @@ impl<S: 'static> LocalOwnedTasks<S> {
         task: T,
         scheduler: S,
         id: super::Id,
-        spawned_at: SpawnLocation,
     ) -> (JoinHandle<T::Output>, Option<Notified<S>>)
     where
         S: Schedule,
         T: Future + 'static,
         T::Output: 'static,
     {
-        let (task, notified, join) = super::new_task(task, scheduler, id, spawned_at);
+        let (task, notified, join) = super::new_task(task, scheduler, id);
 
         unsafe {
             // safety: We just created the task, so we have exclusive access

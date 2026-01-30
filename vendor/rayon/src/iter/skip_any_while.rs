@@ -7,15 +7,16 @@ use std::sync::atomic::{AtomicBool, Ordering};
 /// until the callback returns `false`.
 /// This struct is created by the [`skip_any_while()`] method on [`ParallelIterator`]
 ///
-/// [`skip_any_while()`]: ParallelIterator::skip_any_while()
+/// [`skip_any_while()`]: trait.ParallelIterator.html#method.skip_any_while
+/// [`ParallelIterator`]: trait.ParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Clone)]
-pub struct SkipAnyWhile<I, P> {
+pub struct SkipAnyWhile<I: ParallelIterator, P> {
     base: I,
     predicate: P,
 }
 
-impl<I: fmt::Debug, P> fmt::Debug for SkipAnyWhile<I, P> {
+impl<I: ParallelIterator + fmt::Debug, P> fmt::Debug for SkipAnyWhile<I, P> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SkipAnyWhile")
             .field("base", &self.base)
@@ -23,7 +24,10 @@ impl<I: fmt::Debug, P> fmt::Debug for SkipAnyWhile<I, P> {
     }
 }
 
-impl<I, P> SkipAnyWhile<I, P> {
+impl<I, P> SkipAnyWhile<I, P>
+where
+    I: ParallelIterator,
+{
     /// Creates a new `SkipAnyWhile` iterator.
     pub(super) fn new(base: I, predicate: P) -> Self {
         SkipAnyWhile { base, predicate }
@@ -50,8 +54,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Consumer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Consumer implementation
 
 struct SkipAnyWhileConsumer<'p, C, P> {
     base: C,

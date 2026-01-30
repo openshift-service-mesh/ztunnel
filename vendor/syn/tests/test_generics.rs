@@ -7,9 +7,7 @@
 )]
 
 #[macro_use]
-mod snapshot;
-
-mod debug;
+mod macros;
 
 use quote::quote;
 use syn::{DeriveInput, ItemFn, TypeParamBound, WhereClause, WherePredicate};

@@ -1,7 +1,8 @@
 use core::hash::{BuildHasher, Hash};
 
 use super::{
-    Bucket, Entry, Equivalent, IndexMap, IndexedEntry, IterMut2, OccupiedEntry, VacantEntry,
+    Bucket, Entries, Entry, Equivalent, IndexMap, IndexedEntry, IterMut2, OccupiedEntry,
+    VacantEntry,
 };
 
 /// Opt-in mutable access to [`IndexMap`] keys.

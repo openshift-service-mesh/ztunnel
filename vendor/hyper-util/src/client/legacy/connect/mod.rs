@@ -80,8 +80,6 @@ pub mod dns;
 #[cfg(feature = "tokio")]
 mod http;
 
-pub mod proxy;
-
 pub(crate) mod capture;
 pub use capture::{capture_connection, CaptureConnection};
 

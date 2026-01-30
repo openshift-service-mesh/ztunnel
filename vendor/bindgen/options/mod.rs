@@ -4,15 +4,13 @@
 #[macro_use]
 mod helpers;
 mod as_args;
-#[cfg(feature = "__cli")]
-pub(crate) mod cli;
 
 use crate::callbacks::ParseCallbacks;
 use crate::codegen::{
     AliasVariation, EnumVariation, MacroTypeVariation, NonCopyUnionStyle,
 };
 use crate::deps::DepfileSpec;
-use crate::features::{RustEdition, RustFeatures, RustTarget};
+use crate::features::{RustFeatures, RustTarget};
 use crate::regex_set::RegexSet;
 use crate::Abi;
 use crate::Builder;
@@ -1143,7 +1141,7 @@ options! {
         },
         as_args: |module_lines, args| {
             for (module, lines) in module_lines {
-                for line in lines {
+                for line in lines.iter() {
                     args.push("--module-raw-line".to_owned());
                     args.push(module.clone().into());
                     args.push(line.clone().into());
@@ -1421,8 +1419,10 @@ options! {
             /// Note that they will usually not work. However you can use `-fkeep-inline-functions`
             /// or `-fno-inline-functions` if you are responsible of compiling the library to make
             /// them callable.
-            ///
-            /// Check the [`Builder::wrap_static_fns`] method for an alternative.
+            #[cfg_attr(
+                feature = "experimental",
+                doc = "\nCheck the [`Builder::wrap_static_fns`] method for an alternative."
+            )]
             pub fn generate_inline_functions(mut self, doit: bool) -> Self {
                 self.options.generate_inline_functions = doit;
                 self
@@ -1609,26 +1609,9 @@ options! {
             args.push(rust_target.to_string());
         },
     },
-    /// The Rust edition to use for code generation.
-    rust_edition: Option<RustEdition> {
-        methods: {
-            /// Specify the Rust target edition.
-            ///
-            /// The default edition is the latest edition supported by the chosen Rust target.
-            pub fn rust_edition(mut self, rust_edition: RustEdition) -> Self {
-                self.options.rust_edition = Some(rust_edition);
-                self
-            }
-        }
-        as_args: |edition, args| {
-            if let Some(edition) =  edition {
-                args.push("--rust-edition".to_owned());
-                args.push(edition.to_string());
-            }
-        },
-    },
     /// Features to be enabled. They are derived from `rust_target`.
     rust_features: RustFeatures {
+        default: RustTarget::default().into(),
         methods: {},
         // This field cannot be set from the CLI,
         as_args: ignore,
@@ -2030,7 +2013,7 @@ options! {
             for (abi, set) in overrides {
                 for item in set.get_items() {
                     args.push("--override-abi".to_owned());
-                    args.push(format!("{item}={abi}"));
+                    args.push(format!("{}={}", item, abi));
                 }
             }
         },
@@ -2038,6 +2021,7 @@ options! {
     /// Whether to generate wrappers for `static` functions.
     wrap_static_fns: bool {
         methods: {
+            #[cfg(feature = "experimental")]
             /// Set whether to generate wrappers for `static`` functions.
             ///
             /// Passing `true` to this method will generate a C source file with non-`static`
@@ -2056,6 +2040,7 @@ options! {
     /// The suffix to be added to the function wrappers for `static` functions.
     wrap_static_fns_suffix: Option<String> {
         methods: {
+            #[cfg(feature = "experimental")]
             /// Set the suffix added to the wrappers for `static` functions.
             ///
             /// This option only comes into effect if `true` is passed to the
@@ -2072,6 +2057,7 @@ options! {
     /// The path of the file where the wrappers for `static` functions will be emitted.
     wrap_static_fns_path: Option<PathBuf> {
         methods: {
+            #[cfg(feature = "experimental")]
             /// Set the path for the source code file that would be created if any wrapper
             /// functions must be generated due to the presence of `static` functions.
             ///

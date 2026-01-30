@@ -1,6 +1,6 @@
 [package]
 name = "tempfile"
-version = "3.20.0"
+version = "3.19.1"
 authors = [
   "Steven Allen <steven@stebalien.com>",
   "The Rust Project Developers",
@@ -42,6 +42,3 @@ default = ["getrandom"]
 nightly = []
 # DEPRECATED unstable feature, will be removed in the near future.
 unstable-windows-keep-open-tempfile = []
-
-[package.metadata.docs.rs]
-rustdoc-args = ["--generate-link-to-definition"]

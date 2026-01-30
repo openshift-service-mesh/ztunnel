@@ -5,13 +5,11 @@
 // that section. All the read-only segments of the ELF-binary are in
 // that part of the address space.
 
-use super::mystd::ffi::OsStr;
+use super::mystd::borrow::ToOwned;
+use super::mystd::ffi::{CStr, OsStr};
+use super::mystd::mem::MaybeUninit;
 use super::mystd::os::unix::prelude::*;
-use super::{Library, LibrarySegment};
-use alloc::borrow::ToOwned;
-use alloc::vec::Vec;
-use core::ffi::CStr;
-use core::mem::MaybeUninit;
+use super::{Library, LibrarySegment, Vec};
 
 pub(super) fn native_libraries() -> Vec<Library> {
     let mut libraries: Vec<Library> = Vec::new();

@@ -6,7 +6,6 @@
 
 #include "openssl/ocsp.h"
 #include "openssl/pem.h"
-#include "openssl/bio.h"
 
 #include "../internal.h"
 #include "../test/test_util.h"
@@ -1835,7 +1834,7 @@ TEST(OCSPTest, OCSPBIOTest) {
 
   // Write an OCSP request into the BIO, but it shouldn't successfully parse
   // with |d2i_OCSP_RESPONSE_bio|.
-  ASSERT_TRUE(BIO_reset(bio.get()));
+  BIO_reset(bio.get());
   const int reqLen = (int)ocsp_request_data.size();
   ASSERT_EQ(BIO_write(bio.get(), ocsp_request_data.data(), reqLen), reqLen);
   ocspResponse.reset(d2i_OCSP_RESPONSE_bio(bio.get(), nullptr));
@@ -1855,7 +1854,7 @@ TEST(OCSPTest, OCSPBIOTest) {
 
   // Write an OCSP response into the BIO, but it shouldn't successfully parse
   // with |d2i_OCSP_REQUEST_bio|.
-  ASSERT_TRUE(BIO_reset(bio.get()));
+  BIO_reset(bio.get());
   ASSERT_EQ(BIO_write(bio.get(), ocsp_response_data.data(), respLen), respLen);
   ocspRequest.reset(d2i_OCSP_REQUEST_bio(bio.get(), nullptr));
   EXPECT_FALSE(ocspRequest);

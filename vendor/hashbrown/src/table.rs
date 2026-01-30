@@ -2343,7 +2343,10 @@ impl<T: fmt::Debug, A: Allocator> fmt::Debug for Drain<'_, T, A> {
 /// This `struct` is created by [`HashTable::extract_if`]. See its
 /// documentation for more.
 #[must_use = "Iterators are lazy unless consumed"]
-pub struct ExtractIf<'a, T, F, A: Allocator = Global> {
+pub struct ExtractIf<'a, T, F, A: Allocator = Global>
+where
+    F: FnMut(&mut T) -> bool,
+{
     f: F,
     inner: RawExtractIf<'a, T, A>,
 }

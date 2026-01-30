@@ -4,13 +4,14 @@ use core::fmt::Debug;
 
 use pki_types::{AlgorithmIdentifier, CertificateDer, PrivateKeyDer, SubjectPublicKeyInfoDer};
 
-use super::CryptoProvider;
 use crate::client::ResolvesClientCert;
 use crate::enums::{SignatureAlgorithm, SignatureScheme};
 use crate::error::{Error, InconsistentKeys};
 use crate::server::{ClientHello, ParsedCertificate, ResolvesServerCert};
 use crate::sync::Arc;
 use crate::x509;
+
+use super::CryptoProvider;
 
 /// An abstract signing key.
 ///
@@ -101,19 +102,13 @@ impl From<CertifiedKey> for SingleCertAndKey {
     }
 }
 
-impl From<Arc<CertifiedKey>> for SingleCertAndKey {
-    fn from(certified_key: Arc<CertifiedKey>) -> Self {
-        Self(certified_key)
-    }
-}
-
 impl ResolvesClientCert for SingleCertAndKey {
     fn resolve(
         &self,
         _root_hint_subjects: &[&[u8]],
         _sigschemes: &[SignatureScheme],
     ) -> Option<Arc<CertifiedKey>> {
-        Some(self.0.clone())
+        Some(Arc::clone(&self.0))
     }
 
     fn has_certs(&self) -> bool {
@@ -123,7 +118,7 @@ impl ResolvesClientCert for SingleCertAndKey {
 
 impl ResolvesServerCert for SingleCertAndKey {
     fn resolve(&self, _client_hello: ClientHello<'_>) -> Option<Arc<CertifiedKey>> {
-        Some(self.0.clone())
+        Some(Arc::clone(&self.0))
     }
 }
 
@@ -207,8 +202,8 @@ impl CertifiedKey {
     }
 }
 
-/// Convert a public key and algorithm identifier into [`SubjectPublicKeyInfoDer`].
-pub fn public_key_to_spki(
+#[cfg_attr(not(any(feature = "aws_lc_rs", feature = "ring")), allow(dead_code))]
+pub(crate) fn public_key_to_spki(
     alg_id: &AlgorithmIdentifier,
     public_key: impl AsRef<[u8]>,
 ) -> SubjectPublicKeyInfoDer<'static> {

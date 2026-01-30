@@ -5,13 +5,13 @@ use crate::cc_builder::CcBuilder;
 use crate::OutputLib::{Crypto, RustWrapper, Ssl};
 use crate::{
     allow_prebuilt_nasm, cargo_env, effective_target, emit_warning, execute_command,
-    get_crate_cflags, is_crt_static, is_no_asm, is_no_pregenerated_src, optional_env,
-    optional_env_optional_crate_target, set_env, set_env_for_target, target_arch, target_env,
-    target_os, test_nasm_command, use_prebuilt_nasm, OutputLibType,
+    get_crate_cflags, is_crt_static, is_no_asm, is_no_pregenerated_src, option_env, target_arch,
+    target_env, target_os, target_underscored, target_vendor, test_nasm_command, use_prebuilt_nasm,
+    OutputLibType,
 };
 use std::env;
 use std::ffi::OsString;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub(crate) struct CmakeBuilder {
     manifest_dir: PathBuf,
@@ -24,13 +24,8 @@ fn test_clang_cl_command() -> bool {
     execute_command("clang-cl".as_ref(), &["--version".as_ref()]).status
 }
 
-fn test_prebuilt_nasm_script(script_path: &Path) -> bool {
-    // Call with no args - both scripts will exit with error, but we only care if they can execute
-    execute_command(script_path.as_os_str(), &[]).executed
-}
-
 fn find_cmake_command() -> Option<OsString> {
-    if let Some(cmake) = optional_env_optional_crate_target("CMAKE") {
+    if let Some(cmake) = option_env("CMAKE") {
         emit_warning(&format!(
             "CMAKE environment variable set: {}",
             cmake.clone()
@@ -94,9 +89,6 @@ impl CmakeBuilder {
     #[allow(clippy::too_many_lines)]
     fn prepare_cmake_build(&self) -> cmake::Config {
         let mut cmake_cfg = self.get_cmake_config();
-        if let Some(generator) = optional_env_optional_crate_target("CMAKE_GENERATOR") {
-            set_env("CMAKE_GENERATOR", generator);
-        }
 
         if OutputLibType::default() == OutputLibType::Dynamic {
             cmake_cfg.define("BUILD_SHARED_LIBS", "1");
@@ -115,7 +107,6 @@ impl CmakeBuilder {
 
         // Build flags that minimize our crate size.
         cmake_cfg.define("BUILD_TESTING", "OFF");
-        cmake_cfg.define("BUILD_TOOL", "OFF");
         if cfg!(feature = "ssl") {
             cmake_cfg.define("BUILD_LIBSSL", "ON");
         } else {
@@ -141,20 +132,24 @@ impl CmakeBuilder {
         }
 
         if cfg!(feature = "asan") {
-            set_env_for_target("CC", "clang");
-            set_env_for_target("CXX", "clang++");
+            env::set_var("CC", "clang");
+            env::set_var("CXX", "clang++");
+            env::set_var("ASM", "clang");
 
             cmake_cfg.define("ASAN", "1");
         }
 
-        let cflags = get_crate_cflags();
-        if !cflags.is_empty() {
-            set_env_for_target("CFLAGS", cflags);
+        if target_env() == "ohos" {
+            Self::configure_open_harmony(&mut cmake_cfg, get_crate_cflags());
+            return cmake_cfg;
         }
 
-        if target_env() == "ohos" {
-            Self::configure_open_harmony(&mut cmake_cfg);
-            return cmake_cfg;
+        let cflags = get_crate_cflags();
+        if !cflags.is_empty() {
+            emit_warning(&format!(
+                "AWS_LC_SYS_CFLAGS found. Setting CFLAGS: '{cflags}'"
+            ));
+            env::set_var("CFLAGS", cflags);
         }
 
         // cmake-rs has logic that strips Optimization/Debug options that are passed via CFLAGS:
@@ -164,8 +159,13 @@ impl CmakeBuilder {
         Self::preserve_cflag_optimization_flags(&mut cmake_cfg);
 
         // Allow environment to specify CMake toolchain.
-        if let Some(toolchain) = optional_env_optional_crate_target("CMAKE_TOOLCHAIN_FILE") {
-            set_env_for_target("CMAKE_TOOLCHAIN_FILE", toolchain);
+        let toolchain_var_name = format!("CMAKE_TOOLCHAIN_FILE_{}", target_underscored());
+        if let Some(toolchain) =
+            option_env(&toolchain_var_name).or(option_env("CMAKE_TOOLCHAIN_FILE"))
+        {
+            emit_warning(&format!(
+                "CMAKE_TOOLCHAIN_FILE environment variable set: {toolchain}"
+            ));
             return cmake_cfg;
         }
         // We only consider compiler CFLAGS when no cmake toolchain is set
@@ -187,23 +187,20 @@ impl CmakeBuilder {
                 cmake_cfg.define("CMAKE_OSX_ARCHITECTURES", "x86_64");
                 cmake_cfg.define("CMAKE_SYSTEM_PROCESSOR", "x86_64");
             }
-            if target_os().trim() == "ios" {
-                cmake_cfg.define("CMAKE_SYSTEM_NAME", "iOS");
-                if effective_target().ends_with("-ios-sim") || target_arch() == "x86_64" {
-                    cmake_cfg.define("CMAKE_OSX_SYSROOT", "iphonesimulator");
-                } else {
-                    cmake_cfg.define("CMAKE_OSX_SYSROOT", "iphoneos");
-                }
-                cmake_cfg.define("CMAKE_THREAD_LIBS_INIT", "-lpthread");
-            }
-            if target_os().trim() == "macos" {
-                cmake_cfg.define("CMAKE_SYSTEM_NAME", "Darwin");
-                cmake_cfg.define("CMAKE_OSX_SYSROOT", "macosx");
-            }
         }
 
         if target_os() == "android" {
             self.configure_android(&mut cmake_cfg);
+        }
+
+        if target_vendor() == "apple" && target_os().to_lowercase() == "ios" {
+            cmake_cfg.define("CMAKE_SYSTEM_NAME", "iOS");
+            if effective_target().ends_with("-ios-sim") || target_arch() == "x86_64" {
+                cmake_cfg.define("CMAKE_OSX_SYSROOT", "iphonesimulator");
+            } else {
+                cmake_cfg.define("CMAKE_OSX_SYSROOT", "iphoneos");
+            }
+            cmake_cfg.define("CMAKE_THREAD_LIBS_INIT", "-lpthread");
         }
 
         cmake_cfg
@@ -222,53 +219,24 @@ impl CmakeBuilder {
     }
 
     #[allow(clippy::unused_self)]
-    fn select_prebuilt_nasm_script(&self) -> PathBuf {
-        let sh_script = self.manifest_dir.join("builder").join("prebuilt-nasm.sh");
-        let bat_script = self.manifest_dir.join("builder").join("prebuilt-nasm.bat");
-
-        // Test .sh first (more universal - works in MSYS2, WSL, native Unix)
-        if test_prebuilt_nasm_script(&sh_script) {
-            emit_warning("Selected prebuilt-nasm.sh (shell script can execute)");
-            sh_script
-        } else if test_prebuilt_nasm_script(&bat_script) {
-            emit_warning(
-                "Selected prebuilt-nasm.bat (batch script can execute, shell script cannot)",
-            );
-            bat_script
-        } else {
-            // Fallback to current logic if neither can execute
-            let fallback_script = if cfg!(target_os = "windows") {
-                bat_script
-            } else {
-                sh_script
-            };
-            emit_warning(
-                &format!(
-                    "Neither script could be tested for execution, falling back to target-based selection: {}", 
-                    fallback_script.file_name().unwrap().to_str().unwrap()));
-            fallback_script
-        }
-    }
-
-    #[allow(clippy::unused_self)]
     fn configure_android(&self, _cmake_cfg: &mut cmake::Config) {
         // If we leave CMAKE_SYSTEM_PROCESSOR unset, then cmake-rs should handle properly setting
         // CMAKE_SYSTEM_NAME and CMAKE_SYSTEM_PROCESSOR:
         // https://github.com/rust-lang/cmake-rs/blob/b689783b5448966e810d515c798465f2e0ab56fd/src/lib.rs#L450-L499
 
         // Log relevant environment variables.
-        if let Some(value) = optional_env_optional_crate_target("ANDROID_NDK_ROOT") {
-            set_env("ANDROID_NDK_ROOT", value);
+        if let Some(value) = option_env("ANDROID_NDK_ROOT") {
+            emit_warning(&format!("Found ANDROID_NDK_ROOT={value}"));
         } else {
             emit_warning("ANDROID_NDK_ROOT not set.");
         }
-        if let Some(value) = optional_env_optional_crate_target("ANDROID_NDK") {
-            set_env("ANDROID_NDK", value);
+        if let Some(value) = option_env("ANDROID_NDK") {
+            emit_warning(&format!("Found ANDROID_NDK={value}"));
         } else {
             emit_warning("ANDROID_NDK not set.");
         }
-        if let Some(value) = optional_env_optional_crate_target("ANDROID_STANDALONE_TOOLCHAIN") {
-            set_env("ANDROID_STANDALONE_TOOLCHAIN", value);
+        if let Some(value) = option_env("ANDROID_STANDALONE_TOOLCHAIN") {
+            emit_warning(&format!("Found ANDROID_STANDALONE_TOOLCHAIN={value}"));
         } else {
             emit_warning("ANDROID_STANDALONE_TOOLCHAIN not set.");
         }
@@ -277,39 +245,50 @@ impl CmakeBuilder {
     fn configure_windows(&self, cmake_cfg: &mut cmake::Config) {
         match (target_env().as_str(), target_arch().as_str()) {
             ("msvc", "aarch64") => {
-                // If CMAKE_GENERATOR is either not set or not set to "Ninja"
-                let cmake_generator = optional_env("CMAKE_GENERATOR");
-                if cmake_generator.is_none() || cmake_generator.unwrap().to_lowercase() != "ninja" {
-                    // The following is not supported by the Ninja generator
-                    cmake_cfg.generator_toolset(format!(
-                        "ClangCL{}",
-                        if cfg!(target_arch = "x86_64") {
-                            ",host=x64"
-                        } else {
-                            ""
-                        }
-                    ));
-                    cmake_cfg.define("CMAKE_GENERATOR_PLATFORM", "ARM64");
-                }
+                cmake_cfg.generator_toolset(format!(
+                    "ClangCL{}",
+                    if cfg!(target_arch = "x86_64") {
+                        ",host=x64"
+                    } else {
+                        ""
+                    }
+                ));
                 cmake_cfg.static_crt(is_crt_static());
+                cmake_cfg.define("CMAKE_GENERATOR_PLATFORM", "ARM64");
                 cmake_cfg.define("CMAKE_SYSTEM_NAME", "Windows");
                 cmake_cfg.define("CMAKE_SYSTEM_PROCESSOR", "ARM64");
+            }
+            ("msvc", "x86") => {
+                cmake_cfg.static_crt(is_crt_static());
+                cmake_cfg.define("CMAKE_SYSTEM_NAME", "");
+                cmake_cfg.define("CMAKE_SYSTEM_PROCESSOR", "");
             }
             ("msvc", _) => {
                 cmake_cfg.static_crt(is_crt_static());
             }
-            (_, arch) => {
+            ("gnu", "x86") => {
                 cmake_cfg.define("CMAKE_SYSTEM_NAME", "Windows");
-                cmake_cfg.define("CMAKE_SYSTEM_PROCESSOR", arch);
+                cmake_cfg.define("CMAKE_SYSTEM_PROCESSOR", "x86");
             }
+            _ => {}
         }
         if use_prebuilt_nasm() {
             emit_warning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             emit_warning("!!!   Using pre-built NASM binaries   !!!");
             emit_warning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
-            let script_path = self.select_prebuilt_nasm_script();
-            let script_path = script_path.display().to_string();
+            let script_name = if cfg!(target_os = "windows") {
+                "prebuilt-nasm.bat"
+            } else {
+                "prebuilt-nasm.sh"
+            };
+
+            let script_path = self
+                .manifest_dir
+                .join("builder")
+                .join(script_name)
+                .display()
+                .to_string();
             let script_path = script_path.replace('\\', "/");
 
             cmake_cfg.define("CMAKE_ASM_NASM_COMPILER", script_path.as_str());
@@ -340,20 +319,25 @@ impl CmakeBuilder {
         }
     }
 
-    fn configure_open_harmony(cmake_cfg: &mut cmake::Config) {
+    fn configure_open_harmony(cmake_cfg: &mut cmake::Config, crate_cflags: &str) {
+        env::set_var("CFLAGS", crate_cflags);
         let mut cflags = vec!["-Wno-unused-command-line-argument"];
         let mut asmflags = vec![];
 
+        let toolchain_var_name = format!("CMAKE_TOOLCHAIN_FILE_{}", target_underscored());
         // If a toolchain is not specified by the environment
-        if optional_env_optional_crate_target("CMAKE_TOOLCHAIN_FILE").is_none() {
+        if option_env(&toolchain_var_name)
+            .or(option_env("CMAKE_TOOLCHAIN_FILE"))
+            .is_none()
+        {
             if let Ok(ndk) = env::var("OHOS_NDK_HOME") {
-                set_env_for_target(
-                    "CMAKE_TOOLCHAIN_FILE",
+                env::set_var(
+                    toolchain_var_name,
                     format!("{ndk}/native/build/cmake/ohos.toolchain.cmake"),
                 );
             } else if let Ok(sdk) = env::var("OHOS_SDK_NATIVE") {
-                set_env_for_target(
-                    "CMAKE_TOOLCHAIN_FILE",
+                env::set_var(
+                    toolchain_var_name,
                     format!("{sdk}/build/cmake/ohos.toolchain.cmake"),
                 );
             } else {
@@ -428,9 +412,7 @@ impl crate::Builder for CmakeBuilder {
             }
         }
         if let Some(cmake_cmd) = find_cmake_command() {
-            unsafe {
-                env::set_var("CMAKE", cmake_cmd);
-            }
+            env::set_var("CMAKE", cmake_cmd);
         } else {
             eprintln!("Missing dependency: cmake");
             missing_dependency = true;

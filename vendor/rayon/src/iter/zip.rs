@@ -6,15 +6,20 @@ use std::iter;
 /// of pairs. This struct is created by the [`zip()`] method on
 /// [`IndexedParallelIterator`]
 ///
-/// [`zip()`]: IndexedParallelIterator::zip()
+/// [`zip()`]: trait.IndexedParallelIterator.html#method.zip
+/// [`IndexedParallelIterator`]: trait.IndexedParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Debug, Clone)]
-pub struct Zip<A, B> {
+pub struct Zip<A: IndexedParallelIterator, B: IndexedParallelIterator> {
     a: A,
     b: B,
 }
 
-impl<A, B> Zip<A, B> {
+impl<A, B> Zip<A, B>
+where
+    A: IndexedParallelIterator,
+    B: IndexedParallelIterator,
+{
     /// Creates a new `Zip` iterator.
     pub(super) fn new(a: A, b: B) -> Self {
         Zip { a, b }
@@ -113,7 +118,7 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////
 
 struct ZipProducer<A: Producer, B: Producer> {
     a: A,

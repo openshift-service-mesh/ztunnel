@@ -83,7 +83,6 @@ fn main() {
     - loongarch64 Linux
     - armv7 Linux
     - riscv64 Linux
-    - powerpc64le Linux
 
 ## License
 

@@ -131,17 +131,6 @@ pub enum PrivateKeyDer<'a> {
     Pkcs8(PrivatePkcs8KeyDer<'a>),
 }
 
-#[cfg(feature = "alloc")]
-impl zeroize::Zeroize for PrivateKeyDer<'static> {
-    fn zeroize(&mut self) {
-        match self {
-            Self::Pkcs1(key) => key.zeroize(),
-            Self::Sec1(key) => key.zeroize(),
-            Self::Pkcs8(key) => key.zeroize(),
-        }
-    }
-}
-
 impl PrivateKeyDer<'_> {
     /// Clone the private key to a `'static` value
     #[cfg(feature = "alloc")]
@@ -325,13 +314,6 @@ impl PrivatePkcs1KeyDer<'_> {
 }
 
 #[cfg(feature = "alloc")]
-impl zeroize::Zeroize for PrivatePkcs1KeyDer<'static> {
-    fn zeroize(&mut self) {
-        self.0.0.zeroize()
-    }
-}
-
-#[cfg(feature = "alloc")]
 impl PemObjectFilter for PrivatePkcs1KeyDer<'static> {
     const KIND: SectionKind = SectionKind::RsaPrivateKey;
 }
@@ -388,13 +370,6 @@ impl PrivateSec1KeyDer<'_> {
     /// Yield the DER-encoded bytes of the private key
     pub fn secret_sec1_der(&self) -> &[u8] {
         self.0.as_ref()
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl zeroize::Zeroize for PrivateSec1KeyDer<'static> {
-    fn zeroize(&mut self) {
-        self.0.0.zeroize()
     }
 }
 
@@ -456,13 +431,6 @@ impl PrivatePkcs8KeyDer<'_> {
     /// Yield the DER-encoded bytes of the private key
     pub fn secret_pkcs8_der(&self) -> &[u8] {
         self.0.as_ref()
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl zeroize::Zeroize for PrivatePkcs8KeyDer<'static> {
-    fn zeroize(&mut self) {
-        self.0.0.zeroize()
     }
 }
 
@@ -714,7 +682,7 @@ impl CertificateDer<'_> {
     /// Converts this certificate into its owned variant, unfreezing borrowed content (if any)
     #[cfg(feature = "alloc")]
     pub fn into_owned(self) -> CertificateDer<'static> {
-        CertificateDer(Der(self.0.0.into_owned()))
+        CertificateDer(Der(self.0 .0.into_owned()))
     }
 }
 
@@ -777,7 +745,7 @@ impl SubjectPublicKeyInfoDer<'_> {
     /// Converts this SubjectPublicKeyInfo into its owned variant, unfreezing borrowed content (if any)
     #[cfg(feature = "alloc")]
     pub fn into_owned(self) -> SubjectPublicKeyInfoDer<'static> {
-        SubjectPublicKeyInfoDer(Der(self.0.0.into_owned()))
+        SubjectPublicKeyInfoDer(Der(self.0 .0.into_owned()))
     }
 }
 
@@ -1031,16 +999,6 @@ impl BytesInner<'_> {
             Self::Owned(vec) => vec,
             Self::Borrowed(slice) => slice.to_vec(),
         })
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl zeroize::Zeroize for BytesInner<'static> {
-    fn zeroize(&mut self) {
-        match self {
-            BytesInner::Owned(vec) => vec.zeroize(),
-            BytesInner::Borrowed(_) => (),
-        }
     }
 }
 

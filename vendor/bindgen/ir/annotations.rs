@@ -28,7 +28,7 @@ impl FromStr for FieldVisibilityKind {
             "private" => Ok(Self::Private),
             "crate" => Ok(Self::PublicCrate),
             "public" => Ok(Self::Public),
-            _ => Err(format!("Invalid visibility kind: `{s}`")),
+            _ => Err(format!("Invalid visibility kind: `{}`", s)),
         }
     }
 }
@@ -102,8 +102,6 @@ pub(crate) struct Annotations {
     constify_enum_variant: bool,
     /// List of explicit derives for this type.
     derives: Vec<String>,
-    /// List of explicit attributes for this type.
-    attributes: Vec<String>,
 }
 
 fn parse_accessor(s: &str) -> FieldAccessorKind {
@@ -171,11 +169,6 @@ impl Annotations {
         &self.derives
     }
 
-    /// The list of attributes that have been specified in this annotation.
-    pub(crate) fn attributes(&self) -> &[String] {
-        &self.attributes
-    }
-
     /// Should we avoid implementing the `Copy` trait?
     pub(crate) fn disallow_copy(&self) -> bool {
         self.disallow_copy
@@ -213,7 +206,7 @@ impl Annotations {
             comment
                 .get_tag_attrs()
                 .next()
-                .is_some_and(|attr| attr.name == "rustbindgen")
+                .map_or(false, |attr| attr.name == "rustbindgen")
         {
             *matched = true;
             for attr in comment.get_tag_attrs() {
@@ -227,19 +220,18 @@ impl Annotations {
                     "replaces" => {
                         self.use_instead_of = Some(
                             attr.value.split("::").map(Into::into).collect(),
-                        );
+                        )
                     }
                     "derive" => self.derives.push(attr.value),
-                    "attribute" => self.attributes.push(attr.value),
                     "private" => {
-                        self.visibility_kind = if attr.value == "false" {
-                            Some(FieldVisibilityKind::Public)
-                        } else {
+                        self.visibility_kind = if attr.value != "false" {
                             Some(FieldVisibilityKind::Private)
+                        } else {
+                            Some(FieldVisibilityKind::Public)
                         };
                     }
                     "accessor" => {
-                        self.accessor_kind = Some(parse_accessor(&attr.value));
+                        self.accessor_kind = Some(parse_accessor(&attr.value))
                     }
                     "constant" => self.constify_enum_variant = true,
                     _ => {}

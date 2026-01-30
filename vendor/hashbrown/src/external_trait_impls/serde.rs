@@ -186,7 +186,7 @@ mod set {
             where
                 A: Allocator;
 
-            impl<'de, T, S, A> Visitor<'de> for SeqInPlaceVisitor<'_, T, S, A>
+            impl<'a, 'de, T, S, A> Visitor<'de> for SeqInPlaceVisitor<'a, T, S, A>
             where
                 T: Deserialize<'de> + Eq + Hash,
                 S: BuildHasher + Default,

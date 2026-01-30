@@ -1,23 +1,19 @@
 use super::plumbing::*;
 use super::*;
-use std::num::NonZeroUsize;
-use std::{fmt, iter, mem};
+use std::iter;
+use std::usize;
 
-/// Iterator adaptor for [the `repeat()` function].
-///
-/// [the `repeat()` function]: repeat()
+/// Iterator adaptor for [the `repeat()` function](fn.repeat.html).
 #[derive(Debug, Clone)]
-pub struct Repeat<T> {
+pub struct Repeat<T: Clone + Send> {
     element: T,
 }
 
-/// Creates a parallel iterator that endlessly repeats `element` (by
+/// Creates a parallel iterator that endlessly repeats `elt` (by
 /// cloning it). Note that this iterator has "infinite" length, so
 /// typically you would want to use `zip` or `take` or some other
 /// means to shorten it, or consider using
-/// [the `repeat_n()` function] instead.
-///
-/// [the `repeat_n()` function]: repeat_n()
+/// [the `repeatn()` function](fn.repeatn.html) instead.
 ///
 /// # Examples
 ///
@@ -27,8 +23,8 @@ pub struct Repeat<T> {
 /// let x: Vec<(i32, i32)> = repeat(22).zip(0..3).collect();
 /// assert_eq!(x, vec![(22, 0), (22, 1), (22, 2)]);
 /// ```
-pub fn repeat<T: Clone + Send>(element: T) -> Repeat<T> {
-    Repeat { element }
+pub fn repeat<T: Clone + Send>(elt: T) -> Repeat<T> {
+    Repeat { element: elt }
 }
 
 impl<T> Repeat<T>
@@ -36,23 +32,21 @@ where
     T: Clone + Send,
 {
     /// Takes only `n` repeats of the element, similar to the general
-    /// [`take()`].
+    /// [`take()`](trait.IndexedParallelIterator.html#method.take).
     ///
     /// The resulting `RepeatN` is an `IndexedParallelIterator`, allowing
     /// more functionality than `Repeat` alone.
-    ///
-    /// [`take()`]: IndexedParallelIterator::take()
     pub fn take(self, n: usize) -> RepeatN<T> {
-        repeat_n(self.element, n)
+        repeatn(self.element, n)
     }
 
     /// Iterates tuples, repeating the element with items from another
-    /// iterator, similar to the general [`zip()`].
-    ///
-    /// [`zip()`]: IndexedParallelIterator::zip()
+    /// iterator, similar to the general
+    /// [`zip()`](trait.IndexedParallelIterator.html#method.zip).
     pub fn zip<Z>(self, zip_op: Z) -> Zip<RepeatN<T>, Z::Iter>
     where
-        Z: IntoParallelIterator<Iter: IndexedParallelIterator>,
+        Z: IntoParallelIterator,
+        Z::Iter: IndexedParallelIterator,
     {
         let z = zip_op.into_par_iter();
         let n = z.len();
@@ -104,52 +98,28 @@ impl<T: Clone + Send> UnindexedProducer for RepeatProducer<T> {
     }
 }
 
-/// Iterator adaptor for [the `repeat_n()` function].
-///
-/// [the `repeat_n()` function]: repeat_n()
-#[derive(Clone)]
-pub struct RepeatN<T> {
-    inner: RepeatNProducer<T>,
+/// Iterator adaptor for [the `repeatn()` function](fn.repeatn.html).
+#[derive(Debug, Clone)]
+pub struct RepeatN<T: Clone + Send> {
+    element: T,
+    count: usize,
 }
 
-/// Creates a parallel iterator that produces `n` repeats of `element`
+/// Creates a parallel iterator that produces `n` repeats of `elt`
 /// (by cloning it).
 ///
 /// # Examples
 ///
 /// ```
 /// use rayon::prelude::*;
-/// use rayon::iter::repeat_n;
-/// let x: Vec<(i32, i32)> = repeat_n(22, 3).zip(0..3).collect();
+/// use rayon::iter::repeatn;
+/// let x: Vec<(i32, i32)> = repeatn(22, 3).zip(0..3).collect();
 /// assert_eq!(x, vec![(22, 0), (22, 1), (22, 2)]);
 /// ```
-pub fn repeat_n<T: Clone + Send>(element: T, n: usize) -> RepeatN<T> {
-    let inner = match NonZeroUsize::new(n) {
-        Some(count) => RepeatNProducer::Repeats(element, count),
-        None => RepeatNProducer::Empty,
-    };
-    RepeatN { inner }
-}
-
-/// Creates a parallel iterator that produces `n` repeats of `element`
-/// (by cloning it).
-///
-/// Deprecated in favor of [`repeat_n`] for consistency with the standard library.
-#[deprecated(note = "use `repeat_n`")]
-pub fn repeatn<T: Clone + Send>(element: T, n: usize) -> RepeatN<T> {
-    repeat_n(element, n)
-}
-
-impl<T: fmt::Debug> fmt::Debug for RepeatN<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut dbg = f.debug_struct("RepeatN");
-        if let RepeatNProducer::Repeats(element, count) = &self.inner {
-            dbg.field("count", &count.get())
-                .field("element", element)
-                .finish()
-        } else {
-            dbg.field("count", &0usize).finish_non_exhaustive()
-        }
+pub fn repeatn<T: Clone + Send>(elt: T, n: usize) -> RepeatN<T> {
+    RepeatN {
+        element: elt,
+        count: n,
     }
 }
 
@@ -167,7 +137,7 @@ where
     }
 
     fn opt_len(&self) -> Option<usize> {
-        Some(self.inner.len())
+        Some(self.count)
     }
 }
 
@@ -186,110 +156,86 @@ where
     where
         CB: ProducerCallback<Self::Item>,
     {
-        callback.callback(self.inner)
+        callback.callback(RepeatNProducer {
+            element: self.element,
+            count: self.count,
+        })
     }
 
     fn len(&self) -> usize {
-        self.inner.len()
+        self.count
     }
 }
 
 /// Producer for `RepeatN`.
-#[derive(Clone)]
-enum RepeatNProducer<T> {
-    Repeats(T, NonZeroUsize),
-    Empty,
+struct RepeatNProducer<T: Clone + Send> {
+    element: T,
+    count: usize,
 }
 
 impl<T: Clone + Send> Producer for RepeatNProducer<T> {
     type Item = T;
-    type IntoIter = Self;
+    type IntoIter = Iter<T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        // We could potentially use `std::iter::RepeatN` with MSRV 1.82, but we have no way to
-        // create an empty instance without a value in hand, like `repeat_n(value, 0)`.
-        self
+        Iter {
+            element: self.element,
+            count: self.count,
+        }
     }
 
     fn split_at(self, index: usize) -> (Self, Self) {
-        if let Self::Repeats(element, count) = self {
-            assert!(index <= count.get());
-            match (
-                NonZeroUsize::new(index),
-                NonZeroUsize::new(count.get() - index),
-            ) {
-                (Some(left), Some(right)) => (
-                    Self::Repeats(element.clone(), left),
-                    Self::Repeats(element, right),
-                ),
-                (Some(left), None) => (Self::Repeats(element, left), Self::Empty),
-                (None, Some(right)) => (Self::Empty, Self::Repeats(element, right)),
-                (None, None) => unreachable!(),
-            }
-        } else {
-            assert!(index == 0);
-            (Self::Empty, Self::Empty)
-        }
+        (
+            RepeatNProducer {
+                element: self.element.clone(),
+                count: index,
+            },
+            RepeatNProducer {
+                element: self.element,
+                count: self.count - index,
+            },
+        )
     }
 }
 
-impl<T: Clone> Iterator for RepeatNProducer<T> {
+/// Iterator for `RepeatN`.
+///
+/// This is conceptually like `std::iter::Take<std::iter::Repeat<T>>`, but
+/// we need `DoubleEndedIterator` and unconditional `ExactSizeIterator`.
+struct Iter<T: Clone> {
+    element: T,
+    count: usize,
+}
+
+impl<T: Clone> Iterator for Iter<T> {
     type Item = T;
 
     #[inline]
     fn next(&mut self) -> Option<T> {
-        if let Self::Repeats(element, count) = self {
-            if let Some(rem) = NonZeroUsize::new(count.get() - 1) {
-                *count = rem;
-                Some(element.clone())
-            } else {
-                match mem::replace(self, Self::Empty) {
-                    Self::Repeats(element, _) => Some(element),
-                    Self::Empty => unreachable!(),
-                }
-            }
+        if self.count > 0 {
+            self.count -= 1;
+            Some(self.element.clone())
         } else {
             None
         }
     }
 
     #[inline]
-    fn nth(&mut self, n: usize) -> Option<T> {
-        if let Self::Repeats(_, count) = self {
-            if let Some(rem) = NonZeroUsize::new(count.get().saturating_sub(n)) {
-                *count = rem;
-                return self.next();
-            }
-            *self = Self::Empty;
-        }
-        None
-    }
-
-    #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let len = self.len();
-        (len, Some(len))
+        (self.count, Some(self.count))
     }
 }
 
-impl<T: Clone> DoubleEndedIterator for RepeatNProducer<T> {
+impl<T: Clone> DoubleEndedIterator for Iter<T> {
     #[inline]
     fn next_back(&mut self) -> Option<T> {
         self.next()
     }
-
-    #[inline]
-    fn nth_back(&mut self, n: usize) -> Option<T> {
-        self.nth(n)
-    }
 }
 
-impl<T: Clone> ExactSizeIterator for RepeatNProducer<T> {
+impl<T: Clone> ExactSizeIterator for Iter<T> {
     #[inline]
     fn len(&self) -> usize {
-        match self {
-            Self::Repeats(_, count) => count.get(),
-            Self::Empty => 0,
-        }
+        self.count
     }
 }

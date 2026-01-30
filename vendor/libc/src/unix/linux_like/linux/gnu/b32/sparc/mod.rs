@@ -6,8 +6,6 @@ use crate::{off64_t, off_t};
 pub type wchar_t = i32;
 
 s! {
-    // FIXME(1.0): This should not implement `PartialEq`
-    #[allow(unpredictable_function_pointer_comparisons)]
     pub struct sigaction {
         pub sa_sigaction: crate::sighandler_t,
         pub sa_mask: crate::sigset_t,
@@ -28,8 +26,7 @@ s! {
 
         pub f_namelen: crate::__fsword_t,
         pub f_frsize: crate::__fsword_t,
-        pub f_flags: crate::__fsword_t,
-        f_spare: [crate::__fsword_t; 4],
+        f_spare: [crate::__fsword_t; 5],
     }
 
     pub struct siginfo_t {
@@ -63,30 +60,6 @@ s! {
         pub ss_size: size_t,
     }
 
-    pub struct stat {
-        pub st_dev: crate::dev_t,
-        #[cfg(not(gnu_file_offset_bits64))]
-        __pad1: c_ushort,
-        pub st_ino: crate::ino_t,
-        pub st_mode: crate::mode_t,
-        pub st_nlink: crate::nlink_t,
-        pub st_uid: crate::uid_t,
-        pub st_gid: crate::gid_t,
-        pub st_rdev: crate::dev_t,
-        __pad2: c_ushort,
-        pub st_size: off_t,
-        pub st_blksize: crate::blksize_t,
-        pub st_blocks: crate::blkcnt_t,
-        pub st_atime: crate::time_t,
-        pub st_atime_nsec: c_long,
-        pub st_mtime: crate::time_t,
-        pub st_mtime_nsec: c_long,
-        pub st_ctime: crate::time_t,
-        pub st_ctime_nsec: c_long,
-        __glibc_reserved4: c_ulong,
-        __glibc_reserved5: c_ulong,
-    }
-
     pub struct stat64 {
         pub st_dev: crate::dev_t,
         pub st_ino: crate::ino64_t,
@@ -105,8 +78,7 @@ s! {
         pub st_mtime_nsec: c_long,
         pub st_ctime: crate::time_t,
         pub st_ctime_nsec: c_long,
-        __glibc_reserved4: c_ulong,
-        __glibc_reserved5: c_ulong,
+        __reserved: [c_long; 2],
     }
 
     pub struct statfs64 {
@@ -134,7 +106,6 @@ s! {
         pub f_ffree: u64,
         pub f_favail: u64,
         pub f_fsid: c_ulong,
-        __f_unused: c_int,
         pub f_flag: c_ulong,
         pub f_namemax: c_ulong,
         __f_spare: [c_int; 6],
@@ -156,18 +127,12 @@ s! {
 
     pub struct shmid_ds {
         pub shm_perm: crate::ipc_perm,
-        #[cfg(gnu_time_bits64)]
-        pub shm_segsz: size_t,
-        #[cfg(not(gnu_time_bits64))]
         __pad1: c_uint,
         pub shm_atime: crate::time_t,
-        #[cfg(not(gnu_time_bits64))]
         __pad2: c_uint,
         pub shm_dtime: crate::time_t,
-        #[cfg(not(gnu_time_bits64))]
         __pad3: c_uint,
         pub shm_ctime: crate::time_t,
-        #[cfg(not(gnu_time_bits64))]
         pub shm_segsz: size_t,
         pub shm_cpid: crate::pid_t,
         pub shm_lpid: crate::pid_t,
@@ -178,26 +143,24 @@ s! {
 
     pub struct msqid_ds {
         pub msg_perm: crate::ipc_perm,
-        #[cfg(not(gnu_time_bits64))]
         __pad1: c_uint,
         pub msg_stime: crate::time_t,
-        #[cfg(not(gnu_time_bits64))]
         __pad2: c_uint,
         pub msg_rtime: crate::time_t,
-        #[cfg(not(gnu_time_bits64))]
         __pad3: c_uint,
         pub msg_ctime: crate::time_t,
-        pub __msg_cbytes: c_ulong,
+        pub __msg_cbytes: c_ushort,
         pub msg_qnum: crate::msgqnum_t,
         pub msg_qbytes: crate::msglen_t,
         pub msg_lspid: crate::pid_t,
         pub msg_lrpid: crate::pid_t,
-        __glibc_reserved4: c_ulong,
-        __glibc_reserved5: c_ulong,
+        __glibc_reserved1: c_ulong,
+        __glibc_reserved2: c_ulong,
     }
 }
 
 s_no_extra_traits! {
+    #[allow(missing_debug_implementations)]
     #[repr(align(8))]
     pub struct max_align_t {
         priv_: [i64; 3],
