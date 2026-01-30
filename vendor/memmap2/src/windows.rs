@@ -77,7 +77,6 @@ struct SYSTEM_INFO {
     wProcessorRevision: WORD,
 }
 
-#[allow(dead_code)]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct FILETIME {
@@ -137,7 +136,8 @@ extern "system" {
 ///
 /// This aligns the pointer to `allocation_granularity()` or 1 if unknown.
 fn empty_slice_ptr() -> *mut c_void {
-    allocation_granularity().max(1) as *mut c_void
+    let align = allocation_granularity().max(1);
+    unsafe { mem::transmute(align) }
 }
 
 pub struct MmapInner {
@@ -216,7 +216,7 @@ impl MmapInner {
             Ok(MmapInner {
                 handle: Some(new_handle),
                 ptr: ptr.offset(alignment as isize),
-                len,
+                len: len as usize,
                 copy,
             })
         }
@@ -382,7 +382,7 @@ impl MmapInner {
                 Ok(MmapInner {
                     handle: None,
                     ptr,
-                    len,
+                    len: len as usize,
                     copy: false,
                 })
             } else {
@@ -463,7 +463,7 @@ impl MmapInner {
 
     #[inline]
     pub fn mut_ptr(&mut self) -> *mut u8 {
-        self.ptr.cast()
+        self.ptr as *mut u8
     }
 
     #[inline]

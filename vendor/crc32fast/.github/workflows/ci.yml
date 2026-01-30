@@ -8,6 +8,9 @@ on:
     branches:
       - master
 
+env:
+  MSRV: "1.46.0"
+
 jobs:
   stable:
     name: stable
@@ -48,11 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Get MSRV from Cargo.toml
-        id: msrv
-        run: echo "version=$(grep '^rust-version' Cargo.toml | sed 's/rust-version = "\(.*\)"/\1/')" >> $GITHUB_OUTPUT
       - name: Install Rust
-        run: rustup update ${{ steps.msrv.outputs.version }} && rustup default ${{ steps.msrv.outputs.version }}
+        run: rustup update $MSRV && rustup default $MSRV
       - name: Test in debug mode
         run: cargo test --no-fail-fast
       - name: Test in release mode

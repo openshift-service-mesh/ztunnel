@@ -1,277 +1,329 @@
 #[inline]
-pub unsafe fn ActivateKeyboardLayout(hkl: HKL, flags: ACTIVATE_KEYBOARD_LAYOUT_FLAGS) -> windows_core::Result<HKL> {
-    windows_link::link!("user32.dll" "system" fn ActivateKeyboardLayout(hkl : HKL, flags : ACTIVATE_KEYBOARD_LAYOUT_FLAGS) -> HKL);
-    let result__ = unsafe { ActivateKeyboardLayout(hkl, flags) };
-    (!result__.is_invalid()).then_some(result__).ok_or_else(windows_core::Error::from_win32)
+pub unsafe fn ActivateKeyboardLayout<P0>(hkl: P0, flags: ACTIVATE_KEYBOARD_LAYOUT_FLAGS) -> windows_core::Result<HKL>
+where
+    P0: windows_core::Param<HKL>,
+{
+    windows_targets::link!("user32.dll" "system" fn ActivateKeyboardLayout(hkl : HKL, flags : ACTIVATE_KEYBOARD_LAYOUT_FLAGS) -> HKL);
+    let result__ = ActivateKeyboardLayout(hkl.param().abi(), flags);
+    (!result__.is_invalid()).then(|| result__).ok_or_else(windows_core::Error::from_win32)
 }
 #[inline]
-pub unsafe fn BlockInput(fblockit: bool) -> windows_core::Result<()> {
-    windows_link::link!("user32.dll" "system" fn BlockInput(fblockit : windows_core::BOOL) -> windows_core::BOOL);
-    unsafe { BlockInput(fblockit.into()).ok() }
+pub unsafe fn BlockInput<P0>(fblockit: P0) -> windows_core::Result<()>
+where
+    P0: windows_core::Param<super::super::super::Foundation::BOOL>,
+{
+    windows_targets::link!("user32.dll" "system" fn BlockInput(fblockit : super::super::super::Foundation:: BOOL) -> super::super::super::Foundation:: BOOL);
+    BlockInput(fblockit.param().abi()).ok()
 }
 #[inline]
-pub unsafe fn DragDetect(hwnd: super::super::super::Foundation::HWND, pt: super::super::super::Foundation::POINT) -> windows_core::BOOL {
-    windows_link::link!("user32.dll" "system" fn DragDetect(hwnd : super::super::super::Foundation:: HWND, pt : super::super::super::Foundation:: POINT) -> windows_core::BOOL);
-    unsafe { DragDetect(hwnd, core::mem::transmute(pt)) }
+pub unsafe fn DragDetect<P0>(hwnd: P0, pt: super::super::super::Foundation::POINT) -> super::super::super::Foundation::BOOL
+where
+    P0: windows_core::Param<super::super::super::Foundation::HWND>,
+{
+    windows_targets::link!("user32.dll" "system" fn DragDetect(hwnd : super::super::super::Foundation:: HWND, pt : super::super::super::Foundation:: POINT) -> super::super::super::Foundation:: BOOL);
+    DragDetect(hwnd.param().abi(), core::mem::transmute(pt))
 }
 #[inline]
-pub unsafe fn EnableWindow(hwnd: super::super::super::Foundation::HWND, benable: bool) -> windows_core::BOOL {
-    windows_link::link!("user32.dll" "system" fn EnableWindow(hwnd : super::super::super::Foundation:: HWND, benable : windows_core::BOOL) -> windows_core::BOOL);
-    unsafe { EnableWindow(hwnd, benable.into()) }
+pub unsafe fn EnableWindow<P0, P1>(hwnd: P0, benable: P1) -> super::super::super::Foundation::BOOL
+where
+    P0: windows_core::Param<super::super::super::Foundation::HWND>,
+    P1: windows_core::Param<super::super::super::Foundation::BOOL>,
+{
+    windows_targets::link!("user32.dll" "system" fn EnableWindow(hwnd : super::super::super::Foundation:: HWND, benable : super::super::super::Foundation:: BOOL) -> super::super::super::Foundation:: BOOL);
+    EnableWindow(hwnd.param().abi(), benable.param().abi())
 }
 #[inline]
 pub unsafe fn GetActiveWindow() -> super::super::super::Foundation::HWND {
-    windows_link::link!("user32.dll" "system" fn GetActiveWindow() -> super::super::super::Foundation:: HWND);
-    unsafe { GetActiveWindow() }
+    windows_targets::link!("user32.dll" "system" fn GetActiveWindow() -> super::super::super::Foundation:: HWND);
+    GetActiveWindow()
 }
 #[inline]
 pub unsafe fn GetAsyncKeyState(vkey: i32) -> i16 {
-    windows_link::link!("user32.dll" "system" fn GetAsyncKeyState(vkey : i32) -> i16);
-    unsafe { GetAsyncKeyState(vkey) }
+    windows_targets::link!("user32.dll" "system" fn GetAsyncKeyState(vkey : i32) -> i16);
+    GetAsyncKeyState(vkey)
 }
 #[inline]
 pub unsafe fn GetCapture() -> super::super::super::Foundation::HWND {
-    windows_link::link!("user32.dll" "system" fn GetCapture() -> super::super::super::Foundation:: HWND);
-    unsafe { GetCapture() }
+    windows_targets::link!("user32.dll" "system" fn GetCapture() -> super::super::super::Foundation:: HWND);
+    GetCapture()
 }
 #[inline]
 pub unsafe fn GetDoubleClickTime() -> u32 {
-    windows_link::link!("user32.dll" "system" fn GetDoubleClickTime() -> u32);
-    unsafe { GetDoubleClickTime() }
+    windows_targets::link!("user32.dll" "system" fn GetDoubleClickTime() -> u32);
+    GetDoubleClickTime()
 }
 #[inline]
 pub unsafe fn GetFocus() -> super::super::super::Foundation::HWND {
-    windows_link::link!("user32.dll" "system" fn GetFocus() -> super::super::super::Foundation:: HWND);
-    unsafe { GetFocus() }
+    windows_targets::link!("user32.dll" "system" fn GetFocus() -> super::super::super::Foundation:: HWND);
+    GetFocus()
 }
 #[inline]
 pub unsafe fn GetKBCodePage() -> u32 {
-    windows_link::link!("user32.dll" "system" fn GetKBCodePage() -> u32);
-    unsafe { GetKBCodePage() }
+    windows_targets::link!("user32.dll" "system" fn GetKBCodePage() -> u32);
+    GetKBCodePage()
 }
 #[inline]
 pub unsafe fn GetKeyNameTextA(lparam: i32, lpstring: &mut [u8]) -> i32 {
-    windows_link::link!("user32.dll" "system" fn GetKeyNameTextA(lparam : i32, lpstring : windows_core::PSTR, cchsize : i32) -> i32);
-    unsafe { GetKeyNameTextA(lparam, core::mem::transmute(lpstring.as_ptr()), lpstring.len().try_into().unwrap()) }
+    windows_targets::link!("user32.dll" "system" fn GetKeyNameTextA(lparam : i32, lpstring : windows_core::PSTR, cchsize : i32) -> i32);
+    GetKeyNameTextA(lparam, core::mem::transmute(lpstring.as_ptr()), lpstring.len().try_into().unwrap())
 }
 #[inline]
 pub unsafe fn GetKeyNameTextW(lparam: i32, lpstring: &mut [u16]) -> i32 {
-    windows_link::link!("user32.dll" "system" fn GetKeyNameTextW(lparam : i32, lpstring : windows_core::PWSTR, cchsize : i32) -> i32);
-    unsafe { GetKeyNameTextW(lparam, core::mem::transmute(lpstring.as_ptr()), lpstring.len().try_into().unwrap()) }
+    windows_targets::link!("user32.dll" "system" fn GetKeyNameTextW(lparam : i32, lpstring : windows_core::PWSTR, cchsize : i32) -> i32);
+    GetKeyNameTextW(lparam, core::mem::transmute(lpstring.as_ptr()), lpstring.len().try_into().unwrap())
 }
 #[inline]
 pub unsafe fn GetKeyState(nvirtkey: i32) -> i16 {
-    windows_link::link!("user32.dll" "system" fn GetKeyState(nvirtkey : i32) -> i16);
-    unsafe { GetKeyState(nvirtkey) }
+    windows_targets::link!("user32.dll" "system" fn GetKeyState(nvirtkey : i32) -> i16);
+    GetKeyState(nvirtkey)
 }
 #[inline]
 pub unsafe fn GetKeyboardLayout(idthread: u32) -> HKL {
-    windows_link::link!("user32.dll" "system" fn GetKeyboardLayout(idthread : u32) -> HKL);
-    unsafe { GetKeyboardLayout(idthread) }
+    windows_targets::link!("user32.dll" "system" fn GetKeyboardLayout(idthread : u32) -> HKL);
+    GetKeyboardLayout(idthread)
 }
 #[inline]
 pub unsafe fn GetKeyboardLayoutList(lplist: Option<&mut [HKL]>) -> i32 {
-    windows_link::link!("user32.dll" "system" fn GetKeyboardLayoutList(nbuff : i32, lplist : *mut HKL) -> i32);
-    unsafe { GetKeyboardLayoutList(lplist.as_deref().map_or(0, |slice| slice.len().try_into().unwrap()), core::mem::transmute(lplist.as_deref().map_or(core::ptr::null(), |slice| slice.as_ptr()))) }
+    windows_targets::link!("user32.dll" "system" fn GetKeyboardLayoutList(nbuff : i32, lplist : *mut HKL) -> i32);
+    GetKeyboardLayoutList(lplist.as_deref().map_or(0, |slice| slice.len().try_into().unwrap()), core::mem::transmute(lplist.as_deref().map_or(core::ptr::null(), |slice| slice.as_ptr())))
 }
 #[inline]
 pub unsafe fn GetKeyboardLayoutNameA(pwszklid: &mut [u8; 9]) -> windows_core::Result<()> {
-    windows_link::link!("user32.dll" "system" fn GetKeyboardLayoutNameA(pwszklid : windows_core::PSTR) -> windows_core::BOOL);
-    unsafe { GetKeyboardLayoutNameA(core::mem::transmute(pwszklid.as_ptr())).ok() }
+    windows_targets::link!("user32.dll" "system" fn GetKeyboardLayoutNameA(pwszklid : windows_core::PSTR) -> super::super::super::Foundation:: BOOL);
+    GetKeyboardLayoutNameA(core::mem::transmute(pwszklid.as_ptr())).ok()
 }
 #[inline]
 pub unsafe fn GetKeyboardLayoutNameW(pwszklid: &mut [u16; 9]) -> windows_core::Result<()> {
-    windows_link::link!("user32.dll" "system" fn GetKeyboardLayoutNameW(pwszklid : windows_core::PWSTR) -> windows_core::BOOL);
-    unsafe { GetKeyboardLayoutNameW(core::mem::transmute(pwszklid.as_ptr())).ok() }
+    windows_targets::link!("user32.dll" "system" fn GetKeyboardLayoutNameW(pwszklid : windows_core::PWSTR) -> super::super::super::Foundation:: BOOL);
+    GetKeyboardLayoutNameW(core::mem::transmute(pwszklid.as_ptr())).ok()
 }
 #[inline]
 pub unsafe fn GetKeyboardState(lpkeystate: &mut [u8; 256]) -> windows_core::Result<()> {
-    windows_link::link!("user32.dll" "system" fn GetKeyboardState(lpkeystate : *mut u8) -> windows_core::BOOL);
-    unsafe { GetKeyboardState(core::mem::transmute(lpkeystate.as_ptr())).ok() }
+    windows_targets::link!("user32.dll" "system" fn GetKeyboardState(lpkeystate : *mut u8) -> super::super::super::Foundation:: BOOL);
+    GetKeyboardState(core::mem::transmute(lpkeystate.as_ptr())).ok()
 }
 #[inline]
 pub unsafe fn GetKeyboardType(ntypeflag: i32) -> i32 {
-    windows_link::link!("user32.dll" "system" fn GetKeyboardType(ntypeflag : i32) -> i32);
-    unsafe { GetKeyboardType(ntypeflag) }
+    windows_targets::link!("user32.dll" "system" fn GetKeyboardType(ntypeflag : i32) -> i32);
+    GetKeyboardType(ntypeflag)
 }
 #[inline]
-pub unsafe fn GetLastInputInfo(plii: *mut LASTINPUTINFO) -> windows_core::BOOL {
-    windows_link::link!("user32.dll" "system" fn GetLastInputInfo(plii : *mut LASTINPUTINFO) -> windows_core::BOOL);
-    unsafe { GetLastInputInfo(plii as _) }
+pub unsafe fn GetLastInputInfo(plii: *mut LASTINPUTINFO) -> super::super::super::Foundation::BOOL {
+    windows_targets::link!("user32.dll" "system" fn GetLastInputInfo(plii : *mut LASTINPUTINFO) -> super::super::super::Foundation:: BOOL);
+    GetLastInputInfo(plii)
 }
 #[inline]
 pub unsafe fn GetMouseMovePointsEx(cbsize: u32, lppt: *const MOUSEMOVEPOINT, lpptbuf: &mut [MOUSEMOVEPOINT], resolution: GET_MOUSE_MOVE_POINTS_EX_RESOLUTION) -> i32 {
-    windows_link::link!("user32.dll" "system" fn GetMouseMovePointsEx(cbsize : u32, lppt : *const MOUSEMOVEPOINT, lpptbuf : *mut MOUSEMOVEPOINT, nbufpoints : i32, resolution : GET_MOUSE_MOVE_POINTS_EX_RESOLUTION) -> i32);
-    unsafe { GetMouseMovePointsEx(cbsize, lppt, core::mem::transmute(lpptbuf.as_ptr()), lpptbuf.len().try_into().unwrap(), resolution) }
+    windows_targets::link!("user32.dll" "system" fn GetMouseMovePointsEx(cbsize : u32, lppt : *const MOUSEMOVEPOINT, lpptbuf : *mut MOUSEMOVEPOINT, nbufpoints : i32, resolution : GET_MOUSE_MOVE_POINTS_EX_RESOLUTION) -> i32);
+    GetMouseMovePointsEx(cbsize, lppt, core::mem::transmute(lpptbuf.as_ptr()), lpptbuf.len().try_into().unwrap(), resolution)
 }
 #[inline]
-pub unsafe fn IsWindowEnabled(hwnd: super::super::super::Foundation::HWND) -> windows_core::BOOL {
-    windows_link::link!("user32.dll" "system" fn IsWindowEnabled(hwnd : super::super::super::Foundation:: HWND) -> windows_core::BOOL);
-    unsafe { IsWindowEnabled(hwnd) }
+pub unsafe fn IsWindowEnabled<P0>(hwnd: P0) -> super::super::super::Foundation::BOOL
+where
+    P0: windows_core::Param<super::super::super::Foundation::HWND>,
+{
+    windows_targets::link!("user32.dll" "system" fn IsWindowEnabled(hwnd : super::super::super::Foundation:: HWND) -> super::super::super::Foundation:: BOOL);
+    IsWindowEnabled(hwnd.param().abi())
 }
 #[inline]
 pub unsafe fn LoadKeyboardLayoutA<P0>(pwszklid: P0, flags: ACTIVATE_KEYBOARD_LAYOUT_FLAGS) -> windows_core::Result<HKL>
 where
     P0: windows_core::Param<windows_core::PCSTR>,
 {
-    windows_link::link!("user32.dll" "system" fn LoadKeyboardLayoutA(pwszklid : windows_core::PCSTR, flags : ACTIVATE_KEYBOARD_LAYOUT_FLAGS) -> HKL);
-    let result__ = unsafe { LoadKeyboardLayoutA(pwszklid.param().abi(), flags) };
-    (!result__.is_invalid()).then_some(result__).ok_or_else(windows_core::Error::from_win32)
+    windows_targets::link!("user32.dll" "system" fn LoadKeyboardLayoutA(pwszklid : windows_core::PCSTR, flags : ACTIVATE_KEYBOARD_LAYOUT_FLAGS) -> HKL);
+    let result__ = LoadKeyboardLayoutA(pwszklid.param().abi(), flags);
+    (!result__.is_invalid()).then(|| result__).ok_or_else(windows_core::Error::from_win32)
 }
 #[inline]
 pub unsafe fn LoadKeyboardLayoutW<P0>(pwszklid: P0, flags: ACTIVATE_KEYBOARD_LAYOUT_FLAGS) -> windows_core::Result<HKL>
 where
     P0: windows_core::Param<windows_core::PCWSTR>,
 {
-    windows_link::link!("user32.dll" "system" fn LoadKeyboardLayoutW(pwszklid : windows_core::PCWSTR, flags : ACTIVATE_KEYBOARD_LAYOUT_FLAGS) -> HKL);
-    let result__ = unsafe { LoadKeyboardLayoutW(pwszklid.param().abi(), flags) };
-    (!result__.is_invalid()).then_some(result__).ok_or_else(windows_core::Error::from_win32)
+    windows_targets::link!("user32.dll" "system" fn LoadKeyboardLayoutW(pwszklid : windows_core::PCWSTR, flags : ACTIVATE_KEYBOARD_LAYOUT_FLAGS) -> HKL);
+    let result__ = LoadKeyboardLayoutW(pwszklid.param().abi(), flags);
+    (!result__.is_invalid()).then(|| result__).ok_or_else(windows_core::Error::from_win32)
 }
 #[inline]
 pub unsafe fn MapVirtualKeyA(ucode: u32, umaptype: MAP_VIRTUAL_KEY_TYPE) -> u32 {
-    windows_link::link!("user32.dll" "system" fn MapVirtualKeyA(ucode : u32, umaptype : MAP_VIRTUAL_KEY_TYPE) -> u32);
-    unsafe { MapVirtualKeyA(ucode, umaptype) }
+    windows_targets::link!("user32.dll" "system" fn MapVirtualKeyA(ucode : u32, umaptype : MAP_VIRTUAL_KEY_TYPE) -> u32);
+    MapVirtualKeyA(ucode, umaptype)
 }
 #[inline]
-pub unsafe fn MapVirtualKeyExA(ucode: u32, umaptype: MAP_VIRTUAL_KEY_TYPE, dwhkl: Option<HKL>) -> u32 {
-    windows_link::link!("user32.dll" "system" fn MapVirtualKeyExA(ucode : u32, umaptype : MAP_VIRTUAL_KEY_TYPE, dwhkl : HKL) -> u32);
-    unsafe { MapVirtualKeyExA(ucode, umaptype, dwhkl.unwrap_or(core::mem::zeroed()) as _) }
+pub unsafe fn MapVirtualKeyExA<P0>(ucode: u32, umaptype: MAP_VIRTUAL_KEY_TYPE, dwhkl: P0) -> u32
+where
+    P0: windows_core::Param<HKL>,
+{
+    windows_targets::link!("user32.dll" "system" fn MapVirtualKeyExA(ucode : u32, umaptype : MAP_VIRTUAL_KEY_TYPE, dwhkl : HKL) -> u32);
+    MapVirtualKeyExA(ucode, umaptype, dwhkl.param().abi())
 }
 #[inline]
-pub unsafe fn MapVirtualKeyExW(ucode: u32, umaptype: MAP_VIRTUAL_KEY_TYPE, dwhkl: Option<HKL>) -> u32 {
-    windows_link::link!("user32.dll" "system" fn MapVirtualKeyExW(ucode : u32, umaptype : MAP_VIRTUAL_KEY_TYPE, dwhkl : HKL) -> u32);
-    unsafe { MapVirtualKeyExW(ucode, umaptype, dwhkl.unwrap_or(core::mem::zeroed()) as _) }
+pub unsafe fn MapVirtualKeyExW<P0>(ucode: u32, umaptype: MAP_VIRTUAL_KEY_TYPE, dwhkl: P0) -> u32
+where
+    P0: windows_core::Param<HKL>,
+{
+    windows_targets::link!("user32.dll" "system" fn MapVirtualKeyExW(ucode : u32, umaptype : MAP_VIRTUAL_KEY_TYPE, dwhkl : HKL) -> u32);
+    MapVirtualKeyExW(ucode, umaptype, dwhkl.param().abi())
 }
 #[inline]
 pub unsafe fn MapVirtualKeyW(ucode: u32, umaptype: MAP_VIRTUAL_KEY_TYPE) -> u32 {
-    windows_link::link!("user32.dll" "system" fn MapVirtualKeyW(ucode : u32, umaptype : MAP_VIRTUAL_KEY_TYPE) -> u32);
-    unsafe { MapVirtualKeyW(ucode, umaptype) }
+    windows_targets::link!("user32.dll" "system" fn MapVirtualKeyW(ucode : u32, umaptype : MAP_VIRTUAL_KEY_TYPE) -> u32);
+    MapVirtualKeyW(ucode, umaptype)
 }
 #[inline]
 pub unsafe fn OemKeyScan(woemchar: u16) -> u32 {
-    windows_link::link!("user32.dll" "system" fn OemKeyScan(woemchar : u16) -> u32);
-    unsafe { OemKeyScan(woemchar) }
+    windows_targets::link!("user32.dll" "system" fn OemKeyScan(woemchar : u16) -> u32);
+    OemKeyScan(woemchar)
 }
 #[inline]
-pub unsafe fn RegisterHotKey(hwnd: Option<super::super::super::Foundation::HWND>, id: i32, fsmodifiers: HOT_KEY_MODIFIERS, vk: u32) -> windows_core::Result<()> {
-    windows_link::link!("user32.dll" "system" fn RegisterHotKey(hwnd : super::super::super::Foundation:: HWND, id : i32, fsmodifiers : HOT_KEY_MODIFIERS, vk : u32) -> windows_core::BOOL);
-    unsafe { RegisterHotKey(hwnd.unwrap_or(core::mem::zeroed()) as _, id, fsmodifiers, vk).ok() }
+pub unsafe fn RegisterHotKey<P0>(hwnd: P0, id: i32, fsmodifiers: HOT_KEY_MODIFIERS, vk: u32) -> windows_core::Result<()>
+where
+    P0: windows_core::Param<super::super::super::Foundation::HWND>,
+{
+    windows_targets::link!("user32.dll" "system" fn RegisterHotKey(hwnd : super::super::super::Foundation:: HWND, id : i32, fsmodifiers : HOT_KEY_MODIFIERS, vk : u32) -> super::super::super::Foundation:: BOOL);
+    RegisterHotKey(hwnd.param().abi(), id, fsmodifiers, vk).ok()
 }
 #[inline]
 pub unsafe fn ReleaseCapture() -> windows_core::Result<()> {
-    windows_link::link!("user32.dll" "system" fn ReleaseCapture() -> windows_core::BOOL);
-    unsafe { ReleaseCapture().ok() }
+    windows_targets::link!("user32.dll" "system" fn ReleaseCapture() -> super::super::super::Foundation:: BOOL);
+    ReleaseCapture().ok()
 }
 #[inline]
 pub unsafe fn SendInput(pinputs: &[INPUT], cbsize: i32) -> u32 {
-    windows_link::link!("user32.dll" "system" fn SendInput(cinputs : u32, pinputs : *const INPUT, cbsize : i32) -> u32);
-    unsafe { SendInput(pinputs.len().try_into().unwrap(), core::mem::transmute(pinputs.as_ptr()), cbsize) }
+    windows_targets::link!("user32.dll" "system" fn SendInput(cinputs : u32, pinputs : *const INPUT, cbsize : i32) -> u32);
+    SendInput(pinputs.len().try_into().unwrap(), core::mem::transmute(pinputs.as_ptr()), cbsize)
 }
 #[inline]
-pub unsafe fn SetActiveWindow(hwnd: super::super::super::Foundation::HWND) -> windows_core::Result<super::super::super::Foundation::HWND> {
-    windows_link::link!("user32.dll" "system" fn SetActiveWindow(hwnd : super::super::super::Foundation:: HWND) -> super::super::super::Foundation:: HWND);
-    let result__ = unsafe { SetActiveWindow(hwnd) };
-    (!result__.is_invalid()).then_some(result__).ok_or_else(windows_core::Error::from_win32)
+pub unsafe fn SetActiveWindow<P0>(hwnd: P0) -> windows_core::Result<super::super::super::Foundation::HWND>
+where
+    P0: windows_core::Param<super::super::super::Foundation::HWND>,
+{
+    windows_targets::link!("user32.dll" "system" fn SetActiveWindow(hwnd : super::super::super::Foundation:: HWND) -> super::super::super::Foundation:: HWND);
+    let result__ = SetActiveWindow(hwnd.param().abi());
+    (!result__.is_invalid()).then(|| result__).ok_or_else(windows_core::Error::from_win32)
 }
 #[inline]
-pub unsafe fn SetCapture(hwnd: super::super::super::Foundation::HWND) -> super::super::super::Foundation::HWND {
-    windows_link::link!("user32.dll" "system" fn SetCapture(hwnd : super::super::super::Foundation:: HWND) -> super::super::super::Foundation:: HWND);
-    unsafe { SetCapture(hwnd) }
+pub unsafe fn SetCapture<P0>(hwnd: P0) -> super::super::super::Foundation::HWND
+where
+    P0: windows_core::Param<super::super::super::Foundation::HWND>,
+{
+    windows_targets::link!("user32.dll" "system" fn SetCapture(hwnd : super::super::super::Foundation:: HWND) -> super::super::super::Foundation:: HWND);
+    SetCapture(hwnd.param().abi())
 }
 #[inline]
 pub unsafe fn SetDoubleClickTime(param0: u32) -> windows_core::Result<()> {
-    windows_link::link!("user32.dll" "system" fn SetDoubleClickTime(param0 : u32) -> windows_core::BOOL);
-    unsafe { SetDoubleClickTime(param0).ok() }
+    windows_targets::link!("user32.dll" "system" fn SetDoubleClickTime(param0 : u32) -> super::super::super::Foundation:: BOOL);
+    SetDoubleClickTime(param0).ok()
 }
 #[inline]
-pub unsafe fn SetFocus(hwnd: Option<super::super::super::Foundation::HWND>) -> windows_core::Result<super::super::super::Foundation::HWND> {
-    windows_link::link!("user32.dll" "system" fn SetFocus(hwnd : super::super::super::Foundation:: HWND) -> super::super::super::Foundation:: HWND);
-    let result__ = unsafe { SetFocus(hwnd.unwrap_or(core::mem::zeroed()) as _) };
-    (!result__.is_invalid()).then_some(result__).ok_or_else(windows_core::Error::from_win32)
+pub unsafe fn SetFocus<P0>(hwnd: P0) -> windows_core::Result<super::super::super::Foundation::HWND>
+where
+    P0: windows_core::Param<super::super::super::Foundation::HWND>,
+{
+    windows_targets::link!("user32.dll" "system" fn SetFocus(hwnd : super::super::super::Foundation:: HWND) -> super::super::super::Foundation:: HWND);
+    let result__ = SetFocus(hwnd.param().abi());
+    (!result__.is_invalid()).then(|| result__).ok_or_else(windows_core::Error::from_win32)
 }
 #[inline]
 pub unsafe fn SetKeyboardState(lpkeystate: &[u8; 256]) -> windows_core::Result<()> {
-    windows_link::link!("user32.dll" "system" fn SetKeyboardState(lpkeystate : *const u8) -> windows_core::BOOL);
-    unsafe { SetKeyboardState(core::mem::transmute(lpkeystate.as_ptr())).ok() }
+    windows_targets::link!("user32.dll" "system" fn SetKeyboardState(lpkeystate : *const u8) -> super::super::super::Foundation:: BOOL);
+    SetKeyboardState(core::mem::transmute(lpkeystate.as_ptr())).ok()
 }
 #[inline]
-pub unsafe fn SwapMouseButton(fswap: bool) -> windows_core::BOOL {
-    windows_link::link!("user32.dll" "system" fn SwapMouseButton(fswap : windows_core::BOOL) -> windows_core::BOOL);
-    unsafe { SwapMouseButton(fswap.into()) }
+pub unsafe fn SwapMouseButton<P0>(fswap: P0) -> super::super::super::Foundation::BOOL
+where
+    P0: windows_core::Param<super::super::super::Foundation::BOOL>,
+{
+    windows_targets::link!("user32.dll" "system" fn SwapMouseButton(fswap : super::super::super::Foundation:: BOOL) -> super::super::super::Foundation:: BOOL);
+    SwapMouseButton(fswap.param().abi())
 }
 #[inline]
 pub unsafe fn ToAscii(uvirtkey: u32, uscancode: u32, lpkeystate: Option<&[u8; 256]>, lpchar: *mut u16, uflags: u32) -> i32 {
-    windows_link::link!("user32.dll" "system" fn ToAscii(uvirtkey : u32, uscancode : u32, lpkeystate : *const u8, lpchar : *mut u16, uflags : u32) -> i32);
-    unsafe { ToAscii(uvirtkey, uscancode, core::mem::transmute(lpkeystate.as_deref().map_or(core::ptr::null(), |slice| slice.as_ptr())), lpchar as _, uflags) }
+    windows_targets::link!("user32.dll" "system" fn ToAscii(uvirtkey : u32, uscancode : u32, lpkeystate : *const u8, lpchar : *mut u16, uflags : u32) -> i32);
+    ToAscii(uvirtkey, uscancode, core::mem::transmute(lpkeystate.as_deref().map_or(core::ptr::null(), |slice| slice.as_ptr())), lpchar, uflags)
 }
 #[inline]
-pub unsafe fn ToAsciiEx(uvirtkey: u32, uscancode: u32, lpkeystate: Option<&[u8; 256]>, lpchar: *mut u16, uflags: u32, dwhkl: Option<HKL>) -> i32 {
-    windows_link::link!("user32.dll" "system" fn ToAsciiEx(uvirtkey : u32, uscancode : u32, lpkeystate : *const u8, lpchar : *mut u16, uflags : u32, dwhkl : HKL) -> i32);
-    unsafe { ToAsciiEx(uvirtkey, uscancode, core::mem::transmute(lpkeystate.as_deref().map_or(core::ptr::null(), |slice| slice.as_ptr())), lpchar as _, uflags, dwhkl.unwrap_or(core::mem::zeroed()) as _) }
+pub unsafe fn ToAsciiEx<P0>(uvirtkey: u32, uscancode: u32, lpkeystate: Option<&[u8; 256]>, lpchar: *mut u16, uflags: u32, dwhkl: P0) -> i32
+where
+    P0: windows_core::Param<HKL>,
+{
+    windows_targets::link!("user32.dll" "system" fn ToAsciiEx(uvirtkey : u32, uscancode : u32, lpkeystate : *const u8, lpchar : *mut u16, uflags : u32, dwhkl : HKL) -> i32);
+    ToAsciiEx(uvirtkey, uscancode, core::mem::transmute(lpkeystate.as_deref().map_or(core::ptr::null(), |slice| slice.as_ptr())), lpchar, uflags, dwhkl.param().abi())
 }
 #[inline]
 pub unsafe fn ToUnicode(wvirtkey: u32, wscancode: u32, lpkeystate: Option<&[u8; 256]>, pwszbuff: &mut [u16], wflags: u32) -> i32 {
-    windows_link::link!("user32.dll" "system" fn ToUnicode(wvirtkey : u32, wscancode : u32, lpkeystate : *const u8, pwszbuff : windows_core::PWSTR, cchbuff : i32, wflags : u32) -> i32);
-    unsafe { ToUnicode(wvirtkey, wscancode, core::mem::transmute(lpkeystate.as_deref().map_or(core::ptr::null(), |slice| slice.as_ptr())), core::mem::transmute(pwszbuff.as_ptr()), pwszbuff.len().try_into().unwrap(), wflags) }
+    windows_targets::link!("user32.dll" "system" fn ToUnicode(wvirtkey : u32, wscancode : u32, lpkeystate : *const u8, pwszbuff : windows_core::PWSTR, cchbuff : i32, wflags : u32) -> i32);
+    ToUnicode(wvirtkey, wscancode, core::mem::transmute(lpkeystate.as_deref().map_or(core::ptr::null(), |slice| slice.as_ptr())), core::mem::transmute(pwszbuff.as_ptr()), pwszbuff.len().try_into().unwrap(), wflags)
 }
 #[inline]
-pub unsafe fn ToUnicodeEx(wvirtkey: u32, wscancode: u32, lpkeystate: &[u8; 256], pwszbuff: &mut [u16], wflags: u32, dwhkl: Option<HKL>) -> i32 {
-    windows_link::link!("user32.dll" "system" fn ToUnicodeEx(wvirtkey : u32, wscancode : u32, lpkeystate : *const u8, pwszbuff : windows_core::PWSTR, cchbuff : i32, wflags : u32, dwhkl : HKL) -> i32);
-    unsafe { ToUnicodeEx(wvirtkey, wscancode, core::mem::transmute(lpkeystate.as_ptr()), core::mem::transmute(pwszbuff.as_ptr()), pwszbuff.len().try_into().unwrap(), wflags, dwhkl.unwrap_or(core::mem::zeroed()) as _) }
+pub unsafe fn ToUnicodeEx<P0>(wvirtkey: u32, wscancode: u32, lpkeystate: &[u8; 256], pwszbuff: &mut [u16], wflags: u32, dwhkl: P0) -> i32
+where
+    P0: windows_core::Param<HKL>,
+{
+    windows_targets::link!("user32.dll" "system" fn ToUnicodeEx(wvirtkey : u32, wscancode : u32, lpkeystate : *const u8, pwszbuff : windows_core::PWSTR, cchbuff : i32, wflags : u32, dwhkl : HKL) -> i32);
+    ToUnicodeEx(wvirtkey, wscancode, core::mem::transmute(lpkeystate.as_ptr()), core::mem::transmute(pwszbuff.as_ptr()), pwszbuff.len().try_into().unwrap(), wflags, dwhkl.param().abi())
 }
 #[inline]
 pub unsafe fn TrackMouseEvent(lpeventtrack: *mut TRACKMOUSEEVENT) -> windows_core::Result<()> {
-    windows_link::link!("user32.dll" "system" fn TrackMouseEvent(lpeventtrack : *mut TRACKMOUSEEVENT) -> windows_core::BOOL);
-    unsafe { TrackMouseEvent(lpeventtrack as _).ok() }
+    windows_targets::link!("user32.dll" "system" fn TrackMouseEvent(lpeventtrack : *mut TRACKMOUSEEVENT) -> super::super::super::Foundation:: BOOL);
+    TrackMouseEvent(lpeventtrack).ok()
 }
 #[inline]
-pub unsafe fn UnloadKeyboardLayout(hkl: HKL) -> windows_core::Result<()> {
-    windows_link::link!("user32.dll" "system" fn UnloadKeyboardLayout(hkl : HKL) -> windows_core::BOOL);
-    unsafe { UnloadKeyboardLayout(hkl).ok() }
+pub unsafe fn UnloadKeyboardLayout<P0>(hkl: P0) -> windows_core::Result<()>
+where
+    P0: windows_core::Param<HKL>,
+{
+    windows_targets::link!("user32.dll" "system" fn UnloadKeyboardLayout(hkl : HKL) -> super::super::super::Foundation:: BOOL);
+    UnloadKeyboardLayout(hkl.param().abi()).ok()
 }
 #[inline]
-pub unsafe fn UnregisterHotKey(hwnd: Option<super::super::super::Foundation::HWND>, id: i32) -> windows_core::Result<()> {
-    windows_link::link!("user32.dll" "system" fn UnregisterHotKey(hwnd : super::super::super::Foundation:: HWND, id : i32) -> windows_core::BOOL);
-    unsafe { UnregisterHotKey(hwnd.unwrap_or(core::mem::zeroed()) as _, id).ok() }
+pub unsafe fn UnregisterHotKey<P0>(hwnd: P0, id: i32) -> windows_core::Result<()>
+where
+    P0: windows_core::Param<super::super::super::Foundation::HWND>,
+{
+    windows_targets::link!("user32.dll" "system" fn UnregisterHotKey(hwnd : super::super::super::Foundation:: HWND, id : i32) -> super::super::super::Foundation:: BOOL);
+    UnregisterHotKey(hwnd.param().abi(), id).ok()
 }
 #[inline]
 pub unsafe fn VkKeyScanA(ch: i8) -> i16 {
-    windows_link::link!("user32.dll" "system" fn VkKeyScanA(ch : i8) -> i16);
-    unsafe { VkKeyScanA(ch) }
+    windows_targets::link!("user32.dll" "system" fn VkKeyScanA(ch : i8) -> i16);
+    VkKeyScanA(ch)
 }
 #[inline]
-pub unsafe fn VkKeyScanExA(ch: i8, dwhkl: HKL) -> i16 {
-    windows_link::link!("user32.dll" "system" fn VkKeyScanExA(ch : i8, dwhkl : HKL) -> i16);
-    unsafe { VkKeyScanExA(ch, dwhkl) }
+pub unsafe fn VkKeyScanExA<P0>(ch: i8, dwhkl: P0) -> i16
+where
+    P0: windows_core::Param<HKL>,
+{
+    windows_targets::link!("user32.dll" "system" fn VkKeyScanExA(ch : i8, dwhkl : HKL) -> i16);
+    VkKeyScanExA(ch, dwhkl.param().abi())
 }
 #[inline]
-pub unsafe fn VkKeyScanExW(ch: u16, dwhkl: HKL) -> i16 {
-    windows_link::link!("user32.dll" "system" fn VkKeyScanExW(ch : u16, dwhkl : HKL) -> i16);
-    unsafe { VkKeyScanExW(ch, dwhkl) }
+pub unsafe fn VkKeyScanExW<P0>(ch: u16, dwhkl: P0) -> i16
+where
+    P0: windows_core::Param<HKL>,
+{
+    windows_targets::link!("user32.dll" "system" fn VkKeyScanExW(ch : u16, dwhkl : HKL) -> i16);
+    VkKeyScanExW(ch, dwhkl.param().abi())
 }
 #[inline]
 pub unsafe fn VkKeyScanW(ch: u16) -> i16 {
-    windows_link::link!("user32.dll" "system" fn VkKeyScanW(ch : u16) -> i16);
-    unsafe { VkKeyScanW(ch) }
+    windows_targets::link!("user32.dll" "system" fn VkKeyScanW(ch : u16) -> i16);
+    VkKeyScanW(ch)
 }
 #[inline]
-pub unsafe fn _TrackMouseEvent(lpeventtrack: *mut TRACKMOUSEEVENT) -> windows_core::BOOL {
-    windows_link::link!("comctl32.dll" "system" fn _TrackMouseEvent(lpeventtrack : *mut TRACKMOUSEEVENT) -> windows_core::BOOL);
-    unsafe { _TrackMouseEvent(lpeventtrack as _) }
+pub unsafe fn _TrackMouseEvent(lpeventtrack: *mut TRACKMOUSEEVENT) -> super::super::super::Foundation::BOOL {
+    windows_targets::link!("comctl32.dll" "system" fn _TrackMouseEvent(lpeventtrack : *mut TRACKMOUSEEVENT) -> super::super::super::Foundation:: BOOL);
+    _TrackMouseEvent(lpeventtrack)
 }
 #[inline]
 pub unsafe fn keybd_event(bvk: u8, bscan: u8, dwflags: KEYBD_EVENT_FLAGS, dwextrainfo: usize) {
-    windows_link::link!("user32.dll" "system" fn keybd_event(bvk : u8, bscan : u8, dwflags : KEYBD_EVENT_FLAGS, dwextrainfo : usize));
-    unsafe { keybd_event(bvk, bscan, dwflags, dwextrainfo) }
+    windows_targets::link!("user32.dll" "system" fn keybd_event(bvk : u8, bscan : u8, dwflags : KEYBD_EVENT_FLAGS, dwextrainfo : usize));
+    keybd_event(bvk, bscan, dwflags, dwextrainfo)
 }
 #[inline]
 pub unsafe fn mouse_event(dwflags: MOUSE_EVENT_FLAGS, dx: i32, dy: i32, dwdata: i32, dwextrainfo: usize) {
-    windows_link::link!("user32.dll" "system" fn mouse_event(dwflags : MOUSE_EVENT_FLAGS, dx : i32, dy : i32, dwdata : i32, dwextrainfo : usize));
-    unsafe { mouse_event(dwflags, dx, dy, dwdata, dwextrainfo) }
+    windows_targets::link!("user32.dll" "system" fn mouse_event(dwflags : MOUSE_EVENT_FLAGS, dx : i32, dy : i32, dwdata : i32, dwextrainfo : usize));
+    mouse_event(dwflags, dx, dy, dwdata, dwextrainfo)
 }
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct ACTIVATE_KEYBOARD_LAYOUT_FLAGS(pub u32);
 pub const ACUTE: u32 = 769u32;
 pub const AX_KBD_DESKTOP_TYPE: u32 = 1u32;
 pub const BREVE: u32 = 774u32;
@@ -279,13 +331,6 @@ pub const CAPLOK: u32 = 1u32;
 pub const CAPLOKALTGR: u32 = 4u32;
 pub const CEDILLA: u32 = 807u32;
 pub const CIRCUMFLEX: u32 = 770u32;
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct DEADKEY {
-    pub dwBoth: u32,
-    pub wchComposed: u16,
-    pub uFlags: u16,
-}
 pub const DEC_KBD_ANSI_LAYOUT_TYPE: u32 = 1u32;
 pub const DEC_KBD_JIS_LAYOUT_TYPE: u32 = 2u32;
 pub const DIARESIS: u32 = 776u32;
@@ -299,111 +344,15 @@ pub const FAKE_KEYSTROKE: u32 = 33554432u32;
 pub const FMR_KBD_JIS_TYPE: u32 = 0u32;
 pub const FMR_KBD_OASYS_TYPE: u32 = 1u32;
 pub const FMV_KBD_OASYS_TYPE: u32 = 2u32;
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct GET_MOUSE_MOVE_POINTS_EX_RESOLUTION(pub u32);
 pub const GMMP_USE_DISPLAY_POINTS: GET_MOUSE_MOVE_POINTS_EX_RESOLUTION = GET_MOUSE_MOVE_POINTS_EX_RESOLUTION(1u32);
 pub const GMMP_USE_HIGH_RESOLUTION_POINTS: GET_MOUSE_MOVE_POINTS_EX_RESOLUTION = GET_MOUSE_MOVE_POINTS_EX_RESOLUTION(2u32);
 pub const GRAVE: u32 = 768u32;
 pub const GRPSELTAP: u32 = 128u32;
 pub const HACEK: u32 = 780u32;
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct HARDWAREINPUT {
-    pub uMsg: u32,
-    pub wParamL: u16,
-    pub wParamH: u16,
-}
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct HKL(pub *mut core::ffi::c_void);
-impl HKL {
-    pub fn is_invalid(&self) -> bool {
-        self.0 == -1 as _ || self.0 == 0 as _
-    }
-}
-impl windows_core::Free for HKL {
-    #[inline]
-    unsafe fn free(&mut self) {
-        if !self.is_invalid() {
-            windows_link::link!("user32.dll" "system" fn UnloadKeyboardLayout(hkl : *mut core::ffi::c_void) -> i32);
-            unsafe {
-                UnloadKeyboardLayout(self.0);
-            }
-        }
-    }
-}
-impl Default for HKL {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
 pub const HOOK_ABOVE: u32 = 777u32;
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct HOT_KEY_MODIFIERS(pub u32);
-impl HOT_KEY_MODIFIERS {
-    pub const fn contains(&self, other: Self) -> bool {
-        self.0 & other.0 == other.0
-    }
-}
-impl core::ops::BitOr for HOT_KEY_MODIFIERS {
-    type Output = Self;
-    fn bitor(self, other: Self) -> Self {
-        Self(self.0 | other.0)
-    }
-}
-impl core::ops::BitAnd for HOT_KEY_MODIFIERS {
-    type Output = Self;
-    fn bitand(self, other: Self) -> Self {
-        Self(self.0 & other.0)
-    }
-}
-impl core::ops::BitOrAssign for HOT_KEY_MODIFIERS {
-    fn bitor_assign(&mut self, other: Self) {
-        self.0.bitor_assign(other.0)
-    }
-}
-impl core::ops::BitAndAssign for HOT_KEY_MODIFIERS {
-    fn bitand_assign(&mut self, other: Self) {
-        self.0.bitand_assign(other.0)
-    }
-}
-impl core::ops::Not for HOT_KEY_MODIFIERS {
-    type Output = Self;
-    fn not(self) -> Self {
-        Self(self.0.not())
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct INPUT {
-    pub r#type: INPUT_TYPE,
-    pub Anonymous: INPUT_0,
-}
-impl Default for INPUT {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub union INPUT_0 {
-    pub mi: MOUSEINPUT,
-    pub ki: KEYBDINPUT,
-    pub hi: HARDWAREINPUT,
-}
-impl Default for INPUT_0 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
 pub const INPUT_HARDWARE: INPUT_TYPE = INPUT_TYPE(2u32);
 pub const INPUT_KEYBOARD: INPUT_TYPE = INPUT_TYPE(1u32);
 pub const INPUT_MOUSE: INPUT_TYPE = INPUT_TYPE(0u32);
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct INPUT_TYPE(pub u32);
 pub const KANALOK: u32 = 8u32;
 pub const KBDALT: u32 = 4u32;
 pub const KBDBASE: u32 = 0u32;
@@ -411,21 +360,6 @@ pub const KBDCTRL: u32 = 2u32;
 pub const KBDGRPSELTAP: u32 = 128u32;
 pub const KBDKANA: u32 = 8u32;
 pub const KBDLOYA: u32 = 32u32;
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct KBDNLSTABLES {
-    pub OEMIdentifier: u16,
-    pub LayoutInformation: u16,
-    pub NumOfVkToF: u32,
-    pub pVkToF: *mut VK_F,
-    pub NumOfMouseVKey: i32,
-    pub pusMouseVKey: *mut u16,
-}
-impl Default for KBDNLSTABLES {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
 pub const KBDNLS_ALPHANUM: u32 = 5u32;
 pub const KBDNLS_CODEINPUT: u32 = 10u32;
 pub const KBDNLS_CONV_OR_NONCONV: u32 = 15u32;
@@ -449,109 +383,9 @@ pub const KBDNLS_TYPE_NULL: u32 = 0u32;
 pub const KBDNLS_TYPE_TOGGLE: u32 = 2u32;
 pub const KBDROYA: u32 = 16u32;
 pub const KBDSHIFT: u32 = 1u32;
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct KBDTABLES {
-    pub pCharModifiers: *mut MODIFIERS,
-    pub pVkToWcharTable: *mut VK_TO_WCHAR_TABLE,
-    pub pDeadKey: *mut DEADKEY,
-    pub pKeyNames: *mut VSC_LPWSTR,
-    pub pKeyNamesExt: *mut VSC_LPWSTR,
-    pub pKeyNamesDead: *mut *mut u16,
-    pub pusVSCtoVK: *mut u16,
-    pub bMaxVSCtoVK: u8,
-    pub pVSCtoVK_E0: *mut VSC_VK,
-    pub pVSCtoVK_E1: *mut VSC_VK,
-    pub fLocaleFlags: u32,
-    pub nLgMax: u8,
-    pub cbLgEntry: u8,
-    pub pLigature: *mut LIGATURE1,
-    pub dwType: u32,
-    pub dwSubType: u32,
-}
-impl Default for KBDTABLES {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct KBDTABLE_DESC {
-    pub wszDllName: [u16; 32],
-    pub dwType: u32,
-    pub dwSubType: u32,
-}
-impl Default for KBDTABLE_DESC {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct KBDTABLE_MULTI {
-    pub nTables: u32,
-    pub aKbdTables: [KBDTABLE_DESC; 8],
-}
-impl Default for KBDTABLE_MULTI {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
 pub const KBDTABLE_MULTI_MAX: u32 = 8u32;
 pub const KBD_TYPE: u32 = 4u32;
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct KBD_TYPE_INFO {
-    pub dwVersion: u32,
-    pub dwType: u32,
-    pub dwSubType: u32,
-}
 pub const KBD_VERSION: u32 = 1u32;
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct KEYBDINPUT {
-    pub wVk: VIRTUAL_KEY,
-    pub wScan: u16,
-    pub dwFlags: KEYBD_EVENT_FLAGS,
-    pub time: u32,
-    pub dwExtraInfo: usize,
-}
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct KEYBD_EVENT_FLAGS(pub u32);
-impl KEYBD_EVENT_FLAGS {
-    pub const fn contains(&self, other: Self) -> bool {
-        self.0 & other.0 == other.0
-    }
-}
-impl core::ops::BitOr for KEYBD_EVENT_FLAGS {
-    type Output = Self;
-    fn bitor(self, other: Self) -> Self {
-        Self(self.0 | other.0)
-    }
-}
-impl core::ops::BitAnd for KEYBD_EVENT_FLAGS {
-    type Output = Self;
-    fn bitand(self, other: Self) -> Self {
-        Self(self.0 & other.0)
-    }
-}
-impl core::ops::BitOrAssign for KEYBD_EVENT_FLAGS {
-    fn bitor_assign(&mut self, other: Self) {
-        self.0.bitor_assign(other.0)
-    }
-}
-impl core::ops::BitAndAssign for KEYBD_EVENT_FLAGS {
-    fn bitand_assign(&mut self, other: Self) {
-        self.0.bitand_assign(other.0)
-    }
-}
-impl core::ops::Not for KEYBD_EVENT_FLAGS {
-    type Output = Self;
-    fn not(self) -> Self {
-        Self(self.0.not())
-    }
-}
 pub const KEYBOARD_TYPE_GENERIC_101: u32 = 4u32;
 pub const KEYBOARD_TYPE_JAPAN: u32 = 7u32;
 pub const KEYBOARD_TYPE_KOREA: u32 = 8u32;
@@ -572,81 +406,12 @@ pub const KLLF_ALTGR: u32 = 1u32;
 pub const KLLF_GLOBAL_ATTRS: u32 = 2u32;
 pub const KLLF_LRM_RLM: u32 = 4u32;
 pub const KLLF_SHIFTLOCK: u32 = 2u32;
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct LASTINPUTINFO {
-    pub cbSize: u32,
-    pub dwTime: u32,
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct LIGATURE1 {
-    pub VirtualKey: u8,
-    pub ModificationNumber: u16,
-    pub wch: [u16; 1],
-}
-impl Default for LIGATURE1 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct LIGATURE2 {
-    pub VirtualKey: u8,
-    pub ModificationNumber: u16,
-    pub wch: [u16; 2],
-}
-impl Default for LIGATURE2 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct LIGATURE3 {
-    pub VirtualKey: u8,
-    pub ModificationNumber: u16,
-    pub wch: [u16; 3],
-}
-impl Default for LIGATURE3 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct LIGATURE4 {
-    pub VirtualKey: u8,
-    pub ModificationNumber: u16,
-    pub wch: [u16; 4],
-}
-impl Default for LIGATURE4 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct LIGATURE5 {
-    pub VirtualKey: u8,
-    pub ModificationNumber: u16,
-    pub wch: [u16; 5],
-}
-impl Default for LIGATURE5 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
 pub const MACRON: u32 = 772u32;
 pub const MAPVK_VK_TO_CHAR: MAP_VIRTUAL_KEY_TYPE = MAP_VIRTUAL_KEY_TYPE(2u32);
 pub const MAPVK_VK_TO_VSC: MAP_VIRTUAL_KEY_TYPE = MAP_VIRTUAL_KEY_TYPE(0u32);
 pub const MAPVK_VK_TO_VSC_EX: MAP_VIRTUAL_KEY_TYPE = MAP_VIRTUAL_KEY_TYPE(4u32);
 pub const MAPVK_VSC_TO_VK: MAP_VIRTUAL_KEY_TYPE = MAP_VIRTUAL_KEY_TYPE(1u32);
 pub const MAPVK_VSC_TO_VK_EX: MAP_VIRTUAL_KEY_TYPE = MAP_VIRTUAL_KEY_TYPE(3u32);
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct MAP_VIRTUAL_KEY_TYPE(pub u32);
 pub const MICROSOFT_KBD_001_TYPE: u32 = 4u32;
 pub const MICROSOFT_KBD_002_TYPE: u32 = 3u32;
 pub const MICROSOFT_KBD_101A_TYPE: u32 = 0u32;
@@ -657,18 +422,6 @@ pub const MICROSOFT_KBD_103_TYPE: u32 = 6u32;
 pub const MICROSOFT_KBD_106_TYPE: u32 = 2u32;
 pub const MICROSOFT_KBD_AX_TYPE: u32 = 1u32;
 pub const MICROSOFT_KBD_FUNC: u32 = 12u32;
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct MODIFIERS {
-    pub pVkToBit: *mut VK_TO_BIT,
-    pub wMaxModBits: u16,
-    pub ModNumber: [u8; 1],
-}
-impl Default for MODIFIERS {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
 pub const MOD_ALT: HOT_KEY_MODIFIERS = HOT_KEY_MODIFIERS(1u32);
 pub const MOD_CONTROL: HOT_KEY_MODIFIERS = HOT_KEY_MODIFIERS(2u32);
 pub const MOD_NOREPEAT: HOT_KEY_MODIFIERS = HOT_KEY_MODIFIERS(16384u32);
@@ -688,60 +441,6 @@ pub const MOUSEEVENTF_VIRTUALDESK: MOUSE_EVENT_FLAGS = MOUSE_EVENT_FLAGS(16384u3
 pub const MOUSEEVENTF_WHEEL: MOUSE_EVENT_FLAGS = MOUSE_EVENT_FLAGS(2048u32);
 pub const MOUSEEVENTF_XDOWN: MOUSE_EVENT_FLAGS = MOUSE_EVENT_FLAGS(128u32);
 pub const MOUSEEVENTF_XUP: MOUSE_EVENT_FLAGS = MOUSE_EVENT_FLAGS(256u32);
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct MOUSEINPUT {
-    pub dx: i32,
-    pub dy: i32,
-    pub mouseData: u32,
-    pub dwFlags: MOUSE_EVENT_FLAGS,
-    pub time: u32,
-    pub dwExtraInfo: usize,
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct MOUSEMOVEPOINT {
-    pub x: i32,
-    pub y: i32,
-    pub time: u32,
-    pub dwExtraInfo: usize,
-}
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct MOUSE_EVENT_FLAGS(pub u32);
-impl MOUSE_EVENT_FLAGS {
-    pub const fn contains(&self, other: Self) -> bool {
-        self.0 & other.0 == other.0
-    }
-}
-impl core::ops::BitOr for MOUSE_EVENT_FLAGS {
-    type Output = Self;
-    fn bitor(self, other: Self) -> Self {
-        Self(self.0 | other.0)
-    }
-}
-impl core::ops::BitAnd for MOUSE_EVENT_FLAGS {
-    type Output = Self;
-    fn bitand(self, other: Self) -> Self {
-        Self(self.0 & other.0)
-    }
-}
-impl core::ops::BitOrAssign for MOUSE_EVENT_FLAGS {
-    fn bitor_assign(&mut self, other: Self) {
-        self.0.bitor_assign(other.0)
-    }
-}
-impl core::ops::BitAndAssign for MOUSE_EVENT_FLAGS {
-    fn bitand_assign(&mut self, other: Self) {
-        self.0.bitand_assign(other.0)
-    }
-}
-impl core::ops::Not for MOUSE_EVENT_FLAGS {
-    type Output = Self;
-    fn not(self) -> Self {
-        Self(self.0.not())
-    }
-}
 pub const NEC_KBD_106_TYPE: u32 = 5u32;
 pub const NEC_KBD_H_MODE_TYPE: u32 = 3u32;
 pub const NEC_KBD_LAPTOP_TYPE: u32 = 4u32;
@@ -783,54 +482,7 @@ pub const TME_QUERY: TRACKMOUSEEVENT_FLAGS = TRACKMOUSEEVENT_FLAGS(1073741824u32
 pub const TONOS: u32 = 900u32;
 pub const TOSHIBA_KBD_DESKTOP_TYPE: u32 = 13u32;
 pub const TOSHIBA_KBD_LAPTOP_TYPE: u32 = 15u32;
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct TRACKMOUSEEVENT {
-    pub cbSize: u32,
-    pub dwFlags: TRACKMOUSEEVENT_FLAGS,
-    pub hwndTrack: super::super::super::Foundation::HWND,
-    pub dwHoverTime: u32,
-}
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct TRACKMOUSEEVENT_FLAGS(pub u32);
-impl TRACKMOUSEEVENT_FLAGS {
-    pub const fn contains(&self, other: Self) -> bool {
-        self.0 & other.0 == other.0
-    }
-}
-impl core::ops::BitOr for TRACKMOUSEEVENT_FLAGS {
-    type Output = Self;
-    fn bitor(self, other: Self) -> Self {
-        Self(self.0 | other.0)
-    }
-}
-impl core::ops::BitAnd for TRACKMOUSEEVENT_FLAGS {
-    type Output = Self;
-    fn bitand(self, other: Self) -> Self {
-        Self(self.0 & other.0)
-    }
-}
-impl core::ops::BitOrAssign for TRACKMOUSEEVENT_FLAGS {
-    fn bitor_assign(&mut self, other: Self) {
-        self.0.bitor_assign(other.0)
-    }
-}
-impl core::ops::BitAndAssign for TRACKMOUSEEVENT_FLAGS {
-    fn bitand_assign(&mut self, other: Self) {
-        self.0.bitand_assign(other.0)
-    }
-}
-impl core::ops::Not for TRACKMOUSEEVENT_FLAGS {
-    type Output = Self;
-    fn not(self) -> Self {
-        Self(self.0.not())
-    }
-}
 pub const UMLAUT: u32 = 776u32;
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct VIRTUAL_KEY(pub u16);
 pub const VK_0: VIRTUAL_KEY = VIRTUAL_KEY(48u16);
 pub const VK_1: VIRTUAL_KEY = VIRTUAL_KEY(49u16);
 pub const VK_2: VIRTUAL_KEY = VIRTUAL_KEY(50u16);
@@ -889,21 +541,6 @@ pub const VK_EREOF: VIRTUAL_KEY = VIRTUAL_KEY(249u16);
 pub const VK_ESCAPE: VIRTUAL_KEY = VIRTUAL_KEY(27u16);
 pub const VK_EXECUTE: VIRTUAL_KEY = VIRTUAL_KEY(43u16);
 pub const VK_EXSEL: VIRTUAL_KEY = VIRTUAL_KEY(248u16);
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_F {
-    pub Vk: u8,
-    pub NLSFEProcType: u8,
-    pub NLSFEProcCurrent: u8,
-    pub NLSFEProcSwitch: u8,
-    pub NLSFEProc: [VK_FPARAM; 8],
-    pub NLSFEProcAlt: [VK_FPARAM; 8],
-}
-impl Default for VK_F {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
 pub const VK_F: VIRTUAL_KEY = VIRTUAL_KEY(70u16);
 pub const VK_F1: VIRTUAL_KEY = VIRTUAL_KEY(112u16);
 pub const VK_F10: VIRTUAL_KEY = VIRTUAL_KEY(121u16);
@@ -930,12 +567,6 @@ pub const VK_F7: VIRTUAL_KEY = VIRTUAL_KEY(118u16);
 pub const VK_F8: VIRTUAL_KEY = VIRTUAL_KEY(119u16);
 pub const VK_F9: VIRTUAL_KEY = VIRTUAL_KEY(120u16);
 pub const VK_FINAL: VIRTUAL_KEY = VIRTUAL_KEY(24u16);
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct VK_FPARAM {
-    pub NLSFEProcIndex: u8,
-    pub NLSFEProcParam: u32,
-}
 pub const VK_G: VIRTUAL_KEY = VIRTUAL_KEY(71u16);
 pub const VK_GAMEPAD_A: VIRTUAL_KEY = VIRTUAL_KEY(195u16);
 pub const VK_GAMEPAD_B: VIRTUAL_KEY = VIRTUAL_KEY(196u16);
@@ -1085,156 +716,12 @@ pub const VK_SPACE: VIRTUAL_KEY = VIRTUAL_KEY(32u16);
 pub const VK_SUBTRACT: VIRTUAL_KEY = VIRTUAL_KEY(109u16);
 pub const VK_T: VIRTUAL_KEY = VIRTUAL_KEY(84u16);
 pub const VK_TAB: VIRTUAL_KEY = VIRTUAL_KEY(9u16);
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct VK_TO_BIT {
-    pub Vk: u8,
-    pub ModBits: u8,
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_TO_WCHARS1 {
-    pub VirtualKey: u8,
-    pub Attributes: u8,
-    pub wch: [u16; 1],
-}
-impl Default for VK_TO_WCHARS1 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_TO_WCHARS10 {
-    pub VirtualKey: u8,
-    pub Attributes: u8,
-    pub wch: [u16; 10],
-}
-impl Default for VK_TO_WCHARS10 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_TO_WCHARS2 {
-    pub VirtualKey: u8,
-    pub Attributes: u8,
-    pub wch: [u16; 2],
-}
-impl Default for VK_TO_WCHARS2 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_TO_WCHARS3 {
-    pub VirtualKey: u8,
-    pub Attributes: u8,
-    pub wch: [u16; 3],
-}
-impl Default for VK_TO_WCHARS3 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_TO_WCHARS4 {
-    pub VirtualKey: u8,
-    pub Attributes: u8,
-    pub wch: [u16; 4],
-}
-impl Default for VK_TO_WCHARS4 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_TO_WCHARS5 {
-    pub VirtualKey: u8,
-    pub Attributes: u8,
-    pub wch: [u16; 5],
-}
-impl Default for VK_TO_WCHARS5 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_TO_WCHARS6 {
-    pub VirtualKey: u8,
-    pub Attributes: u8,
-    pub wch: [u16; 6],
-}
-impl Default for VK_TO_WCHARS6 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_TO_WCHARS7 {
-    pub VirtualKey: u8,
-    pub Attributes: u8,
-    pub wch: [u16; 7],
-}
-impl Default for VK_TO_WCHARS7 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_TO_WCHARS8 {
-    pub VirtualKey: u8,
-    pub Attributes: u8,
-    pub wch: [u16; 8],
-}
-impl Default for VK_TO_WCHARS8 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_TO_WCHARS9 {
-    pub VirtualKey: u8,
-    pub Attributes: u8,
-    pub wch: [u16; 9],
-}
-impl Default for VK_TO_WCHARS9 {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VK_TO_WCHAR_TABLE {
-    pub pVkToWchars: *mut VK_TO_WCHARS1,
-    pub nModifications: u8,
-    pub cbSize: u8,
-}
-impl Default for VK_TO_WCHAR_TABLE {
-    fn default() -> Self {
-        unsafe { core::mem::zeroed() }
-    }
-}
 pub const VK_U: VIRTUAL_KEY = VIRTUAL_KEY(85u16);
 pub const VK_UP: VIRTUAL_KEY = VIRTUAL_KEY(38u16);
 pub const VK_V: VIRTUAL_KEY = VIRTUAL_KEY(86u16);
 pub const VK_VOLUME_DOWN: VIRTUAL_KEY = VIRTUAL_KEY(174u16);
 pub const VK_VOLUME_MUTE: VIRTUAL_KEY = VIRTUAL_KEY(173u16);
 pub const VK_VOLUME_UP: VIRTUAL_KEY = VIRTUAL_KEY(175u16);
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct VK_VSC {
-    pub Vk: u8,
-    pub Vsc: u8,
-}
 pub const VK_W: VIRTUAL_KEY = VIRTUAL_KEY(87u16);
 pub const VK_X: VIRTUAL_KEY = VIRTUAL_KEY(88u16);
 pub const VK_XBUTTON1: VIRTUAL_KEY = VIRTUAL_KEY(5u16);
@@ -1243,18 +730,6 @@ pub const VK_Y: VIRTUAL_KEY = VIRTUAL_KEY(89u16);
 pub const VK_Z: VIRTUAL_KEY = VIRTUAL_KEY(90u16);
 pub const VK_ZOOM: VIRTUAL_KEY = VIRTUAL_KEY(251u16);
 pub const VK__none_: VIRTUAL_KEY = VIRTUAL_KEY(255u16);
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct VSC_LPWSTR {
-    pub vsc: u8,
-    pub pwsz: windows_core::PWSTR,
-}
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct VSC_VK {
-    pub Vsc: u8,
-    pub Vk: u16,
-}
 pub const WCH_DEAD: u32 = 61441u32;
 pub const WCH_LGTR: u32 = 61442u32;
 pub const WCH_NONE: u32 = 61440u32;
@@ -1275,3 +750,831 @@ pub const wszRING: windows_core::PCWSTR = windows_core::w!("\u{30a}");
 pub const wszTILDE: windows_core::PCWSTR = windows_core::w!("\u{303}");
 pub const wszTONOS: windows_core::PCWSTR = windows_core::w!("\u{384}");
 pub const wszUMLAUT: windows_core::PCWSTR = windows_core::w!("\u{308}");
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct ACTIVATE_KEYBOARD_LAYOUT_FLAGS(pub u32);
+impl windows_core::TypeKind for ACTIVATE_KEYBOARD_LAYOUT_FLAGS {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for ACTIVATE_KEYBOARD_LAYOUT_FLAGS {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("ACTIVATE_KEYBOARD_LAYOUT_FLAGS").field(&self.0).finish()
+    }
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct GET_MOUSE_MOVE_POINTS_EX_RESOLUTION(pub u32);
+impl windows_core::TypeKind for GET_MOUSE_MOVE_POINTS_EX_RESOLUTION {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for GET_MOUSE_MOVE_POINTS_EX_RESOLUTION {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("GET_MOUSE_MOVE_POINTS_EX_RESOLUTION").field(&self.0).finish()
+    }
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct HOT_KEY_MODIFIERS(pub u32);
+impl windows_core::TypeKind for HOT_KEY_MODIFIERS {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for HOT_KEY_MODIFIERS {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("HOT_KEY_MODIFIERS").field(&self.0).finish()
+    }
+}
+impl HOT_KEY_MODIFIERS {
+    pub const fn contains(&self, other: Self) -> bool {
+        self.0 & other.0 == other.0
+    }
+}
+impl core::ops::BitOr for HOT_KEY_MODIFIERS {
+    type Output = Self;
+    fn bitor(self, other: Self) -> Self {
+        Self(self.0 | other.0)
+    }
+}
+impl core::ops::BitAnd for HOT_KEY_MODIFIERS {
+    type Output = Self;
+    fn bitand(self, other: Self) -> Self {
+        Self(self.0 & other.0)
+    }
+}
+impl core::ops::BitOrAssign for HOT_KEY_MODIFIERS {
+    fn bitor_assign(&mut self, other: Self) {
+        self.0.bitor_assign(other.0)
+    }
+}
+impl core::ops::BitAndAssign for HOT_KEY_MODIFIERS {
+    fn bitand_assign(&mut self, other: Self) {
+        self.0.bitand_assign(other.0)
+    }
+}
+impl core::ops::Not for HOT_KEY_MODIFIERS {
+    type Output = Self;
+    fn not(self) -> Self {
+        Self(self.0.not())
+    }
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct INPUT_TYPE(pub u32);
+impl windows_core::TypeKind for INPUT_TYPE {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for INPUT_TYPE {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("INPUT_TYPE").field(&self.0).finish()
+    }
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct KEYBD_EVENT_FLAGS(pub u32);
+impl windows_core::TypeKind for KEYBD_EVENT_FLAGS {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for KEYBD_EVENT_FLAGS {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("KEYBD_EVENT_FLAGS").field(&self.0).finish()
+    }
+}
+impl KEYBD_EVENT_FLAGS {
+    pub const fn contains(&self, other: Self) -> bool {
+        self.0 & other.0 == other.0
+    }
+}
+impl core::ops::BitOr for KEYBD_EVENT_FLAGS {
+    type Output = Self;
+    fn bitor(self, other: Self) -> Self {
+        Self(self.0 | other.0)
+    }
+}
+impl core::ops::BitAnd for KEYBD_EVENT_FLAGS {
+    type Output = Self;
+    fn bitand(self, other: Self) -> Self {
+        Self(self.0 & other.0)
+    }
+}
+impl core::ops::BitOrAssign for KEYBD_EVENT_FLAGS {
+    fn bitor_assign(&mut self, other: Self) {
+        self.0.bitor_assign(other.0)
+    }
+}
+impl core::ops::BitAndAssign for KEYBD_EVENT_FLAGS {
+    fn bitand_assign(&mut self, other: Self) {
+        self.0.bitand_assign(other.0)
+    }
+}
+impl core::ops::Not for KEYBD_EVENT_FLAGS {
+    type Output = Self;
+    fn not(self) -> Self {
+        Self(self.0.not())
+    }
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct MAP_VIRTUAL_KEY_TYPE(pub u32);
+impl windows_core::TypeKind for MAP_VIRTUAL_KEY_TYPE {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for MAP_VIRTUAL_KEY_TYPE {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("MAP_VIRTUAL_KEY_TYPE").field(&self.0).finish()
+    }
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct MOUSE_EVENT_FLAGS(pub u32);
+impl windows_core::TypeKind for MOUSE_EVENT_FLAGS {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for MOUSE_EVENT_FLAGS {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("MOUSE_EVENT_FLAGS").field(&self.0).finish()
+    }
+}
+impl MOUSE_EVENT_FLAGS {
+    pub const fn contains(&self, other: Self) -> bool {
+        self.0 & other.0 == other.0
+    }
+}
+impl core::ops::BitOr for MOUSE_EVENT_FLAGS {
+    type Output = Self;
+    fn bitor(self, other: Self) -> Self {
+        Self(self.0 | other.0)
+    }
+}
+impl core::ops::BitAnd for MOUSE_EVENT_FLAGS {
+    type Output = Self;
+    fn bitand(self, other: Self) -> Self {
+        Self(self.0 & other.0)
+    }
+}
+impl core::ops::BitOrAssign for MOUSE_EVENT_FLAGS {
+    fn bitor_assign(&mut self, other: Self) {
+        self.0.bitor_assign(other.0)
+    }
+}
+impl core::ops::BitAndAssign for MOUSE_EVENT_FLAGS {
+    fn bitand_assign(&mut self, other: Self) {
+        self.0.bitand_assign(other.0)
+    }
+}
+impl core::ops::Not for MOUSE_EVENT_FLAGS {
+    type Output = Self;
+    fn not(self) -> Self {
+        Self(self.0.not())
+    }
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct TRACKMOUSEEVENT_FLAGS(pub u32);
+impl windows_core::TypeKind for TRACKMOUSEEVENT_FLAGS {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for TRACKMOUSEEVENT_FLAGS {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("TRACKMOUSEEVENT_FLAGS").field(&self.0).finish()
+    }
+}
+impl TRACKMOUSEEVENT_FLAGS {
+    pub const fn contains(&self, other: Self) -> bool {
+        self.0 & other.0 == other.0
+    }
+}
+impl core::ops::BitOr for TRACKMOUSEEVENT_FLAGS {
+    type Output = Self;
+    fn bitor(self, other: Self) -> Self {
+        Self(self.0 | other.0)
+    }
+}
+impl core::ops::BitAnd for TRACKMOUSEEVENT_FLAGS {
+    type Output = Self;
+    fn bitand(self, other: Self) -> Self {
+        Self(self.0 & other.0)
+    }
+}
+impl core::ops::BitOrAssign for TRACKMOUSEEVENT_FLAGS {
+    fn bitor_assign(&mut self, other: Self) {
+        self.0.bitor_assign(other.0)
+    }
+}
+impl core::ops::BitAndAssign for TRACKMOUSEEVENT_FLAGS {
+    fn bitand_assign(&mut self, other: Self) {
+        self.0.bitand_assign(other.0)
+    }
+}
+impl core::ops::Not for TRACKMOUSEEVENT_FLAGS {
+    type Output = Self;
+    fn not(self) -> Self {
+        Self(self.0.not())
+    }
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct VIRTUAL_KEY(pub u16);
+impl windows_core::TypeKind for VIRTUAL_KEY {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for VIRTUAL_KEY {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("VIRTUAL_KEY").field(&self.0).finish()
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct DEADKEY {
+    pub dwBoth: u32,
+    pub wchComposed: u16,
+    pub uFlags: u16,
+}
+impl windows_core::TypeKind for DEADKEY {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for DEADKEY {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct HARDWAREINPUT {
+    pub uMsg: u32,
+    pub wParamL: u16,
+    pub wParamH: u16,
+}
+impl windows_core::TypeKind for HARDWAREINPUT {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for HARDWAREINPUT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct HKL(pub *mut core::ffi::c_void);
+impl HKL {
+    pub fn is_invalid(&self) -> bool {
+        self.0 == -1 as _ || self.0 == 0 as _
+    }
+}
+impl windows_core::Free for HKL {
+    #[inline]
+    unsafe fn free(&mut self) {
+        if !self.is_invalid() {
+            _ = UnloadKeyboardLayout(*self);
+        }
+    }
+}
+impl Default for HKL {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+impl windows_core::TypeKind for HKL {
+    type TypeKind = windows_core::CopyType;
+}
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct INPUT {
+    pub r#type: INPUT_TYPE,
+    pub Anonymous: INPUT_0,
+}
+impl windows_core::TypeKind for INPUT {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for INPUT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub union INPUT_0 {
+    pub mi: MOUSEINPUT,
+    pub ki: KEYBDINPUT,
+    pub hi: HARDWAREINPUT,
+}
+impl windows_core::TypeKind for INPUT_0 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for INPUT_0 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct KBDNLSTABLES {
+    pub OEMIdentifier: u16,
+    pub LayoutInformation: u16,
+    pub NumOfVkToF: u32,
+    pub pVkToF: *mut VK_F,
+    pub NumOfMouseVKey: i32,
+    pub pusMouseVKey: *mut u16,
+}
+impl windows_core::TypeKind for KBDNLSTABLES {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for KBDNLSTABLES {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct KBDTABLES {
+    pub pCharModifiers: *mut MODIFIERS,
+    pub pVkToWcharTable: *mut VK_TO_WCHAR_TABLE,
+    pub pDeadKey: *mut DEADKEY,
+    pub pKeyNames: *mut VSC_LPWSTR,
+    pub pKeyNamesExt: *mut VSC_LPWSTR,
+    pub pKeyNamesDead: *mut *mut u16,
+    pub pusVSCtoVK: *mut u16,
+    pub bMaxVSCtoVK: u8,
+    pub pVSCtoVK_E0: *mut VSC_VK,
+    pub pVSCtoVK_E1: *mut VSC_VK,
+    pub fLocaleFlags: u32,
+    pub nLgMax: u8,
+    pub cbLgEntry: u8,
+    pub pLigature: *mut LIGATURE1,
+    pub dwType: u32,
+    pub dwSubType: u32,
+}
+impl windows_core::TypeKind for KBDTABLES {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for KBDTABLES {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct KBDTABLE_DESC {
+    pub wszDllName: [u16; 32],
+    pub dwType: u32,
+    pub dwSubType: u32,
+}
+impl windows_core::TypeKind for KBDTABLE_DESC {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for KBDTABLE_DESC {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct KBDTABLE_MULTI {
+    pub nTables: u32,
+    pub aKbdTables: [KBDTABLE_DESC; 8],
+}
+impl windows_core::TypeKind for KBDTABLE_MULTI {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for KBDTABLE_MULTI {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct KBD_TYPE_INFO {
+    pub dwVersion: u32,
+    pub dwType: u32,
+    pub dwSubType: u32,
+}
+impl windows_core::TypeKind for KBD_TYPE_INFO {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for KBD_TYPE_INFO {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct KEYBDINPUT {
+    pub wVk: VIRTUAL_KEY,
+    pub wScan: u16,
+    pub dwFlags: KEYBD_EVENT_FLAGS,
+    pub time: u32,
+    pub dwExtraInfo: usize,
+}
+impl windows_core::TypeKind for KEYBDINPUT {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for KEYBDINPUT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct LASTINPUTINFO {
+    pub cbSize: u32,
+    pub dwTime: u32,
+}
+impl windows_core::TypeKind for LASTINPUTINFO {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for LASTINPUTINFO {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct LIGATURE1 {
+    pub VirtualKey: u8,
+    pub ModificationNumber: u16,
+    pub wch: [u16; 1],
+}
+impl windows_core::TypeKind for LIGATURE1 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for LIGATURE1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct LIGATURE2 {
+    pub VirtualKey: u8,
+    pub ModificationNumber: u16,
+    pub wch: [u16; 2],
+}
+impl windows_core::TypeKind for LIGATURE2 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for LIGATURE2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct LIGATURE3 {
+    pub VirtualKey: u8,
+    pub ModificationNumber: u16,
+    pub wch: [u16; 3],
+}
+impl windows_core::TypeKind for LIGATURE3 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for LIGATURE3 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct LIGATURE4 {
+    pub VirtualKey: u8,
+    pub ModificationNumber: u16,
+    pub wch: [u16; 4],
+}
+impl windows_core::TypeKind for LIGATURE4 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for LIGATURE4 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct LIGATURE5 {
+    pub VirtualKey: u8,
+    pub ModificationNumber: u16,
+    pub wch: [u16; 5],
+}
+impl windows_core::TypeKind for LIGATURE5 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for LIGATURE5 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct MODIFIERS {
+    pub pVkToBit: *mut VK_TO_BIT,
+    pub wMaxModBits: u16,
+    pub ModNumber: [u8; 1],
+}
+impl windows_core::TypeKind for MODIFIERS {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for MODIFIERS {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct MOUSEINPUT {
+    pub dx: i32,
+    pub dy: i32,
+    pub mouseData: u32,
+    pub dwFlags: MOUSE_EVENT_FLAGS,
+    pub time: u32,
+    pub dwExtraInfo: usize,
+}
+impl windows_core::TypeKind for MOUSEINPUT {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for MOUSEINPUT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct MOUSEMOVEPOINT {
+    pub x: i32,
+    pub y: i32,
+    pub time: u32,
+    pub dwExtraInfo: usize,
+}
+impl windows_core::TypeKind for MOUSEMOVEPOINT {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for MOUSEMOVEPOINT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct TRACKMOUSEEVENT {
+    pub cbSize: u32,
+    pub dwFlags: TRACKMOUSEEVENT_FLAGS,
+    pub hwndTrack: super::super::super::Foundation::HWND,
+    pub dwHoverTime: u32,
+}
+impl windows_core::TypeKind for TRACKMOUSEEVENT {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for TRACKMOUSEEVENT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_F {
+    pub Vk: u8,
+    pub NLSFEProcType: u8,
+    pub NLSFEProcCurrent: u8,
+    pub NLSFEProcSwitch: u8,
+    pub NLSFEProc: [VK_FPARAM; 8],
+    pub NLSFEProcAlt: [VK_FPARAM; 8],
+}
+impl windows_core::TypeKind for VK_F {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_F {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_FPARAM {
+    pub NLSFEProcIndex: u8,
+    pub NLSFEProcParam: u32,
+}
+impl windows_core::TypeKind for VK_FPARAM {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_FPARAM {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_BIT {
+    pub Vk: u8,
+    pub ModBits: u8,
+}
+impl windows_core::TypeKind for VK_TO_BIT {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_BIT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_WCHARS1 {
+    pub VirtualKey: u8,
+    pub Attributes: u8,
+    pub wch: [u16; 1],
+}
+impl windows_core::TypeKind for VK_TO_WCHARS1 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_WCHARS1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_WCHARS10 {
+    pub VirtualKey: u8,
+    pub Attributes: u8,
+    pub wch: [u16; 10],
+}
+impl windows_core::TypeKind for VK_TO_WCHARS10 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_WCHARS10 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_WCHARS2 {
+    pub VirtualKey: u8,
+    pub Attributes: u8,
+    pub wch: [u16; 2],
+}
+impl windows_core::TypeKind for VK_TO_WCHARS2 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_WCHARS2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_WCHARS3 {
+    pub VirtualKey: u8,
+    pub Attributes: u8,
+    pub wch: [u16; 3],
+}
+impl windows_core::TypeKind for VK_TO_WCHARS3 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_WCHARS3 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_WCHARS4 {
+    pub VirtualKey: u8,
+    pub Attributes: u8,
+    pub wch: [u16; 4],
+}
+impl windows_core::TypeKind for VK_TO_WCHARS4 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_WCHARS4 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_WCHARS5 {
+    pub VirtualKey: u8,
+    pub Attributes: u8,
+    pub wch: [u16; 5],
+}
+impl windows_core::TypeKind for VK_TO_WCHARS5 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_WCHARS5 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_WCHARS6 {
+    pub VirtualKey: u8,
+    pub Attributes: u8,
+    pub wch: [u16; 6],
+}
+impl windows_core::TypeKind for VK_TO_WCHARS6 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_WCHARS6 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_WCHARS7 {
+    pub VirtualKey: u8,
+    pub Attributes: u8,
+    pub wch: [u16; 7],
+}
+impl windows_core::TypeKind for VK_TO_WCHARS7 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_WCHARS7 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_WCHARS8 {
+    pub VirtualKey: u8,
+    pub Attributes: u8,
+    pub wch: [u16; 8],
+}
+impl windows_core::TypeKind for VK_TO_WCHARS8 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_WCHARS8 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_WCHARS9 {
+    pub VirtualKey: u8,
+    pub Attributes: u8,
+    pub wch: [u16; 9],
+}
+impl windows_core::TypeKind for VK_TO_WCHARS9 {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_WCHARS9 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_TO_WCHAR_TABLE {
+    pub pVkToWchars: *mut VK_TO_WCHARS1,
+    pub nModifications: u8,
+    pub cbSize: u8,
+}
+impl windows_core::TypeKind for VK_TO_WCHAR_TABLE {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_TO_WCHAR_TABLE {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VK_VSC {
+    pub Vk: u8,
+    pub Vsc: u8,
+}
+impl windows_core::TypeKind for VK_VSC {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VK_VSC {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VSC_LPWSTR {
+    pub vsc: u8,
+    pub pwsz: windows_core::PWSTR,
+}
+impl windows_core::TypeKind for VSC_LPWSTR {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VSC_LPWSTR {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct VSC_VK {
+    pub Vsc: u8,
+    pub Vk: u16,
+}
+impl windows_core::TypeKind for VSC_VK {
+    type TypeKind = windows_core::CopyType;
+}
+impl Default for VSC_VK {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}

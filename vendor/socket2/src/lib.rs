@@ -6,8 +6,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![allow(clippy::needless_lifetimes)]
-
 //! Utilities for creating and using sockets.
 //!
 //! The goal of this crate is to create and use a socket using advanced
@@ -53,8 +51,8 @@
 //! that are not available on all OSs.
 
 #![deny(missing_docs, missing_debug_implementations, rust_2018_idioms)]
-// Automatically generate required OS/features for docs.rs.
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+// Show required OS/features on docs.rs.
+#![cfg_attr(docsrs, feature(doc_cfg))]
 // Disallow warnings when running tests.
 #![cfg_attr(test, deny(warnings))]
 // Disallow warnings in examples.
@@ -185,7 +183,10 @@ compile_error!("Socket2 doesn't support the compile target");
 
 use sys::c_int;
 
-pub use sockaddr::{sa_family_t, socklen_t, SockAddr, SockAddrStorage};
+pub use sockaddr::SockAddr;
+pub use socket::Socket;
+pub use sockref::SockRef;
+
 #[cfg(not(any(
     target_os = "haiku",
     target_os = "illumos",
@@ -194,12 +195,6 @@ pub use sockaddr::{sa_family_t, socklen_t, SockAddr, SockAddrStorage};
     target_os = "solaris",
 )))]
 pub use socket::InterfaceIndexOrAddress;
-pub use socket::Socket;
-pub use sockref::SockRef;
-#[cfg(all(feature = "all", target_os = "linux"))]
-pub use sys::CcidEndpoints;
-#[cfg(all(feature = "all", any(target_os = "linux", target_os = "android")))]
-pub use sys::SockFilter;
 
 /// Specification of the communication domain for a socket.
 ///
@@ -271,14 +266,20 @@ impl Type {
     ///
     /// Used for the DCCP protocol.
     #[cfg(all(feature = "all", target_os = "linux"))]
+    #[cfg_attr(docsrs, doc(cfg(all(feature = "all", target_os = "linux"))))]
     pub const DCCP: Type = Type(sys::SOCK_DCCP);
 
     /// Type corresponding to `SOCK_SEQPACKET`.
     #[cfg(all(feature = "all", not(target_os = "espidf")))]
+    #[cfg_attr(docsrs, doc(cfg(all(feature = "all", not(target_os = "espidf")))))]
     pub const SEQPACKET: Type = Type(sys::SOCK_SEQPACKET);
 
     /// Type corresponding to `SOCK_RAW`.
     #[cfg(all(feature = "all", not(any(target_os = "redox", target_os = "espidf"))))]
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(all(feature = "all", not(any(target_os = "redox", target_os = "espidf")))))
+    )]
     pub const RAW: Type = Type(sys::SOCK_RAW);
 }
 
@@ -323,6 +324,7 @@ impl Protocol {
 
     /// Protocol corresponding to `DCCP`.
     #[cfg(all(feature = "all", target_os = "linux"))]
+    #[cfg_attr(docsrs, doc(cfg(all(feature = "all", target_os = "linux"))))]
     pub const DCCP: Protocol = Protocol(sys::IPPROTO_DCCP);
 
     /// Protocol corresponding to `SCTP`.
@@ -362,6 +364,7 @@ impl From<Protocol> for c_int {
 ///
 /// Flags provide additional information about incoming messages.
 #[cfg(not(target_os = "redox"))]
+#[cfg_attr(docsrs, doc(cfg(not(target_os = "redox"))))]
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct RecvFlags(c_int);
 
@@ -441,6 +444,7 @@ pub struct TcpKeepalive {
         target_os = "openbsd",
         target_os = "redox",
         target_os = "solaris",
+        target_os = "windows",
         target_os = "nto",
         target_os = "espidf",
         target_os = "vita",
@@ -469,6 +473,7 @@ impl TcpKeepalive {
                 target_os = "openbsd",
                 target_os = "redox",
                 target_os = "solaris",
+                target_os = "windows",
                 target_os = "nto",
                 target_os = "espidf",
                 target_os = "vita",
@@ -517,8 +522,25 @@ impl TcpKeepalive {
         target_os = "tvos",
         target_os = "watchos",
         target_os = "windows",
-        target_os = "cygwin",
     ))]
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(any(
+            target_os = "android",
+            target_os = "dragonfly",
+            target_os = "freebsd",
+            target_os = "fuchsia",
+            target_os = "illumos",
+            target_os = "ios",
+            target_os = "visionos",
+            target_os = "linux",
+            target_os = "macos",
+            target_os = "netbsd",
+            target_os = "tvos",
+            target_os = "watchos",
+            target_os = "windows",
+        )))
+    )]
     pub const fn with_interval(self, interval: Duration) -> Self {
         Self {
             interval: Some(interval),
@@ -545,10 +567,28 @@ impl TcpKeepalive {
             target_os = "netbsd",
             target_os = "tvos",
             target_os = "watchos",
-            target_os = "cygwin",
-            target_os = "windows",
         )
     ))]
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(all(
+            feature = "all",
+            any(
+                target_os = "android",
+                target_os = "dragonfly",
+                target_os = "freebsd",
+                target_os = "fuchsia",
+                target_os = "illumos",
+                target_os = "ios",
+                target_os = "visionos",
+                target_os = "linux",
+                target_os = "macos",
+                target_os = "netbsd",
+                target_os = "tvos",
+                target_os = "watchos",
+            )
+        )))
+    )]
     pub const fn with_retries(self, retries: u32) -> Self {
         Self {
             retries: Some(retries),

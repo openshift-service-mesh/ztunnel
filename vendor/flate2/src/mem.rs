@@ -43,7 +43,6 @@ pub struct Decompress {
 /// in-memory data.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[non_exhaustive]
-#[allow(clippy::unnecessary_cast)]
 pub enum FlushCompress {
     /// A typical parameter for passing to compression/decompression functions,
     /// this indicates that the underlying stream to decide how much data to
@@ -87,7 +86,6 @@ pub enum FlushCompress {
 /// decompressing in-memory data.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[non_exhaustive]
-#[allow(clippy::unnecessary_cast)]
 pub enum FlushDecompress {
     /// A typical parameter for passing to compression/decompression functions,
     /// this indicates that the underlying stream to decide how much data to
@@ -279,7 +277,6 @@ impl Compress {
 
         match rc {
             ffi::MZ_STREAM_ERROR => compress_failed(self.inner.inner.msg()),
-            #[allow(clippy::unnecessary_cast)]
             ffi::MZ_OK => Ok(unsafe { (*stream).adler } as u32),
             c => panic!("unknown return code: {}", c),
         }
@@ -496,7 +493,6 @@ impl Decompress {
             ffi::inflateSetDictionary(stream, dictionary.as_ptr(), dictionary.len() as ffi::uInt)
         };
 
-        #[allow(clippy::unnecessary_cast)]
         match rc {
             ffi::MZ_STREAM_ERROR => decompress_failed(self.inner.inner.msg()),
             ffi::MZ_DATA_ERROR => decompress_need_dict(unsafe { (*stream).adler } as u32),

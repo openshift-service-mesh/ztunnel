@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.71.1"
 name = "bumpalo"
-version = "3.19.0"
+version = "3.17.0"
 authors = ["Nick Fitzgerald <fitzgen@gmail.com>"]
 build = false
 exclude = [
@@ -42,18 +42,6 @@ repository = "https://github.com/fitzgen/bumpalo"
 [package.metadata.docs.rs]
 all-features = true
 
-[features]
-allocator_api = []
-bench_allocator_api = [
-    "allocator_api",
-    "blink-alloc/nightly",
-]
-boxed = []
-collections = []
-default = []
-serde = ["dep:serde"]
-std = []
-
 [lib]
 name = "bumpalo"
 path = "src/lib.rs"
@@ -67,9 +55,6 @@ default-features = false
 [dependencies.serde]
 version = "1.0.171"
 optional = true
-
-[dev-dependencies.blink-alloc]
-version = "=0.3.1"
 
 [dev-dependencies.criterion]
 version = "0.3.6"
@@ -86,3 +71,11 @@ features = ["derive"]
 
 [dev-dependencies.serde_json]
 version = "1.0.115"
+
+[features]
+allocator_api = []
+boxed = []
+collections = []
+default = []
+serde = ["dep:serde"]
+std = []

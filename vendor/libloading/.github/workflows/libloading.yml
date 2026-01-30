@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust_toolchain: [nightly, stable, 1.63.0]
+        rust_toolchain: [nightly, stable, 1.56.0]
         os: [ubuntu-latest, windows-latest, macOS-latest]
     timeout-minutes: 20
     steps:
@@ -24,7 +24,7 @@ jobs:
       - run: rustup default ${{ matrix.rust_toolchain }}
       - run: rustup component add clippy
       - run: cargo update -p libc --precise 0.2.155
-        if: ${{ matrix.rust_toolchain == '1.63.0' }}
+        if: ${{ matrix.rust_toolchain == "1.56.0" }}
       - run: cargo clippy
       - run: cargo test -- --nocapture
       - run: cargo test --release -- --nocapture
@@ -40,12 +40,12 @@ jobs:
       matrix:
         rust_toolchain: [nightly, stable]
         rust_target:
-          - x86_64-pc-windows-gnullvm
+          - x86_64-pc-windows-gnu
           - i686-pc-windows-gnu
         include:
-          - rust_target: x86_64-pc-windows-gnullvm
-            mingw_path: C:/msys64/clang64/bin
-            package: mingw-w64-clang-x86_64-clang
+          - rust_target: x86_64-pc-windows-gnu
+            mingw_path: C:/msys64/mingw64/bin
+            package: mingw-w64-x86_64-gcc
           - rust_target: i686-pc-windows-gnu
             mingw_path: C:/msys64/mingw32/bin
             package: mingw-w64-i686-gcc
@@ -58,31 +58,12 @@ jobs:
         with:
           release: false
           install: ${{ matrix.package }}
+      - run: echo "c:/msys64/bin" | Out-File -FilePath $env:GITHUB_PATH -Append
       - run: echo "${{ matrix.mingw_path }}" | Out-File -FilePath $env:GITHUB_PATH -Append
         if: ${{ matrix.mingw_path }}"
       - run: cargo test --target ${{ matrix.rust_target }}
         env:
           TARGET: ${{ matrix.rust_target}}
-
-  msys2-test:
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v2
-      - run: rustup install nightly --profile=minimal
-      - run: rustup default nightly
-      - run: rustup component add rust-src
-      - uses: msys2/setup-msys2@v2
-        with:
-          release: false
-          install: gcc
-      - run: echo "INPUT(libmsys-2.0.a)" | Out-File -FilePath "C:\msys64\usr\lib\libcygwin.a"
-      - run: |
-          $env:PATH = "C:\msys64\usr\bin\;$env:PATH"
-          cargo test --target x86_64-pc-cygwin -Zbuild-std
-        env:
-          CARGO_TARGET_X86_64_PC_CYGWIN_LINKER: x86_64-pc-msys-gcc.exe
 
   bare-cross-build:
     runs-on: ubuntu-latest

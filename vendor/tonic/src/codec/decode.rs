@@ -172,10 +172,11 @@ impl StreamingInner {
                     trace!("unexpected compression flag");
                     let message = if let Direction::Response(status) = self.direction {
                         format!(
-                            "protocol error: received message with invalid compression flag: {f} (valid flags are 0 and 1) while receiving response with status: {status}"
+                            "protocol error: received message with invalid compression flag: {} (valid flags are 0 and 1) while receiving response with status: {}",
+                            f, status
                         )
                     } else {
-                        format!("protocol error: received message with invalid compression flag: {f} (valid flags are 0 and 1), while sending request")
+                        format!("protocol error: received message with invalid compression flag: {} (valid flags are 0 and 1), while sending request", f)
                     };
                     return Err(Status::internal(message));
                 }
@@ -188,7 +189,8 @@ impl StreamingInner {
             if len > limit {
                 return Err(Status::out_of_range(
                     format!(
-                        "Error, decoded message length too large: found {len} bytes, the limit is: {limit} bytes"
+                        "Error, decoded message length too large: found {} bytes, the limit is: {} bytes",
+                        len, limit
                     ),
                 ));
             }
@@ -222,10 +224,11 @@ impl StreamingInner {
                 ) {
                     let message = if let Direction::Response(status) = self.direction {
                         format!(
-                            "Error decompressing: {err}, while receiving response with status: {status}"
+                            "Error decompressing: {}, while receiving response with status: {}",
+                            err, status
                         )
                     } else {
-                        format!("Error decompressing: {err}, while sending request")
+                        format!("Error decompressing: {}, while sending request", err)
                     };
                     return Err(Status::internal(message));
                 }
@@ -277,7 +280,7 @@ impl StreamingInner {
 
             Ok(None)
         } else {
-            panic!("unexpected frame: {frame:?}");
+            panic!("unexpected frame: {:?}", frame);
         })
     }
 

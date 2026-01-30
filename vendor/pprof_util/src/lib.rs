@@ -15,9 +15,6 @@ use prost::Message;
 pub use cast::CastFrom;
 pub use cast::TryCastFrom;
 
-#[cfg(feature = "flamegraph")]
-pub use inferno::flamegraph::Options as FlamegraphOptions;
-
 /// Start times of the profiler.
 #[derive(Copy, Clone, Debug)]
 pub enum ProfStartTime {
@@ -54,7 +51,7 @@ impl StringTable {
 }
 
 #[path = "perftools.profiles.rs"]
-mod proto;
+mod pprof_types;
 
 /// A single sample in the profile. The stack is a list of addresses.
 #[derive(Clone, Debug)]
@@ -107,21 +104,8 @@ impl StackProfile {
         period_type: (&str, &str),
         anno_key: Option<String>,
     ) -> Vec<u8> {
-        let profile = self.to_pprof_proto(sample_type, period_type, anno_key);
-        let encoded = profile.encode_to_vec();
+        use crate::pprof_types as proto;
 
-        let mut gz = GzEncoder::new(Vec::new(), Compression::default());
-        gz.write_all(&encoded).unwrap();
-        gz.finish().unwrap()
-    }
-
-    /// Converts the profile into the pprof Protobuf format (see `pprof/profile.proto`).
-    fn to_pprof_proto(
-        &self,
-        sample_type: (&str, &str),
-        period_type: (&str, &str),
-        anno_key: Option<String>,
-    ) -> proto::Profile {
         let mut profile = proto::Profile::default();
         let mut strings = StringTable::new();
 
@@ -154,18 +138,36 @@ impl StackProfile {
 
             profile.mapping.push(proto::Mapping {
                 id: mapping_id,
-                memory_start: 0,
-                memory_limit: 0,
-                file_offset: 0,
+                memory_start: u64::cast_from(mapping.memory_start),
+                memory_limit: u64::cast_from(mapping.memory_end),
+                file_offset: mapping.file_offset,
                 filename: filename_idx,
                 build_id: build_id_idx,
                 ..Default::default()
             });
+
+            // This is a is a Polar Signals-specific extension: For correct offline symbolization
+            // they need access to the memory offset of mappings, but the pprof format only has a
+            // field for the file offset. So we instead encode additional information about
+            // mappings in magic comments. There must be exactly one comment for each mapping.
+
+            // Take a shortcut and assume the ELF type is always `ET_DYN`. This is true for shared
+            // libraries and for position-independent executable, so it should always be true for
+            // any mappings we have.
+            // Getting the actual information is annoying. It's in the ELF header (the `e_type`
+            // field), but there is no guarantee that the full ELF header gets mapped, so we might
+            // not be able to find it in memory. We could try to load it from disk instead, but
+            // then we'd have to worry about blocking disk I/O.
+            let elf_type = 3;
+
+            let comment = format!(
+                "executableInfo={:x};{:x};{:x}",
+                elf_type, mapping.file_offset, mapping.memory_offset
+            );
+            profile.comment.push(strings.insert(&comment));
         }
 
         let mut location_ids = BTreeMap::new();
-        #[cfg(feature = "symbolize")]
-        let mut function_ids = BTreeMap::new();
         for (stack, anno) in self.iter() {
             let mut sample = proto::Sample::default();
 
@@ -187,79 +189,19 @@ impl StackProfile {
                 // tools don't seem to get confused by this.
                 let addr = u64::cast_from(*addr) - 1;
 
-                // Find the mapping for this address (search once)
-                let mapping_info = self.mappings.iter().enumerate().find(|(_, mapping)| {
-                    mapping.memory_start <= addr as usize && mapping.memory_end > addr as usize
-                });
-
-                // Convert runtime address to file-relative address using found mapping data
-                let file_relative_addr = mapping_info
-                    .map(|(_, mapping)| {
-                        (addr as usize - mapping.memory_start + mapping.file_offset as usize) as u64
-                    })
-                    .unwrap_or(addr);
-
-                let loc_id = *location_ids.entry(file_relative_addr).or_insert_with(|| {
-                    // profile.proto says the location id may be the address, but Polar Signals
+                let loc_id = *location_ids.entry(addr).or_insert_with(|| {
+                    // pprof_types.proto says the location id may be the address, but Polar Signals
                     // insists that location ids are sequential, starting with 1.
                     let id = u64::cast_from(profile.location.len()) + 1;
-
-                    #[allow(unused_mut)] // for feature = "symbolize"
-                    let mut mapping =
-                        mapping_info.and_then(|(idx, _)| profile.mapping.get_mut(idx));
-
-                    // If online symbolization is enabled, resolve the function and line.
-                    #[allow(unused_mut)]
-                    let mut line = Vec::new();
-                    #[cfg(feature = "symbolize")]
-                    backtrace::resolve(addr as *mut std::ffi::c_void, |symbol| {
-                        let Some(symbol_name) = symbol.name() else {
-                            return;
-                        };
-                        let function_name = format!("{symbol_name:#}");
-                        let lineno = symbol.lineno().unwrap_or(0) as i64;
-
-                        let function_id = *function_ids.entry(function_name).or_insert_with_key(
-                            |function_name| {
-                                let function_id = profile.function.len() as u64 + 1;
-                                let system_name = String::from_utf8_lossy(symbol_name.as_bytes());
-                                let filename = symbol
-                                    .filename()
-                                    .map(|path| path.to_string_lossy())
-                                    .unwrap_or(std::borrow::Cow::Borrowed(""));
-
-                                if let Some(ref mut mapping) = mapping {
-                                    mapping.has_functions = true;
-                                    mapping.has_filenames |= !filename.is_empty();
-                                    mapping.has_line_numbers |= lineno > 0;
-                                }
-
-                                profile.function.push(proto::Function {
-                                    id: function_id,
-                                    name: strings.insert(function_name),
-                                    system_name: strings.insert(&system_name),
-                                    filename: strings.insert(&filename),
-                                    ..Default::default()
-                                });
-                                function_id
-                            },
-                        );
-
-                        line.push(proto::Line {
-                            function_id,
-                            line: lineno,
-                        });
-
-                        if let Some(ref mut mapping) = mapping {
-                            mapping.has_inline_frames |= line.len() > 1;
-                        }
-                    });
-
+                    let mapping_id = profile
+                        .mapping
+                        .iter()
+                        .find(|m| m.memory_start <= addr && m.memory_limit > addr)
+                        .map_or(0, |m| m.id);
                     profile.location.push(proto::Location {
                         id,
-                        mapping_id: mapping.map_or(0, |m| m.id),
-                        address: file_relative_addr,
-                        line,
+                        mapping_id,
+                        address: addr,
                         ..Default::default()
                     });
                     id
@@ -281,54 +223,11 @@ impl StackProfile {
 
         profile.string_table = strings.finish();
 
-        profile
-    }
+        let encoded = profile.encode_to_vec();
 
-    /// Converts the profile into a flamegraph SVG, using the given options.
-    #[cfg(feature = "flamegraph")]
-    pub fn to_flamegraph(&self, opts: &mut FlamegraphOptions) -> anyhow::Result<Vec<u8>> {
-        use std::collections::HashMap;
-
-        // We start from a symbolized Protobuf profile. We just pass in empty type names, since
-        // they're not used in the final flamegraph.
-        let profile = self.to_pprof_proto(("", ""), ("", ""), None);
-
-        // Index locations, functions, and strings.
-        let locations: HashMap<u64, proto::Location> =
-            profile.location.into_iter().map(|l| (l.id, l)).collect();
-        let functions: HashMap<u64, proto::Function> =
-            profile.function.into_iter().map(|f| (f.id, f)).collect();
-        let strings = profile.string_table;
-
-        // Resolve stacks as function name vectors, and sum sample values per stack. Also reverse
-        // the stack, since inferno expects it bottom-up.
-        let mut stacks: HashMap<Vec<&str>, i64> = HashMap::new();
-        for sample in profile.sample {
-            let mut stack = Vec::with_capacity(sample.location_id.len());
-            for location in sample.location_id.into_iter().rev() {
-                let location = locations.get(&location).expect("missing location");
-                for line in location.line.iter().rev() {
-                    let function = functions.get(&line.function_id).expect("missing function");
-                    let name = strings.get(function.name as usize).expect("missing string");
-                    stack.push(name.as_str());
-                }
-            }
-            let value = sample.value.first().expect("missing value");
-            *stacks.entry(stack).or_default() += value;
-        }
-
-        // Construct stack lines for inferno.
-        let mut lines = stacks
-            .into_iter()
-            .map(|(stack, value)| format!("{} {}", stack.join(";"), value))
-            .collect::<Vec<_>>();
-        lines.sort();
-
-        // Generate the flamegraph SVG.
-        let mut bytes = Vec::new();
-        let lines = lines.iter().map(|line| line.as_str());
-        inferno::flamegraph::from_lines(opts, lines, &mut bytes)?;
-        Ok(bytes)
+        let mut gz = GzEncoder::new(Vec::new(), Compression::default());
+        gz.write_all(&encoded).unwrap();
+        gz.finish().unwrap()
     }
 }
 

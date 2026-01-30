@@ -5,6 +5,9 @@ use core::cmp::min;
 use crate::unix::solarish::*;
 use crate::{c_char, c_int, size_t};
 
+const PTEM: &[u8] = b"ptem\0";
+const LDTERM: &[u8] = b"ldterm\0";
+
 pub unsafe fn cfmakeraw(termios: *mut crate::termios) {
     (*termios).c_iflag &=
         !(IMAXBEL | IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
@@ -38,7 +41,6 @@ pub unsafe fn cfsetspeed(termios: *mut crate::termios, speed: crate::speed_t) ->
     0
 }
 
-#[cfg(target_os = "illumos")]
 unsafe fn bail(fdm: c_int, fds: c_int) -> c_int {
     let e = *___errno();
     if fds >= 0 {
@@ -48,10 +50,9 @@ unsafe fn bail(fdm: c_int, fds: c_int) -> c_int {
         crate::close(fdm);
     }
     *___errno() = e;
-    -1
+    return -1;
 }
 
-#[cfg(target_os = "illumos")]
 pub unsafe fn openpty(
     amain: *mut c_int,
     asubord: *mut c_int,
@@ -59,9 +60,6 @@ pub unsafe fn openpty(
     termp: *const termios,
     winp: *const crate::winsize,
 ) -> c_int {
-    const PTEM: &[u8] = b"ptem\0";
-    const LDTERM: &[u8] = b"ldterm\0";
-
     // Open the main pseudo-terminal device, making sure not to set it as the
     // controlling terminal for this process:
     let fdm = crate::posix_openpt(O_RDWR | O_NOCTTY);
@@ -125,7 +123,6 @@ pub unsafe fn openpty(
     0
 }
 
-#[cfg(target_os = "illumos")]
 pub unsafe fn forkpty(
     amain: *mut c_int,
     name: *mut c_char,
@@ -185,7 +182,7 @@ pub unsafe fn getpwent_r(
 ) -> c_int {
     let old_errno = *crate::___errno();
     *crate::___errno() = 0;
-    *result = native_getpwent_r(pwd, buf, min(buflen, c_int::MAX as size_t) as c_int);
+    *result = native_getpwent_r(pwd, buf, min(buflen, c_int::max_value() as size_t) as c_int);
 
     let ret = if (*result).is_null() {
         *crate::___errno()
@@ -205,7 +202,7 @@ pub unsafe fn getgrent_r(
 ) -> c_int {
     let old_errno = *crate::___errno();
     *crate::___errno() = 0;
-    *result = native_getgrent_r(grp, buf, min(buflen, c_int::MAX as size_t) as c_int);
+    *result = native_getgrent_r(grp, buf, min(buflen, c_int::max_value() as size_t) as c_int);
 
     let ret = if (*result).is_null() {
         *crate::___errno()

@@ -968,7 +968,7 @@ static int ssl_do_post_handshake(SSL *ssl, const SSLMessage &msg) {
 int SSL_process_quic_post_handshake(SSL *ssl) {
   ssl_reset_error_state(ssl);
 
-  if (ssl->quic_method == nullptr || (SSL_in_init(ssl) != 0)) {
+  if (SSL_in_init(ssl)) {
     OPENSSL_PUT_ERROR(SSL, ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED);
     return 0;
   }
@@ -3062,14 +3062,6 @@ int SSL_can_release_private_key(const SSL *ssl) {
   return !ssl->s3->hs || ssl->s3->hs->can_release_private_key;
 }
 
-int SSL_in_connect_init(const SSL *ssl) {
-  return SSL_in_init(ssl) && !SSL_is_server(ssl);
-}
-
-int SSL_in_accept_init(const SSL *ssl) {
-  return SSL_in_init(ssl) && SSL_is_server(ssl);
-}
-
 int SSL_is_init_finished(const SSL *ssl) { return !SSL_in_init(ssl); }
 
 int SSL_in_init(const SSL *ssl) {
@@ -3542,60 +3534,3 @@ size_t SSL_client_hello_get0_ciphers(SSL *ssl, const unsigned char **out) {
   }
   return ssl->all_client_cipher_suites_len;
 }
-
-OPENSSL_EXPORT int SSL_get_read_traffic_secret(
-    const SSL *ssl,
-    uint8_t *secret, size_t *out_len)  {
-  if (SSL_in_init(ssl) || ssl_protocol_version(ssl) < TLS1_3_VERSION) {
-    OPENSSL_PUT_ERROR(SSL, ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED);
-    return 0;
-  }
-
-  GUARD_PTR(out_len);
-
-  if (secret == nullptr) {
-    *out_len = ssl->s3->read_traffic_secret_len;
-    return 1;
-  }
-
-  if (ssl->s3->read_traffic_secret_len > *out_len) {
-    OPENSSL_PUT_ERROR(SSL, ERR_R_OVERFLOW);
-    return 0;
-  }
-
-  OPENSSL_memcpy(secret, ssl->s3->read_traffic_secret,
-                 ssl->s3->read_traffic_secret_len);
-
-  *out_len = ssl->s3->read_traffic_secret_len;
-
-  return 1;
-}
-
-OPENSSL_EXPORT int SSL_get_write_traffic_secret(
-    const SSL *ssl,
-    uint8_t *secret, size_t *out_len)  {
-  if (SSL_in_init(ssl) || ssl_protocol_version(ssl) < TLS1_3_VERSION) {
-    OPENSSL_PUT_ERROR(SSL, ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED);
-    return 0;
-  }
-
-  GUARD_PTR(out_len);
-
-  if (secret == nullptr) {
-    *out_len = ssl->s3->write_traffic_secret_len;
-    return 1;
-  }
-
-  if (ssl->s3->write_traffic_secret_len > *out_len) {
-    OPENSSL_PUT_ERROR(SSL, ERR_R_OVERFLOW);
-    return 0;
-  }
-
-  OPENSSL_memcpy(secret, ssl->s3->write_traffic_secret,
-                 ssl->s3->write_traffic_secret_len);
-
-  *out_len = ssl->s3->write_traffic_secret_len;
-
-  return 1;
-}
-

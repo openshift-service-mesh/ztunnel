@@ -43,11 +43,12 @@ class ImplDispatchTest : public ::testing::Test {
     aes_vpaes_ = CRYPTO_is_SSSE3_capable();
     ifma_avx512 = CRYPTO_is_AVX512IFMA_capable();
     sha_ext_ =
-    // sha_ext_ isn't enabled on 32-bit x86 architectures.
-#if defined(OPENSSL_X86)
-        false;
+// TODO(CryptoAlg-2137): sha_ext_ isn't enabled on Windows Debug Builds with newer
+// 32-bit Intel processors.
+#if !(defined(OPENSSL_WINDOWS) && defined(OPENSSL_X86) && !defined(NDEBUG))
+    CRYPTO_is_SHAEXT_capable();
 #else
-        CRYPTO_is_SHAEXT_capable();
+    false;
 #endif
 
     vaes_vpclmulqdq_ =
@@ -158,7 +159,7 @@ TEST_F(ImplDispatchTest, AEAD_AES_GCM) {
           {kFlag_vpaes_set_encrypt_key, aes_vpaes_ && !aes_hw_},
 #if defined(OPENSSL_X86) || defined(OPENSSL_X86_64)
           {kFlag_aes_hw_ctr32_encrypt_blocks, aes_hw_ &&
-           (!is_x86_64_ || is_assembler_too_old || !vaes_vpclmulqdq_)},
+           (is_assembler_too_old || !vaes_vpclmulqdq_)},
           {kFlag_aesni_gcm_encrypt,
            is_x86_64_ && aes_hw_ && avx_movbe_ &&
            !is_assembler_too_old && !vaes_vpclmulqdq_},

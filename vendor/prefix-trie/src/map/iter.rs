@@ -392,7 +392,7 @@ where
     /// pm.insert("192.168.0.0/24".parse()?, 4);
     /// pm.insert("192.168.2.0/24".parse()?, 5);
     /// assert_eq!(
-    ///     pm.children(&"192.168.0.0/23".parse()?).collect::<Vec<_>>(),
+    ///     pm.children("192.168.0.0/23".parse()?).collect::<Vec<_>>(),
     ///     vec![
     ///         (&"192.168.0.0/23".parse()?, &2),
     ///         (&"192.168.0.0/24".parse()?, &4),
@@ -403,12 +403,10 @@ where
     /// # #[cfg(not(feature = "ipnet"))]
     /// # fn main() {}
     /// ```
-    pub fn children<'a>(&'a self, prefix: &P) -> Iter<'a, P, T> {
-        let nodes = lpm_children_iter_start(&self.table, prefix);
-        Iter {
-            table: Some(&self.table),
-            nodes,
-        }
+    pub fn children(&self, prefix: P) -> Iter<'_, P, T> {
+        self.view_at(prefix)
+            .map(|x| x.into_iter())
+            .unwrap_or_default()
     }
 
     /// Get an iterator of mutable references of the node itself and all its children. All elements
@@ -428,7 +426,7 @@ where
     /// pm.insert("192.168.0.0/24".parse()?, 3);
     /// pm.insert("192.168.2.0/23".parse()?, 4);
     /// pm.insert("192.168.2.0/24".parse()?, 5);
-    /// pm.children_mut(&"192.168.0.0/23".parse()?).for_each(|(_, x)| *x *= 10);
+    /// pm.children_mut("192.168.0.0/23".parse()?).for_each(|(_, x)| *x *= 10);
     /// assert_eq!(
     ///     pm.into_iter().collect::<Vec<_>>(),
     ///     vec![
@@ -444,12 +442,10 @@ where
     /// # #[cfg(not(feature = "ipnet"))]
     /// # fn main() {}
     /// ```
-    pub fn children_mut<'a>(&'a mut self, prefix: &P) -> IterMut<'a, P, T> {
-        let nodes = lpm_children_iter_start(&self.table, prefix);
-        IterMut {
-            table: Some(&self.table),
-            nodes,
-        }
+    pub fn children_mut(&mut self, prefix: P) -> IterMut<'_, P, T> {
+        self.view_mut_at(prefix)
+            .map(|x| x.into_iter())
+            .unwrap_or_default()
     }
 
     /// Get an iterator over the node itself and all children with a value. All elements returned
@@ -528,13 +524,13 @@ where
 
 /// An iterator that yields all items in a `PrefixMap` that covers a given prefix (including the
 /// prefix itself if preseint). See [`PrefixMap::cover`] for how to create this iterator.
-pub struct Cover<'a, 'p, P, T> {
+pub struct Cover<'a, P, T> {
     pub(super) table: &'a Table<P, T>,
     pub(super) idx: Option<usize>,
-    pub(super) prefix: &'p P,
+    pub(super) prefix: &'a P,
 }
 
-impl<'a, P, T> Iterator for Cover<'a, '_, P, T>
+impl<'a, P, T> Iterator for Cover<'a, P, T>
 where
     P: Prefix,
 {
@@ -570,9 +566,9 @@ where
 /// An iterator that yields all keys (prefixes) in a `PrefixMap` that covers a given prefix
 /// (including the prefix itself if preseint). See [`PrefixMap::cover_keys`] for how to create this
 /// iterator.
-pub struct CoverKeys<'a, 'p, P, T>(pub(super) Cover<'a, 'p, P, T>);
+pub struct CoverKeys<'a, P, T>(pub(super) Cover<'a, P, T>);
 
-impl<'a, P, T> Iterator for CoverKeys<'a, '_, P, T>
+impl<'a, P, T> Iterator for CoverKeys<'a, P, T>
 where
     P: Prefix,
 {
@@ -585,9 +581,9 @@ where
 
 /// An iterator that yields all values in a `PrefixMap` that covers a given prefix (including the
 /// prefix itself if preseint). See [`PrefixMap::cover_values`] for how to create this iterator.
-pub struct CoverValues<'a, 'p, P, T>(pub(super) Cover<'a, 'p, P, T>);
+pub struct CoverValues<'a, P, T>(pub(super) Cover<'a, P, T>);
 
-impl<'a, P, T> Iterator for CoverValues<'a, '_, P, T>
+impl<'a, P, T> Iterator for CoverValues<'a, P, T>
 where
     P: Prefix,
 {

@@ -1,5 +1,3 @@
-#![allow(clippy::from_over_into)]
-
 #[cfg(feature = "serde")]
 use crate::resolve;
 use crate::PrintFmt;
@@ -28,7 +26,7 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Backtrace {
     // Frames here are listed from top-to-bottom of the stack
-    frames: Box<[BacktraceFrame]>,
+    frames: Vec<BacktraceFrame>,
 }
 
 #[derive(Clone, Copy)]
@@ -143,7 +141,7 @@ fn _assert_send_sync() {
 #[derive(Clone)]
 pub struct BacktraceFrame {
     frame: Frame,
-    symbols: Option<Box<[BacktraceSymbol]>>,
+    symbols: Option<Vec<BacktraceSymbol>>,
 }
 
 #[derive(Clone)]
@@ -186,11 +184,11 @@ impl Frame {
     }
 
     /// Resolve all addresses in the frame to their symbolic names.
-    fn resolve_symbols(&self) -> Box<[BacktraceSymbol]> {
+    fn resolve_symbols(&self) -> Vec<BacktraceSymbol> {
         let mut symbols = Vec::new();
         let sym = |symbol: &Symbol| {
             symbols.push(BacktraceSymbol {
-                name: symbol.name().map(|m| m.as_bytes().into()),
+                name: symbol.name().map(|m| m.as_bytes().to_vec()),
                 addr: symbol.addr().map(TracePtr),
                 filename: symbol.filename().map(|m| m.to_owned()),
                 lineno: symbol.lineno(),
@@ -204,7 +202,7 @@ impl Frame {
                 resolve(ip.into_void(), sym);
             }
         }
-        symbols.into_boxed_slice()
+        symbols
     }
 }
 
@@ -220,7 +218,7 @@ impl Frame {
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct BacktraceSymbol {
-    name: Option<Box<[u8]>>,
+    name: Option<Vec<u8>>,
     addr: Option<TracePtr>,
     filename: Option<PathBuf>,
     lineno: Option<u32>,
@@ -306,9 +304,7 @@ impl Backtrace {
         });
         frames.shrink_to_fit();
 
-        Backtrace {
-            frames: frames.into_boxed_slice(),
-        }
+        Backtrace { frames }
     }
 
     /// Returns the frames from when this backtrace was captured.
@@ -322,7 +318,7 @@ impl Backtrace {
     /// This function requires the `std` feature of the `backtrace` crate to be
     /// enabled, and the `std` feature is enabled by default.
     pub fn frames(&self) -> &[BacktraceFrame] {
-        self.frames.as_ref()
+        self.frames.as_slice()
     }
 
     /// If this backtrace was created from `new_unresolved` then this function
@@ -342,9 +338,7 @@ impl Backtrace {
 
 impl From<Vec<BacktraceFrame>> for Backtrace {
     fn from(frames: Vec<BacktraceFrame>) -> Self {
-        Backtrace {
-            frames: frames.into_boxed_slice(),
-        }
+        Backtrace { frames }
     }
 }
 
@@ -357,12 +351,12 @@ impl From<crate::Frame> for BacktraceFrame {
     }
 }
 
-// we don't want to implement `impl From<Backtrace> for Vec<BacktraceFrame>` on purpose,
+// we don't want implementing `impl From<Backtrace> for Vec<BacktraceFrame>` on purpose,
 // because "... additional directions for Vec<T> can weaken type inference ..."
 // more information on https://github.com/rust-lang/backtrace-rs/pull/526
 impl Into<Vec<BacktraceFrame>> for Backtrace {
     fn into(self) -> Vec<BacktraceFrame> {
-        self.frames.into_vec()
+        self.frames
     }
 }
 
@@ -458,7 +452,7 @@ impl BacktraceSymbol {
     /// This function requires the `std` feature of the `backtrace` crate to be
     /// enabled, and the `std` feature is enabled by default.
     pub fn filename(&self) -> Option<&Path> {
-        self.filename.as_deref()
+        self.filename.as_ref().map(|p| &**p)
     }
 
     /// Same as `Symbol::lineno`
@@ -557,7 +551,7 @@ mod serde_impls {
         ip: usize,
         symbol_address: usize,
         module_base_address: Option<usize>,
-        symbols: Option<Box<[BacktraceSymbol]>>,
+        symbols: Option<Vec<BacktraceSymbol>>,
     }
 
     impl Serialize for BacktraceFrame {

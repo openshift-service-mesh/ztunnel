@@ -6,21 +6,25 @@ use std::fmt::{self, Debug};
 /// `Filter` takes a predicate `filter_op` and filters out elements that match.
 /// This struct is created by the [`filter()`] method on [`ParallelIterator`]
 ///
-/// [`filter()`]: ParallelIterator::filter()
+/// [`filter()`]: trait.ParallelIterator.html#method.filter
+/// [`ParallelIterator`]: trait.ParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Clone)]
-pub struct Filter<I, P> {
+pub struct Filter<I: ParallelIterator, P> {
     base: I,
     filter_op: P,
 }
 
-impl<I: Debug, P> Debug for Filter<I, P> {
+impl<I: ParallelIterator + Debug, P> Debug for Filter<I, P> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Filter").field("base", &self.base).finish()
     }
 }
 
-impl<I, P> Filter<I, P> {
+impl<I, P> Filter<I, P>
+where
+    I: ParallelIterator,
+{
     /// Creates a new `Filter` iterator.
     pub(super) fn new(base: I, filter_op: P) -> Self {
         Filter { base, filter_op }
@@ -43,8 +47,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Consumer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Consumer implementation
 
 struct FilterConsumer<'p, C, P> {
     base: C,

@@ -187,35 +187,6 @@ impl Timestamp {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::convert::TryFrom<std::time::SystemTime> for Timestamp {
-    type Error = crate::Error;
-
-    /// Perform the conversion.
-    /// 
-    /// This method will fail if the system time is earlier than the Unix Epoch.
-    /// On some platforms it may panic instead.
-    fn try_from(st: std::time::SystemTime) -> Result<Self, Self::Error> {
-        let dur = st.duration_since(std::time::UNIX_EPOCH).map_err(|_| crate::Error(crate::error::ErrorKind::InvalidSystemTime("unable to convert the system tie into a Unix timestamp")))?;
-
-        Ok(Self::from_unix_time(
-            dur.as_secs(),
-            dur.subsec_nanos(),
-            0,
-            0,
-        ))
-    }
-}
-
-#[cfg(feature = "std")]
-impl From<Timestamp> for std::time::SystemTime {
-    fn from(ts: Timestamp) -> Self {
-        let (seconds, subsec_nanos) = ts.to_unix();
-
-        Self::UNIX_EPOCH + std::time::Duration::new(seconds, subsec_nanos)
-    }
-}
-
 pub(crate) const fn encode_gregorian_timestamp(
     ticks: u64,
     counter: u16,
@@ -337,7 +308,11 @@ pub(crate) const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64 {
 #[cfg(all(
     feature = "std",
     feature = "js",
-    all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))
+    all(
+        target_arch = "wasm32",
+        target_vendor = "unknown",
+        target_os = "unknown"
+    )
 ))]
 fn now() -> (u64, u32) {
     use wasm_bindgen::prelude::*;
@@ -362,7 +337,11 @@ fn now() -> (u64, u32) {
     not(miri),
     any(
         not(feature = "js"),
-        not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))
+        not(all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ))
     )
 ))]
 fn now() -> (u64, u32) {
@@ -1187,12 +1166,20 @@ pub mod context {
 mod tests {
     use super::*;
 
-    #[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
+    #[cfg(all(
+        target_arch = "wasm32",
+        target_vendor = "unknown",
+        target_os = "unknown"
+    ))]
     use wasm_bindgen_test::*;
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn gregorian_unix_does_not_panic() {
@@ -1206,62 +1193,16 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn to_gregorian_truncates_to_usable_bits() {
         let ts = Timestamp::from_gregorian(123, u16::MAX);
 
         assert_eq!((123, u16::MAX >> 2), ts.to_gregorian());
-    }
-}
-
-/// Tests for conversion between `std::time::SystemTime` and `Timestamp`.
-#[cfg(all(test, feature = "std", not(miri)))]
-mod test_conversion {
-    use std::{
-        convert::{TryFrom, TryInto},
-        time::{Duration, SystemTime},
-    };
-
-    use super::Timestamp;
-
-    // Components of an arbitrary timestamp with non-zero nanoseconds.
-    const KNOWN_SECONDS: u64 = 1_501_520_400;
-    const KNOWN_NANOS: u32 = 1_000;
-
-    fn known_system_time() -> SystemTime {
-        SystemTime::UNIX_EPOCH
-            .checked_add(Duration::new(KNOWN_SECONDS, KNOWN_NANOS))
-            .unwrap()
-    }
-
-    fn known_timestamp() -> Timestamp {
-        Timestamp::from_unix_time(KNOWN_SECONDS, KNOWN_NANOS, 0, 0)
-    }
-
-    #[test]
-    fn to_system_time() {
-        let st: SystemTime = known_timestamp().into();
-
-        assert_eq!(known_system_time(), st);
-    }
-
-    #[test]
-    fn from_system_time() {
-        let ts: Timestamp = known_system_time().try_into().unwrap();
-
-        assert_eq!(known_timestamp(), ts);
-    }
-
-    #[test]
-    fn from_system_time_before_epoch() {
-        let before_epoch = match SystemTime::UNIX_EPOCH.checked_sub(Duration::from_nanos(1_000)) {
-            Some(st) => st,
-            None => return,
-        };
-
-        Timestamp::try_from(before_epoch)
-            .expect_err("Timestamp should not be created from before epoch");
     }
 }

@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.61"
+rust-version = "1.67"
 name = "resolv-conf"
-version = "0.7.4"
+version = "0.7.1"
 build = false
 autolib = false
 autobins = false
@@ -35,7 +35,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/hickory-dns/resolv-conf"
 
 [features]
-system = []
+system = ["hostname"]
 
 [lib]
 name = "resolv_conf"
@@ -48,3 +48,7 @@ path = "examples/parse.rs"
 [[test]]
 name = "lib"
 path = "tests/lib.rs"
+
+[dependencies.hostname]
+version = "0.4"
+optional = true

@@ -1,7 +1,7 @@
 use openssl::cipher::{Cipher, CipherRef};
 use openssl::cipher_ctx::CipherCtx;
-use rustls::Error;
 use rustls::crypto::cipher::NONCE_LEN;
+use rustls::Error;
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Algorithm {
@@ -88,7 +88,7 @@ impl Algorithm {
 
 #[cfg(test)]
 mod test {
-    use wycheproof::{TestResult, aead::TestFlag};
+    use wycheproof::{aead::TestFlag, TestResult};
 
     fn test_aead(alg: super::Algorithm) {
         let test_name = match alg {

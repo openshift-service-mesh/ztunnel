@@ -25,11 +25,9 @@ pub fn once<T: Send>(item: T) -> Once<T> {
     Once { item }
 }
 
-/// Iterator adaptor for [the `once()` function].
-///
-/// [the `once()` function]: once()
+/// Iterator adaptor for [the `once()` function](fn.once.html).
 #[derive(Clone, Debug)]
-pub struct Once<T> {
+pub struct Once<T: Send> {
     item: T,
 }
 

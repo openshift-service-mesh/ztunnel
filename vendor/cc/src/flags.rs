@@ -178,7 +178,8 @@ impl<'this> RustcCodegenFlags<'this> {
                 tool.args.push(flag);
             } else {
                 build.cargo_output.print_warning(&format!(
-                    "Inherited flag {flag:?} is not supported by the currently used CC"
+                    "Inherited flag {:?} is not supported by the currently used CC",
+                    flag
                 ));
             }
         };

@@ -161,7 +161,7 @@ pub(crate) struct UsedTemplateParameters<'ctx> {
     allowlisted_items: HashSet<ItemId>,
 }
 
-impl UsedTemplateParameters<'_> {
+impl<'ctx> UsedTemplateParameters<'ctx> {
     fn consider_edge(kind: EdgeKind) -> bool {
         match kind {
             // For each of these kinds of edges, if the referent uses a template
@@ -259,6 +259,7 @@ impl UsedTemplateParameters<'_> {
                          a's used template param set should be `Some`",
                     )
                     .iter()
+                    .cloned()
             });
 
         used_by_this_id.extend(args);
@@ -290,8 +291,10 @@ impl UsedTemplateParameters<'_> {
 
         for (arg, param) in args.iter().zip(params.iter()) {
             trace!(
-                "      instantiation's argument {arg:?} is used if definition's \
-                 parameter {param:?} is used",
+                "      instantiation's argument {:?} is used if definition's \
+                 parameter {:?} is used",
+                arg,
+                param
             );
 
             if used_by_def.contains(&param.into()) {
@@ -319,7 +322,8 @@ impl UsedTemplateParameters<'_> {
                          arg's used template param set should be \
                          `Some`",
                     )
-                    .iter();
+                    .iter()
+                    .cloned();
                 used_by_this_id.extend(used_by_arg);
             }
         }
@@ -351,10 +355,12 @@ impl UsedTemplateParameters<'_> {
                          sub_id's used template param set should be \
                          `Some`",
                     )
-                    .iter();
+                    .iter()
+                    .cloned();
 
                 trace!(
-                    "      union with {sub_id:?}'s usage: {:?}",
+                    "      union with {:?}'s usage: {:?}",
+                    sub_id,
                     used_by_sub_id.clone().collect::<Vec<_>>()
                 );
 
@@ -374,11 +380,11 @@ impl<'ctx> MonotoneFramework for UsedTemplateParameters<'ctx> {
         let mut used = HashMap::default();
         let mut dependencies = HashMap::default();
         let allowlisted_items: HashSet<_> =
-            ctx.allowlisted_items().iter().copied().collect();
+            ctx.allowlisted_items().iter().cloned().collect();
 
         let allowlisted_and_blocklisted_items: ItemSet = allowlisted_items
             .iter()
-            .copied()
+            .cloned()
             .flat_map(|i| {
                 let mut reachable = vec![i];
                 i.trace(
@@ -464,7 +470,7 @@ impl<'ctx> MonotoneFramework for UsedTemplateParameters<'ctx> {
             // (This is so that every item we call `constrain` on is guaranteed
             // to have a set of template parameters, and we can allow
             // blocklisted templates to use all of their parameters).
-            for item in &allowlisted_items {
+            for item in allowlisted_items.iter() {
                 extra_assert!(used.contains_key(item));
                 extra_assert!(dependencies.contains_key(item));
                 item.trace(
@@ -474,7 +480,7 @@ impl<'ctx> MonotoneFramework for UsedTemplateParameters<'ctx> {
                         extra_assert!(dependencies.contains_key(&sub_item));
                     },
                     &(),
-                );
+                )
             }
         }
 
@@ -492,7 +498,7 @@ impl<'ctx> MonotoneFramework for UsedTemplateParameters<'ctx> {
         self.ctx
             .allowlisted_items()
             .iter()
-            .copied()
+            .cloned()
             .flat_map(|i| {
                 let mut reachable = vec![i];
                 i.trace(
@@ -518,8 +524,8 @@ impl<'ctx> MonotoneFramework for UsedTemplateParameters<'ctx> {
         // an analog to slice::split_at_mut.
         let mut used_by_this_id = self.take_this_id_usage_set(id);
 
-        trace!("constrain {id:?}");
-        trace!("  initially, used set is {used_by_this_id:?}");
+        trace!("constrain {:?}", id);
+        trace!("  initially, used set is {:?}", used_by_this_id);
 
         let original_len = used_by_this_id.len();
 
@@ -556,7 +562,7 @@ impl<'ctx> MonotoneFramework for UsedTemplateParameters<'ctx> {
             _ => self.constrain_join(&mut used_by_this_id, item),
         }
 
-        trace!("  finally, used set is {used_by_this_id:?}");
+        trace!("  finally, used set is {:?}", used_by_this_id);
 
         let new_len = used_by_this_id.len();
         assert!(
@@ -570,10 +576,10 @@ impl<'ctx> MonotoneFramework for UsedTemplateParameters<'ctx> {
         self.used.insert(id, Some(used_by_this_id));
         extra_assert!(self.used.values().all(|v| v.is_some()));
 
-        if new_len == original_len {
-            ConstrainResult::Same
-        } else {
+        if new_len != original_len {
             ConstrainResult::Changed
+        } else {
+            ConstrainResult::Same
         }
     }
 
@@ -583,7 +589,7 @@ impl<'ctx> MonotoneFramework for UsedTemplateParameters<'ctx> {
     {
         if let Some(edges) = self.dependencies.get(&item) {
             for item in edges {
-                trace!("enqueue {item:?} into worklist");
+                trace!("enqueue {:?} into worklist", item);
                 f(*item);
             }
         }

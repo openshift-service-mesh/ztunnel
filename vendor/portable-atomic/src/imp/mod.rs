@@ -101,20 +101,9 @@ mod atomic128;
     not(any(
         all(
             target_arch = "aarch64",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
             any(not(portable_atomic_no_asm), portable_atomic_unstable_asm),
         ),
-        all(
-            target_arch = "arm64ec",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
-            not(portable_atomic_no_asm),
-        ),
+        all(target_arch = "arm64ec", not(portable_atomic_no_asm)),
         all(
             target_arch = "x86_64",
             any(not(portable_atomic_no_asm), portable_atomic_unstable_asm),
@@ -128,24 +117,13 @@ mod atomic128;
         ),
         all(
             target_arch = "powerpc64",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
             portable_atomic_unstable_asm_experimental_arch,
             any(
                 target_feature = "quadword-atomics",
                 portable_atomic_target_feature = "quadword-atomics",
             ),
         ),
-        all(
-            target_arch = "s390x",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
-            not(portable_atomic_no_asm),
-        ),
+        all(target_arch = "s390x", not(portable_atomic_no_asm)),
     ))
 ))]
 mod fallback;
@@ -320,20 +298,9 @@ items! {
     #[cfg(not(any(
         all(
             target_arch = "aarch64",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
             any(not(portable_atomic_no_asm), portable_atomic_unstable_asm),
         ),
-        all(
-            target_arch = "arm64ec",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
-            not(portable_atomic_no_asm),
-        ),
+        all(target_arch = "arm64ec", not(portable_atomic_no_asm)),
         all(
             target_arch = "x86_64",
             not(all(
@@ -367,10 +334,6 @@ items! {
         ),
         all(
             target_arch = "powerpc64",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
             portable_atomic_unstable_asm_experimental_arch,
             any(
                 target_feature = "quadword-atomics",
@@ -387,23 +350,14 @@ items! {
                                     any(target_endian = "little", not(target_feature = "crt-static")),
                                 ),
                                 all(
-                                    target_env = "musl",
-                                    any(not(target_feature = "crt-static"), feature = "std"),
+                                    any(target_env = "musl", target_env = "ohos", target_env = "uclibc"),
+                                    not(target_feature = "crt-static"),
                                 ),
-                                target_env = "ohos",
-                                all(target_env = "uclibc", not(target_feature = "crt-static")),
                                 portable_atomic_outline_atomics,
                             ),
                         ),
                         target_os = "android",
-                        all(
-                            target_os = "freebsd",
-                            any(
-                                target_endian = "little",
-                                not(target_feature = "crt-static"),
-                                portable_atomic_outline_atomics,
-                            ),
-                        ),
+                        target_os = "freebsd",
                         target_os = "openbsd",
                         all(
                             target_os = "aix",
@@ -415,14 +369,7 @@ items! {
                 ),
             ),
         ),
-        all(
-            target_arch = "s390x",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
-            not(portable_atomic_no_asm),
-        ),
+        all(target_arch = "s390x", not(portable_atomic_no_asm)),
     )))]
     pub(crate) use self::fallback::{AtomicI128, AtomicU128};
 }
@@ -461,22 +408,8 @@ pub(crate) use self::atomic64::riscv32::{AtomicI64, AtomicU64};
 // 128-bit atomics (platform-specific)
 // AArch64
 #[cfg(any(
-    all(
-        target_arch = "aarch64",
-        not(all(
-            any(miri, portable_atomic_sanitize_thread),
-            not(portable_atomic_atomic_intrinsics),
-        )),
-        any(not(portable_atomic_no_asm), portable_atomic_unstable_asm),
-    ),
-    all(
-        target_arch = "arm64ec",
-        not(all(
-            any(miri, portable_atomic_sanitize_thread),
-            not(portable_atomic_atomic_intrinsics),
-        )),
-        not(portable_atomic_no_asm),
-    ),
+    all(target_arch = "aarch64", any(not(portable_atomic_no_asm), portable_atomic_unstable_asm)),
+    all(target_arch = "arm64ec", not(portable_atomic_no_asm))
 ))]
 pub(crate) use self::atomic128::aarch64::{AtomicI128, AtomicU128};
 // x86_64 & (cmpxchg16b | outline-atomics)
@@ -514,10 +447,6 @@ pub(crate) use self::atomic128::riscv64::{AtomicI128, AtomicU128};
 // powerpc64 & (pwr8 | outline-atomics)
 #[cfg(all(
     target_arch = "powerpc64",
-    not(all(
-        any(miri, portable_atomic_sanitize_thread),
-        not(portable_atomic_atomic_intrinsics),
-    )),
     portable_atomic_unstable_asm_experimental_arch,
     any(
         target_feature = "quadword-atomics",
@@ -534,23 +463,14 @@ pub(crate) use self::atomic128::riscv64::{AtomicI128, AtomicU128};
                             any(target_endian = "little", not(target_feature = "crt-static")),
                         ),
                         all(
-                            target_env = "musl",
-                            any(not(target_feature = "crt-static"), feature = "std"),
+                            any(target_env = "musl", target_env = "ohos", target_env = "uclibc"),
+                            not(target_feature = "crt-static"),
                         ),
-                        target_env = "ohos",
-                        all(target_env = "uclibc", not(target_feature = "crt-static")),
                         portable_atomic_outline_atomics,
                     ),
                 ),
                 target_os = "android",
-                all(
-                    target_os = "freebsd",
-                    any(
-                        target_endian = "little",
-                        not(target_feature = "crt-static"),
-                        portable_atomic_outline_atomics,
-                    ),
-                ),
+                target_os = "freebsd",
                 target_os = "openbsd",
                 all(
                     target_os = "aix",
@@ -564,9 +484,5 @@ pub(crate) use self::atomic128::riscv64::{AtomicI128, AtomicU128};
 ))]
 pub(crate) use self::atomic128::powerpc64::{AtomicI128, AtomicU128};
 // s390x
-#[cfg(all(
-    target_arch = "s390x",
-    not(all(any(miri, portable_atomic_sanitize_thread), not(portable_atomic_atomic_intrinsics))),
-    not(portable_atomic_no_asm),
-))]
+#[cfg(all(target_arch = "s390x", not(portable_atomic_no_asm)))]
 pub(crate) use self::atomic128::s390x::{AtomicI128, AtomicU128};

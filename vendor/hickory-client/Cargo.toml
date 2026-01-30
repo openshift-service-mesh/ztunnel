@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.71.1"
 name = "hickory-client"
-version = "0.25.2"
+version = "0.25.1"
 authors = ["The contributors to Hickory DNS"]
 build = false
 autolib = false

@@ -30,6 +30,12 @@ use core::mem;
 use core::ptr;
 use core::slice;
 
+// This is used when we're double-checking function signatures against windows-sys.
+#[inline(always)]
+fn assert_equal_types<T>(a: T, _b: T) -> T {
+    a
+}
+
 // This macro is used to define a `Dbghelp` structure which internally contains
 // all the function pointers that we might load.
 macro_rules! dbghelp {
@@ -58,6 +64,8 @@ macro_rules! dbghelp {
         impl Dbghelp {
             /// Attempts to open `dbghelp.dll`. Returns success if it works or
             /// error if `LoadLibraryW` fails.
+            ///
+            /// Panics if library is already loaded.
             fn ensure_open(&mut self) -> Result<(), ()> {
                 if !self.dll.is_null() {
                     return Ok(())
@@ -77,23 +85,14 @@ macro_rules! dbghelp {
             // either read the cached function pointer or load it and return the
             // loaded value. Loads are asserted to succeed.
             $(pub fn $name(&mut self) -> Option<$name> {
-                // Assert that windows_sys::$name is declared to have the same
-                // argument types and return type as our declaration, although
-                // it might be either extern "C" or extern "system".
-                cfg_if::cfg_if! {
-                    if #[cfg(any(target_arch = "x86", not(windows_raw_dylib)))] {
-                        let _: unsafe extern "system" fn($($argty),*) -> $ret = super::windows_sys::$name;
-                    } else {
-                        let _: unsafe extern "C" fn($($argty),*) -> $ret = super::windows_sys::$name;
-                    }
-                }
-
                 unsafe {
                     if self.$name == 0 {
                         let name = concat!(stringify!($name), "\0");
                         self.$name = self.symbol(name.as_bytes())?;
                     }
-                    Some(mem::transmute::<usize, $name>(self.$name))
+                    let ret = mem::transmute::<usize, $name>(self.$name);
+                    assert_equal_types(ret, super::windows_sys::$name);
+                    Some(ret)
                 }
             })*
 
@@ -109,8 +108,6 @@ macro_rules! dbghelp {
         #[allow(dead_code)]
         impl Init {
             $(pub fn $name(&self) -> $name {
-                // FIXME: https://github.com/rust-lang/backtrace-rs/issues/678
-                #[allow(static_mut_refs)]
                 unsafe {
                     DBGHELP.$name().unwrap()
                 }
@@ -318,26 +315,24 @@ pub fn init() -> Result<Init, ()> {
         // functions in it, and that's detailed more below. We only do this
         // once, though, so we've got a global boolean indicating whether we're
         // done yet or not.
-        // FIXME: https://github.com/rust-lang/backtrace-rs/issues/678
-        #[allow(static_mut_refs)]
         DBGHELP.ensure_open()?;
 
         static mut INITIALIZED: bool = false;
         if !INITIALIZED {
-            set_optional_options(ret.dbghelp());
+            set_optional_options();
             INITIALIZED = true;
         }
         Ok(ret)
     }
 }
-unsafe fn set_optional_options(dbghelp: *mut Dbghelp) -> Option<()> {
+fn set_optional_options() -> Option<()> {
     unsafe {
-        let orig = (*dbghelp).SymGetOptions()?();
+        let orig = DBGHELP.SymGetOptions()?();
 
         // Ensure that the `SYMOPT_DEFERRED_LOADS` flag is set, because
         // according to MSVC's own docs about this: "This is the fastest, most
         // efficient way to use the symbol handler.", so let's do that!
-        (*dbghelp).SymSetOptions()?(orig | SYMOPT_DEFERRED_LOADS);
+        DBGHELP.SymSetOptions()?(orig | SYMOPT_DEFERRED_LOADS);
 
         // Actually initialize symbols with MSVC. Note that this can fail, but we
         // ignore it. There's not a ton of prior art for this per se, but LLVM
@@ -351,7 +346,7 @@ unsafe fn set_optional_options(dbghelp: *mut Dbghelp) -> Option<()> {
         // the time, but now that it's using this crate it means that someone will
         // get to initialization first and the other will pick up that
         // initialization.
-        (*dbghelp).SymInitializeW()?(GetCurrentProcess(), ptr::null_mut(), TRUE);
+        DBGHELP.SymInitializeW()?(GetCurrentProcess(), ptr::null_mut(), TRUE);
 
         // The default search path for dbghelp will only look in the current working
         // directory and (possibly) `_NT_SYMBOL_PATH` and `_NT_ALT_SYMBOL_PATH`.
@@ -365,7 +360,7 @@ unsafe fn set_optional_options(dbghelp: *mut Dbghelp) -> Option<()> {
         search_path_buf.resize(1024, 0);
 
         // Prefill the buffer with the current search path.
-        if (*dbghelp).SymGetSearchPathW()?(
+        if DBGHELP.SymGetSearchPathW()?(
             GetCurrentProcess(),
             search_path_buf.as_mut_ptr(),
             search_path_buf.len() as _,
@@ -385,7 +380,7 @@ unsafe fn set_optional_options(dbghelp: *mut Dbghelp) -> Option<()> {
         let mut search_path = SearchPath::new(search_path_buf);
 
         // Update the search path to include the directory of the executable and each DLL.
-        (*dbghelp).EnumerateLoadedModulesW64()?(
+        DBGHELP.EnumerateLoadedModulesW64()?(
             GetCurrentProcess(),
             Some(enum_loaded_modules_callback),
             ((&mut search_path) as *mut SearchPath) as *mut c_void,
@@ -394,7 +389,7 @@ unsafe fn set_optional_options(dbghelp: *mut Dbghelp) -> Option<()> {
         let new_search_path = search_path.finalize();
 
         // Set the new search path.
-        (*dbghelp).SymSetSearchPathW()?(GetCurrentProcess(), new_search_path.as_ptr());
+        DBGHELP.SymSetSearchPathW()?(GetCurrentProcess(), new_search_path.as_ptr());
     }
     Some(())
 }

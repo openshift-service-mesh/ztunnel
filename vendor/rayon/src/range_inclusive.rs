@@ -1,4 +1,4 @@
-//! Parallel iterator types for [inclusive ranges],
+//! Parallel iterator types for [inclusive ranges][std::range],
 //! the type for values created by `a..=b` expressions
 //!
 //! You will rarely need to interact with this module directly unless you have
@@ -14,7 +14,7 @@
 //! assert_eq!((0..=100).sum::<u64>(), r);
 //! ```
 //!
-//! [inclusive ranges]: std::ops::RangeInclusive
+//! [std::range]: https://doc.rust-lang.org/core/ops/struct.RangeInclusive.html
 
 use crate::iter::plumbing::*;
 use crate::iter::*;

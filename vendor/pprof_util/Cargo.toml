@@ -12,10 +12,9 @@
 [package]
 edition = "2021"
 name = "pprof_util"
-version = "0.8.0"
+version = "0.6.0"
 build = false
 publish = true
-autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -26,13 +25,6 @@ readme = false
 license = "Apache-2.0"
 repository = "https://github.com/polarsignals/rust-jemalloc-pprof"
 
-[features]
-flamegraph = [
-    "symbolize",
-    "dep:inferno",
-]
-symbolize = ["dep:backtrace"]
-
 [lib]
 name = "pprof_util"
 path = "src/lib.rs"
@@ -40,16 +32,8 @@ path = "src/lib.rs"
 [dependencies.anyhow]
 version = "1"
 
-[dependencies.backtrace]
-version = "0.3"
-optional = true
-
 [dependencies.flate2]
 version = "1.0"
-
-[dependencies.inferno]
-version = "0.12"
-optional = true
 
 [dependencies.num]
 version = "0.4"

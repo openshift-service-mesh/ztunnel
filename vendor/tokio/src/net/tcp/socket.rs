@@ -79,9 +79,9 @@ cfg_net! {
     /// accessing the `RawFd`/`RawSocket` using [`AsRawFd`]/[`AsRawSocket`] and
     /// setting the option with a crate like [`socket2`].
     ///
-    /// [`RawFd`]: https://doc.rust-lang.org/std/os/fd/type.RawFd.html
+    /// [`RawFd`]: https://doc.rust-lang.org/std/os/unix/io/type.RawFd.html
     /// [`RawSocket`]: https://doc.rust-lang.org/std/os/windows/io/type.RawSocket.html
-    /// [`AsRawFd`]: https://doc.rust-lang.org/std/os/fd/trait.AsRawFd.html
+    /// [`AsRawFd`]: https://doc.rust-lang.org/std/os/unix/io/trait.AsRawFd.html
     /// [`AsRawSocket`]: https://doc.rust-lang.org/std/os/windows/io/trait.AsRawSocket.html
     /// [`socket2`]: https://docs.rs/socket2/
     #[cfg_attr(docsrs, doc(alias = "connect_std"))]
@@ -276,20 +276,10 @@ impl TcpSocket {
     ///     Ok(())
     /// }
     /// ```
-    #[cfg(all(
-        unix,
-        not(target_os = "solaris"),
-        not(target_os = "illumos"),
-        not(target_os = "cygwin"),
-    ))]
+    #[cfg(all(unix, not(target_os = "solaris"), not(target_os = "illumos")))]
     #[cfg_attr(
         docsrs,
-        doc(cfg(all(
-            unix,
-            not(target_os = "solaris"),
-            not(target_os = "illumos"),
-            not(target_os = "cygwin"),
-        )))
+        doc(cfg(all(unix, not(target_os = "solaris"), not(target_os = "illumos"))))
     )]
     pub fn set_reuseport(&self, reuseport: bool) -> io::Result<()> {
         self.inner.set_reuse_port(reuseport)
@@ -321,20 +311,10 @@ impl TcpSocket {
     ///     Ok(())
     /// }
     /// ```
-    #[cfg(all(
-        unix,
-        not(target_os = "solaris"),
-        not(target_os = "illumos"),
-        not(target_os = "cygwin"),
-    ))]
+    #[cfg(all(unix, not(target_os = "solaris"), not(target_os = "illumos")))]
     #[cfg_attr(
         docsrs,
-        doc(cfg(all(
-            unix,
-            not(target_os = "solaris"),
-            not(target_os = "illumos"),
-            not(target_os = "cygwin"),
-        )))
+        doc(cfg(all(unix, not(target_os = "solaris"), not(target_os = "illumos"))))
     )]
     pub fn reuseport(&self) -> io::Result<bool> {
         self.inner.reuse_port()
@@ -388,7 +368,7 @@ impl TcpSocket {
     ///
     /// Note that if [`set_recv_buffer_size`] has been called on this socket
     /// previously, the value returned by this function may not be the same as
-    /// the argument provided to `set_recv_buffer_size`. This is for the
+    /// the argument provided to `set_send_buffer_size`. This is for the
     /// following reasons:
     ///
     /// * Most operating systems have minimum and maximum allowed sizes for the
@@ -450,7 +430,7 @@ impl TcpSocket {
     /// # }
     /// ```
     pub fn set_nodelay(&self, nodelay: bool) -> io::Result<()> {
-        self.inner.set_tcp_nodelay(nodelay)
+        self.inner.set_nodelay(nodelay)
     }
 
     /// Gets the value of the `TCP_NODELAY` option on this socket.
@@ -472,7 +452,7 @@ impl TcpSocket {
     /// # }
     /// ```
     pub fn nodelay(&self) -> io::Result<bool> {
-        self.inner.tcp_nodelay()
+        self.inner.nodelay()
     }
 
     /// Gets the value of the `IP_TOS` option for this socket.
@@ -502,7 +482,7 @@ impl TcpSocket {
         ))))
     )]
     pub fn tos(&self) -> io::Result<u32> {
-        self.inner.tos_v4()
+        self.inner.tos()
     }
 
     /// Sets the value for the `IP_TOS` option on this socket.
@@ -531,7 +511,7 @@ impl TcpSocket {
         ))))
     )]
     pub fn set_tos(&self, tos: u32) -> io::Result<()> {
-        self.inner.set_tos_v4(tos)
+        self.inner.set_tos(tos)
     }
 
     /// Gets the value for the `SO_BINDTODEVICE` option on this socket
@@ -763,12 +743,12 @@ impl TcpSocket {
     /// # Examples
     ///
     /// ```
+    /// # if cfg!(miri) { return } // No `socket` in miri.
     /// use tokio::net::TcpSocket;
     /// use socket2::{Domain, Socket, Type};
     ///
     /// #[tokio::main]
     /// async fn main() -> std::io::Result<()> {
-    /// #   if cfg!(miri) { return Ok(()); } // No `socket` in miri.
     ///     let socket2_socket = Socket::new(Domain::IPV4, Type::STREAM, None)?;
     ///     socket2_socket.set_nonblocking(true)?;
     ///

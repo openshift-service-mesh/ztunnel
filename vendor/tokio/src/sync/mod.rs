@@ -449,7 +449,7 @@
 cfg_sync! {
     /// Named future types.
     pub mod futures {
-        pub use super::notify::{Notified, OwnedNotified};
+        pub use super::notify::Notified;
     }
 
     mod barrier;
@@ -487,9 +487,6 @@ cfg_sync! {
 
     mod once_cell;
     pub use self::once_cell::{OnceCell, SetError};
-
-    mod set_once;
-    pub use self::set_once::{SetOnce, SetOnceError};
 
     pub mod watch;
 }

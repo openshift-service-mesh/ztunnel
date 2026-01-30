@@ -59,9 +59,10 @@ mod librustc_parse {
     extern crate rustc_span;
 
     use crate::repo;
+    use rustc_error_messages::FluentBundle;
     use rustc_errors::emitter::Emitter;
     use rustc_errors::registry::Registry;
-    use rustc_errors::translation::Translator;
+    use rustc_errors::translation::Translate;
     use rustc_errors::{DiagCtxt, DiagInner};
     use rustc_session::parse::ParseSess;
     use rustc_span::source_map::{FilePathMapping, SourceMap};
@@ -77,7 +78,13 @@ mod librustc_parse {
             fn source_map(&self) -> Option<&SourceMap> {
                 None
             }
-            fn translator(&self) -> &Translator {
+        }
+
+        impl Translate for SilentEmitter {
+            fn fluent_bundle(&self) -> Option<&FluentBundle> {
+                None
+            }
+            fn fallback_fluent_bundle(&self) -> &FluentBundle {
                 panic!("silent emitter attempted to translate a diagnostic");
             }
         }

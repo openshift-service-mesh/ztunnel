@@ -253,9 +253,8 @@ size_t ssl_max_handshake_message_len(const SSL *ssl) {
     return 1;
   }
 
-  // Clients must accept NewSessionTicket, so allow the default size or
-  // max_cert_list, whichever is greater.
-  return std::max(kMaxMessageLen, size_t{ssl->max_cert_list});
+  // Clients must accept NewSessionTicket, so allow the default size.
+  return kMaxMessageLen;
 }
 
 bool ssl_hash_message(SSL_HANDSHAKE *hs, const SSLMessage &msg) {

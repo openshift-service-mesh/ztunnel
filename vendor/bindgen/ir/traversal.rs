@@ -235,7 +235,7 @@ pub(crate) fn codegen_edges(ctx: &BindgenContext, edge: Edge) -> bool {
 /// outgoing edges might not have been fully traversed yet) in an active
 /// traversal.
 pub(crate) trait TraversalStorage<'ctx> {
-    /// Construct a new instance of this `TraversalStorage`, for a new traversal.
+    /// Construct a new instance of this TraversalStorage, for a new traversal.
     fn new(ctx: &'ctx BindgenContext) -> Self;
 
     /// Add the given item to the storage. If the item has never been seen
@@ -287,7 +287,8 @@ impl<'ctx> TraversalStorage<'ctx> for Paths<'ctx> {
             }
             path.reverse();
             panic!(
-                "Found reference to dangling id = {item:?}\nvia path = {path:?}"
+                "Found reference to dangling id = {:?}\nvia path = {:?}",
+                item, path
             );
         }
 
@@ -344,7 +345,7 @@ where
     F: FnMut(ItemId, EdgeKind),
 {
     fn visit_kind(&mut self, item: ItemId, kind: EdgeKind) {
-        (*self)(item, kind);
+        (*self)(item, kind)
     }
 }
 
@@ -437,7 +438,7 @@ where
         let is_newly_discovered =
             self.seen.add(self.currently_traversing, item);
         if is_newly_discovered {
-            self.queue.push(item);
+            self.queue.push(item)
         }
     }
 }

@@ -2,18 +2,23 @@ use super::plumbing::*;
 use super::*;
 use std::iter;
 use std::ops::Range;
+use std::usize;
 
 /// `Enumerate` is an iterator that returns the current count along with the element.
 /// This struct is created by the [`enumerate()`] method on [`IndexedParallelIterator`]
 ///
-/// [`enumerate()`]: IndexedParallelIterator::enumerate()
+/// [`enumerate()`]: trait.IndexedParallelIterator.html#method.enumerate
+/// [`IndexedParallelIterator`]: trait.IndexedParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Debug, Clone)]
-pub struct Enumerate<I> {
+pub struct Enumerate<I: IndexedParallelIterator> {
     base: I,
 }
 
-impl<I> Enumerate<I> {
+impl<I> Enumerate<I>
+where
+    I: IndexedParallelIterator,
+{
     /// Creates a new `Enumerate` iterator.
     pub(super) fn new(base: I) -> Self {
         Enumerate { base }
@@ -76,8 +81,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Producer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Producer implementation
 
 struct EnumerateProducer<P> {
     base: P,

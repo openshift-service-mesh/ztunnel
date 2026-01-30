@@ -50,6 +50,7 @@ and then start bump allocating into this new memory chunk.
 
 ```rust
 use bumpalo::Bump;
+use std::u64;
 
 struct Doggo {
     cuteness: u64,
@@ -62,7 +63,7 @@ let bump = Bump::new();
 
 // Allocate values into the arena.
 let scooter = bump.alloc(Doggo {
-    cuteness: u64::MAX,
+    cuteness: u64::max_value(),
     age: 8,
     scritches_required: true,
 });
@@ -154,12 +155,12 @@ in its space itself.
 
 #### Serde
 
-Adding the `serde` feature flag will enable transparent serialization of `Vec`s, `String`s
-and boxed values.
+Adding the `serde` feature flag will enable transparent serialization of Vecs and 
+boxed values.
 
 ```toml
 [dependencies]
-bumpalo = { version = "3.18", features = ["collections", "boxed", "serde"] }
+bumpalo = { version = "3.9", features = ["collections", "boxed", "serde"] }
 ```
 
 ```rust,ignore

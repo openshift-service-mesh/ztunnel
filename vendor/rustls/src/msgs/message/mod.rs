@@ -1,5 +1,5 @@
 use crate::enums::{AlertDescription, ContentType, HandshakeType, ProtocolVersion};
-use crate::error::InvalidMessage;
+use crate::error::{Error, InvalidMessage};
 use crate::msgs::alert::AlertMessagePayload;
 use crate::msgs::base::Payload;
 use crate::msgs::ccs::ChangeCipherSpecPayload;
@@ -162,7 +162,7 @@ impl Message<'_> {
     pub fn is_handshake_type(&self, hstyp: HandshakeType) -> bool {
         // Bit of a layering violation, but OK.
         if let MessagePayload::Handshake { parsed, .. } = &self.payload {
-            parsed.0.handshake_type() == hstyp
+            parsed.typ == hstyp
         } else {
             false
         }
@@ -181,18 +181,20 @@ impl Message<'_> {
     pub fn build_key_update_notify() -> Self {
         Self {
             version: ProtocolVersion::TLSv1_3,
-            payload: MessagePayload::handshake(HandshakeMessagePayload(
-                HandshakePayload::KeyUpdate(KeyUpdateRequest::UpdateNotRequested),
-            )),
+            payload: MessagePayload::handshake(HandshakeMessagePayload {
+                typ: HandshakeType::KeyUpdate,
+                payload: HandshakePayload::KeyUpdate(KeyUpdateRequest::UpdateNotRequested),
+            }),
         }
     }
 
     pub fn build_key_update_request() -> Self {
         Self {
             version: ProtocolVersion::TLSv1_3,
-            payload: MessagePayload::handshake(HandshakeMessagePayload(
-                HandshakePayload::KeyUpdate(KeyUpdateRequest::UpdateRequested),
-            )),
+            payload: MessagePayload::handshake(HandshakeMessagePayload {
+                typ: HandshakeType::KeyUpdate,
+                payload: HandshakePayload::KeyUpdate(KeyUpdateRequest::UpdateRequested),
+            }),
         }
     }
 
@@ -204,17 +206,10 @@ impl Message<'_> {
             payload: payload.into_owned(),
         }
     }
-
-    #[cfg(test)]
-    pub(crate) fn into_wire_bytes(self) -> Vec<u8> {
-        PlainMessage::from(self)
-            .into_unencrypted_opaque()
-            .encode()
-    }
 }
 
 impl TryFrom<PlainMessage> for Message<'static> {
-    type Error = InvalidMessage;
+    type Error = Error;
 
     fn try_from(plain: PlainMessage) -> Result<Self, Self::Error> {
         Ok(Self {
@@ -230,7 +225,7 @@ impl TryFrom<PlainMessage> for Message<'static> {
 /// A [`PlainMessage`] must contain plaintext content. Encrypted content should be stored in an
 /// [`InboundOpaqueMessage`] and decrypted before being stored into a [`PlainMessage`].
 impl<'a> TryFrom<InboundPlainMessage<'a>> for Message<'a> {
-    type Error = InvalidMessage;
+    type Error = Error;
 
     fn try_from(plain: InboundPlainMessage<'a>) -> Result<Self, Self::Error> {
         Ok(Self {

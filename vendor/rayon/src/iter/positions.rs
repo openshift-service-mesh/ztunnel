@@ -8,15 +8,16 @@ use std::fmt::{self, Debug};
 ///
 /// This struct is created by the [`positions()`] method on [`IndexedParallelIterator`]
 ///
-/// [`positions()`]: IndexedParallelIterator::positions()
+/// [`positions()`]: trait.IndexedParallelIterator.html#method.positions
+/// [`IndexedParallelIterator`]: trait.IndexedParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Clone)]
-pub struct Positions<I, P> {
+pub struct Positions<I: IndexedParallelIterator, P> {
     base: I,
     predicate: P,
 }
 
-impl<I: Debug, P> Debug for Positions<I, P> {
+impl<I: IndexedParallelIterator + Debug, P> Debug for Positions<I, P> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Positions")
             .field("base", &self.base)
@@ -24,7 +25,10 @@ impl<I: Debug, P> Debug for Positions<I, P> {
     }
 }
 
-impl<I, P> Positions<I, P> {
+impl<I, P> Positions<I, P>
+where
+    I: IndexedParallelIterator,
+{
     /// Create a new `Positions` iterator.
     pub(super) fn new(base: I, predicate: P) -> Self {
         Positions { base, predicate }
@@ -47,8 +51,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Consumer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Consumer implementation
 
 struct PositionsConsumer<'p, C, P> {
     base: C,

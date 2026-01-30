@@ -1,7 +1,7 @@
+use std::fmt;
 use std::iter::Iterator;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::slice::Iter;
-use std::{fmt, str};
 
 use crate::{grammar, Network, ParseError, ScopedIp};
 
@@ -26,7 +26,7 @@ enum LastSearch {
 /// way.
 ///
 /// Also consider using [`glibc_normalize`] and [`get_system_domain`] to match
-/// behavior of GNU libc.
+/// behavior of GNU libc. (latter requires ``system`` feature enabled)
 ///
 /// ```rust
 /// extern crate resolv_conf;
@@ -278,91 +278,63 @@ impl Config {
 
     /// Get domain from config or fallback to the suffix of a hostname
     ///
-    /// This is how glibc finds out a hostname.
+    /// This is how glibc finds out a hostname. This method requires
+    /// ``system`` feature enabled.
+    #[cfg(feature = "system")]
     pub fn get_system_domain(&self) -> Option<String> {
         if self.domain.is_some() {
             return self.domain.clone();
         }
 
-        // This buffer is far larger than what most systems will ever allow, eg.
-        // linux uses 64 via _SC_HOST_NAME_MAX even though POSIX says the size
-        // must be _at least_ _POSIX_HOST_NAME_MAX (255), but other systems can
-        // be larger, so we just use a sufficiently sized buffer so we can defer
-        // a heap allocation until the last possible moment.
-        let mut hostname = [0u8; 1024];
+        let hostname = match ::hostname::get().ok() {
+            Some(name) => name.into_string().ok(),
+            None => return None,
+        };
 
-        #[cfg(all(target_os = "linux", target_feature = "crt-static"))]
-        {
-            use std::{fs::File, io::Read};
-            let mut file = File::open("/proc/sys/kernel/hostname").ok()?;
-            let read_bytes = file.read(&mut hostname).ok()?;
-
-            // According to Linux kernel's proc_dostring handler, user-space reads
-            // of /proc/sys entries which have a string value are terminated by
-            // a newline character. While libc gethostname() terminates the hostname
-            // with a null character. Hence, to match the behavior of gethostname()
-            // it is necessary to replace the newline with a null character.
-            if read_bytes == hostname.len() && hostname[read_bytes - 1] != b'\n' {
-                // In this case the string read from /proc/sys/kernel/hostname is
-                // truncated and cannot be terminated by a null character
-                return None;
-            }
-            // Since any non-truncated string read from /proc/sys/kernel/hostname
-            // ends with a newline character, read_bytes > 0.
-            hostname[read_bytes - 1] = 0;
-        }
-
-        #[cfg(not(all(target_os = "linux", target_feature = "crt-static")))]
-        {
-            #[link(name = "c")]
-            /*unsafe*/
-            extern "C" {
-                fn gethostname(hostname: *mut u8, size: usize) -> i32;
-            }
-
-            unsafe {
-                if gethostname(hostname.as_mut_ptr(), hostname.len()) < 0 {
-                    return None;
+        hostname.and_then(|s| {
+            if let Some(pos) = s.find('.') {
+                let hn = s[pos + 1..].to_string();
+                if !hn.is_empty() {
+                    return Some(hn);
                 }
-            }
-        }
-
-        domain_from_host(&hostname).map(|s| s.to_owned())
+            };
+            None
+        })
     }
 }
 
 impl fmt::Display for Config {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         for nameserver in self.nameservers.iter() {
-            writeln!(fmt, "nameserver {nameserver}")?;
+            writeln!(fmt, "nameserver {}", nameserver)?;
         }
 
         if self.last_search != LastSearch::Domain {
-            if let Some(domain) = &self.domain {
-                writeln!(fmt, "domain {domain}")?;
+            if let Some(ref domain) = self.domain {
+                writeln!(fmt, "domain {}", domain)?;
             }
         }
 
-        if let Some(search) = &self.search {
+        if let Some(ref search) = self.search {
             if !search.is_empty() {
                 write!(fmt, "search")?;
                 for suffix in search.iter() {
-                    write!(fmt, " {suffix}")?;
+                    write!(fmt, " {}", suffix)?;
                 }
                 writeln!(fmt)?;
             }
         }
 
         if self.last_search == LastSearch::Domain {
-            if let Some(domain) = &self.domain {
-                writeln!(fmt, "domain {domain}")?;
+            if let Some(ref domain) = self.domain {
+                writeln!(fmt, "domain {}", domain)?;
             }
         }
 
         if !self.sortlist.is_empty() {
             write!(fmt, "sortlist")?;
             for network in self.sortlist.iter() {
-                write!(fmt, " {network}")?;
+                write!(fmt, " {}", network)?;
             }
             writeln!(fmt)?;
         }
@@ -443,9 +415,9 @@ impl<'a> Iterator for DomainIterInternal<'a> {
     type Item = &'a String;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self {
-            DomainIterInternal::Search(Some(domains)) => domains.next(),
-            DomainIterInternal::Domain(domain) => domain.take(),
+        match *self {
+            DomainIterInternal::Search(Some(ref mut domains)) => domains.next(),
+            DomainIterInternal::Domain(ref mut domain) => domain.take(),
             _ => None,
         }
     }
@@ -471,44 +443,4 @@ pub enum Family {
     Inet4,
     /// A AAAA lookup for an ipv6 address
     Inet6,
-}
-
-/// Parses the domain name from a hostname, if available
-fn domain_from_host(hostname: &[u8]) -> Option<&str> {
-    let mut start = None;
-    for (i, b) in hostname.iter().copied().enumerate() {
-        if b == b'.' && start.is_none() {
-            start = Some(i);
-            continue;
-        } else if b > 0 {
-            continue;
-        }
-
-        return match start? {
-            // Avoid empty domains
-            start if i - start < 2 => None,
-            start => str::from_utf8(&hostname[start + 1..i]).ok(),
-        };
-    }
-
-    None
-}
-
-#[cfg(test)]
-mod test {
-    use super::domain_from_host;
-    #[test]
-    fn parses_domain_name() {
-        assert!(domain_from_host(b"regular-hostname\0").is_none());
-
-        assert_eq!(domain_from_host(b"with.domain-name\0"), Some("domain-name"));
-        assert_eq!(
-            domain_from_host(b"with.multiple.dots\0"),
-            Some("multiple.dots")
-        );
-
-        assert!(domain_from_host(b"hostname.\0").is_none());
-        assert_eq!(domain_from_host(b"host.a\0"), Some("a"));
-        assert_eq!(domain_from_host(b"host.au\0"), Some("au"));
-    }
 }

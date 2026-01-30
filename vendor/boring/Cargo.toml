@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.80"
 name = "boring"
-version = "4.17.0"
+version = "4.16.0"
 authors = [
     "Steven Fackler <sfackler@gmail.com>",
     "Ivan Nikulin <ifaaan@gmail.com>",
@@ -86,7 +86,7 @@ path = "examples/mk_certs.rs"
 version = "2.4"
 
 [dependencies.boring-sys]
-version = "4.17.0"
+version = "4.16.0"
 
 [dependencies.foreign-types]
 version = "0.5"

@@ -1,11 +1,10 @@
 use crate::iter::plumbing::*;
 use crate::iter::*;
-use std::fmt;
 use std::marker::PhantomData;
+use std::{fmt, mem};
 
 trait ChunkBySlice<T>: AsRef<[T]> + Default + Send {
     fn split(self, index: usize) -> (Self, Self);
-    fn chunk_by(self, pred: &impl Fn(&T, &T) -> bool) -> impl Iterator<Item = Self>;
 
     fn find(&self, pred: &impl Fn(&T, &T) -> bool, start: usize, end: usize) -> Option<usize> {
         self.as_ref()[start..end]
@@ -26,19 +25,11 @@ impl<T: Sync> ChunkBySlice<T> for &[T] {
     fn split(self, index: usize) -> (Self, Self) {
         self.split_at(index)
     }
-
-    fn chunk_by(self, pred: &impl Fn(&T, &T) -> bool) -> impl Iterator<Item = Self> {
-        self.chunk_by(pred)
-    }
 }
 
 impl<T: Send> ChunkBySlice<T> for &mut [T] {
     fn split(self, index: usize) -> (Self, Self) {
         self.split_at_mut(index)
-    }
-
-    fn chunk_by(self, pred: &impl Fn(&T, &T) -> bool) -> impl Iterator<Item = Self> {
-        self.chunk_by_mut(pred)
     }
 }
 
@@ -122,8 +113,22 @@ where
             (None, Some(slice))
         };
 
-        if let Some(slice) = slice {
-            folder = folder.consume_iter(slice.chunk_by(pred));
+        if let Some(mut slice) = slice {
+            // TODO (MSRV 1.77) use either:
+            // folder.consume_iter(slice.chunk_by(pred))
+            // folder.consume_iter(slice.chunk_by_mut(pred))
+
+            folder = folder.consume_iter(std::iter::from_fn(move || {
+                let len = slice.as_ref().len();
+                if len > 0 {
+                    let i = slice.find(pred, 0, len).unwrap_or(len);
+                    let (head, tail) = mem::take(&mut slice).split(i);
+                    slice = tail;
+                    Some(head)
+                } else {
+                    None
+                }
+            }));
         }
 
         if let Some(tail) = tail {
@@ -138,13 +143,13 @@ where
 ///
 /// This struct is created by the [`par_chunk_by`] method on `&[T]`.
 ///
-/// [`par_chunk_by`]: super::ParallelSlice::par_chunk_by()
+/// [`par_chunk_by`]: trait.ParallelSlice.html#method.par_chunk_by
 pub struct ChunkBy<'data, T, P> {
     pred: P,
     slice: &'data [T],
 }
 
-impl<T, P: Clone> Clone for ChunkBy<'_, T, P> {
+impl<'data, T, P: Clone> Clone for ChunkBy<'data, T, P> {
     fn clone(&self) -> Self {
         ChunkBy {
             pred: self.pred.clone(),
@@ -153,7 +158,7 @@ impl<T, P: Clone> Clone for ChunkBy<'_, T, P> {
     }
 }
 
-impl<T: fmt::Debug, P> fmt::Debug for ChunkBy<'_, T, P> {
+impl<'data, T: fmt::Debug, P> fmt::Debug for ChunkBy<'data, T, P> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ChunkBy")
             .field("slice", &self.slice)
@@ -195,13 +200,13 @@ where
 ///
 /// This struct is created by the [`par_chunk_by_mut`] method on `&mut [T]`.
 ///
-/// [`par_chunk_by_mut`]: super::ParallelSliceMut::par_chunk_by_mut()
+/// [`par_chunk_by_mut`]: trait.ParallelSliceMut.html#method.par_chunk_by_mut
 pub struct ChunkByMut<'data, T, P> {
     pred: P,
     slice: &'data mut [T],
 }
 
-impl<T: fmt::Debug, P> fmt::Debug for ChunkByMut<'_, T, P> {
+impl<'data, T: fmt::Debug, P> fmt::Debug for ChunkByMut<'data, T, P> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ChunkByMut")
             .field("slice", &self.slice)

@@ -1,6 +1,6 @@
 [package]
 name = "getrandom"
-version = "0.3.3"
+version = "0.3.2"
 edition = "2021"
 rust-version = "1.63" # Sync tests.yml and README.md.
 authors = ["The Rand Project Developers"]
@@ -21,8 +21,6 @@ rustc-dep-of-std = ["dep:compiler_builtins", "dep:core"]
 # Optional backend: wasm_js
 # This flag enables the backend but does not select it. To use the backend, use
 # this flag *and* set getrandom_backend=wasm_js (see README).
-# WARNING: It is highly recommended to enable this feature only for binary crates and tests,
-# i.e. avoid unconditionally enabling it in library crates.
 wasm_js = ["dep:wasm-bindgen", "dep:js-sys"]
 
 [dependencies]

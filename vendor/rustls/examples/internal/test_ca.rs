@@ -8,10 +8,9 @@ use std::str::FromStr;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
-use rcgen::string::Ia5String;
 use rcgen::{
-    BasicConstraints, Certificate, CertificateParams, CertificateRevocationListParams,
-    DistinguishedName, DnType, ExtendedKeyUsagePurpose, IsCa, Issuer, KeyIdMethod, KeyPair,
+    BasicConstraints, CertificateParams, CertificateRevocationListParams, CertifiedKey,
+    DistinguishedName, DnType, ExtendedKeyUsagePurpose, Ia5String, IsCa, KeyIdMethod, KeyPair,
     KeyUsagePurpose, PKCS_ECDSA_P256_SHA256, PKCS_ECDSA_P384_SHA384, PKCS_ECDSA_P521_SHA512,
     PKCS_ED25519, PKCS_RSA_SHA256, PKCS_RSA_SHA384, PKCS_RSA_SHA512, RevocationReason,
     RevokedCertParams, RsaKeySize, SanType, SerialNumber, SignatureAlgorithm,
@@ -19,11 +18,7 @@ use rcgen::{
 use time::OffsetDateTime;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut certified_keys = HashMap::<
-        (Role, &'static SignatureAlgorithm),
-        (Issuer<'static, KeyPair>, Certificate),
-    >::with_capacity(ROLES.len() * SIG_ALGS.len());
-
+    let mut certified_keys = HashMap::with_capacity(ROLES.len() * SIG_ALGS.len());
     for role in ROLES {
         for alg in SIG_ALGS {
             // Generate a key pair and serialize it to a PEM encoded file.
@@ -34,27 +29,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             // Issue a certificate for the key pair. For trust anchors, this will be self-signed.
             // Otherwise we dig out the issuer and issuer_key for the issuer, which should have
             // been produced in earlier iterations based on the careful ordering of roles.
-            let (params, cert) = match role {
-                Role::TrustAnchor => {
-                    let params = role.params(alg);
-                    let cert = params.self_signed(&key_pair)?;
-                    (params, cert)
-                }
+            let cert = match role {
+                Role::TrustAnchor => role
+                    .params(alg)
+                    .self_signed(&key_pair)?,
                 Role::Intermediate => {
-                    let issuer = certified_keys
+                    let issuer: &CertifiedKey = certified_keys
                         .get(&(Role::TrustAnchor, alg.inner))
                         .unwrap();
-                    let params = role.params(alg);
-                    let cert = params.signed_by(&key_pair, &issuer.0)?;
-                    (params, cert)
+                    role.params(alg)
+                        .signed_by(&key_pair, &issuer.cert, &issuer.key_pair)?
                 }
                 Role::EndEntity | Role::Client => {
                     let issuer = certified_keys
                         .get(&(Role::Intermediate, alg.inner))
                         .unwrap();
-                    let params = role.params(alg);
-                    let cert = params.signed_by(&key_pair, &issuer.0)?;
-                    (params, cert)
+                    role.params(alg)
+                        .signed_by(&key_pair, &issuer.cert, &issuer.key_pair)?
                 }
             };
 
@@ -80,15 +71,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     _ => panic!("unexpected role for CRL generation: {role:?}"),
                 };
 
-                let revoked_crl =
-                    crl_for_serial(params.serial_number.clone().unwrap()).signed_by(&issuer.0)?;
+                let revoked_crl = crl_for_serial(
+                    cert.params()
+                        .serial_number
+                        .clone()
+                        .unwrap(),
+                )
+                .signed_by(&issuer.cert, &issuer.key_pair)?;
                 let mut revoked_crl_file = File::create(
                     alg.output_directory()
                         .join(format!("{}.revoked.crl.pem", role.label())),
                 )?;
                 revoked_crl_file.write_all(revoked_crl.pem().unwrap().as_bytes())?;
 
-                let expired_crl = expired_crl().signed_by(&issuer.0)?;
+                let expired_crl = expired_crl().signed_by(&issuer.cert, &issuer.key_pair)?;
                 let mut expired_crl_file = File::create(
                     alg.output_directory()
                         .join(format!("{}.expired.crl.pem", role.label())),
@@ -102,11 +98,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let root = &certified_keys
                     .get(&(Role::TrustAnchor, alg.inner))
                     .unwrap()
-                    .1;
+                    .cert;
                 let intermediate = &certified_keys
                     .get(&(Role::Intermediate, alg.inner))
                     .unwrap()
-                    .1;
+                    .cert;
 
                 // Write the PEM chain and full chain files for the end entity and client certs.
                 // Chain files include the intermediate and root certs, while full chain files include
@@ -133,7 +129,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 raw_public_key_file.write_all(key_pair.public_key_pem().as_bytes())?;
             }
 
-            certified_keys.insert((role, alg.inner), (Issuer::new(params, key_pair), cert));
+            certified_keys.insert((role, alg.inner), CertifiedKey { cert, key_pair });
         }
     }
 

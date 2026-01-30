@@ -284,7 +284,7 @@ impl<P: Prefix> PrefixSet<P> {
     /// set.insert("192.168.0.0/24".parse()?);
     /// set.insert("192.168.2.0/24".parse()?);
     /// assert_eq!(
-    ///     set.children(&"192.168.0.0/23".parse()?).collect::<Vec<_>>(),
+    ///     set.children("192.168.0.0/23".parse()?).collect::<Vec<_>>(),
     ///     vec![
     ///         &"192.168.0.0/23".parse()?,
     ///         &"192.168.0.0/24".parse()?,
@@ -295,7 +295,7 @@ impl<P: Prefix> PrefixSet<P> {
     /// # #[cfg(not(feature = "ipnet"))]
     /// # fn main() {}
     /// ```
-    pub fn children<'a>(&'a self, prefix: &P) -> Iter<'a, P> {
+    pub fn children(&self, prefix: P) -> Iter<'_, P> {
         Iter(self.0.children(prefix))
     }
 
@@ -325,7 +325,7 @@ impl<P: Prefix> PrefixSet<P> {
     /// # #[cfg(not(feature = "ipnet"))]
     /// # fn main() {}
     /// ```
-    pub fn cover<'a, 'p>(&'a self, prefix: &'p P) -> CoverKeys<'a, 'p, P, ()> {
+    pub fn cover<'a>(&'a self, prefix: &'a P) -> CoverKeys<'a, P, ()> {
         self.0.cover_keys(prefix)
     }
 }

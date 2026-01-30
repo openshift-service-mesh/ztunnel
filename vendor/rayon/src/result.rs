@@ -1,9 +1,9 @@
-//! Parallel iterator types for [results]
+//! Parallel iterator types for [results][std::result]
 //!
 //! You will rarely need to interact with this module directly unless you need
 //! to name one of the iterator types.
 //!
-//! [results]: std::result
+//! [std::result]: https://doc.rust-lang.org/stable/std/result/
 
 use crate::iter::plumbing::*;
 use crate::iter::*;
@@ -13,7 +13,7 @@ use crate::option;
 
 /// Parallel iterator over a result
 #[derive(Debug, Clone)]
-pub struct IntoIter<T> {
+pub struct IntoIter<T: Send> {
     inner: option::IntoIter<T>,
 }
 
@@ -35,11 +35,11 @@ delegate_indexed_iterator! {
 
 /// Parallel iterator over an immutable reference to a result
 #[derive(Debug)]
-pub struct Iter<'a, T> {
+pub struct Iter<'a, T: Sync> {
     inner: option::IntoIter<&'a T>,
 }
 
-impl<T> Clone for Iter<'_, T> {
+impl<'a, T: Sync> Clone for Iter<'a, T> {
     fn clone(&self) -> Self {
         Iter {
             inner: self.inner.clone(),
@@ -60,12 +60,12 @@ impl<'a, T: Sync, E> IntoParallelIterator for &'a Result<T, E> {
 
 delegate_indexed_iterator! {
     Iter<'a, T> => &'a T,
-    impl<'a, T: Sync>
+    impl<'a, T: Sync + 'a>
 }
 
 /// Parallel iterator over a mutable reference to a result
 #[derive(Debug)]
-pub struct IterMut<'a, T> {
+pub struct IterMut<'a, T: Send> {
     inner: option::IntoIter<&'a mut T>,
 }
 
@@ -82,7 +82,7 @@ impl<'a, T: Send, E> IntoParallelIterator for &'a mut Result<T, E> {
 
 delegate_indexed_iterator! {
     IterMut<'a, T> => &'a mut T,
-    impl<'a, T: Send>
+    impl<'a, T: Send + 'a>
 }
 
 /// Collect an arbitrary `Result`-wrapped collection.

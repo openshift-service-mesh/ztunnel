@@ -9,15 +9,14 @@ mod aarch64_apple_darwin;
 mod aarch64_unknown_linux_gnu;
 mod aarch64_unknown_linux_musl;
 mod i686_unknown_linux_gnu;
-mod riscv64gc_unknown_linux_gnu;
 mod x86_64_apple_darwin;
 mod x86_64_unknown_linux_gnu;
 mod x86_64_unknown_linux_musl;
 
 use crate::{
     cargo_env, effective_target, emit_warning, env_var_to_bool, execute_command, get_crate_cflags,
-    is_no_asm, optional_env_optional_crate_target, out_dir, requested_c_std, set_env_for_target,
-    target, target_arch, target_env, target_os, CStdRequested, OutputLibType,
+    is_no_asm, option_env, out_dir, requested_c_std, target, target_arch, target_env, target_os,
+    target_vendor, CStdRequested, OutputLibType,
 };
 use std::path::PathBuf;
 
@@ -28,7 +27,7 @@ pub(crate) struct CcBuilder {
     output_lib_type: OutputLibType,
 }
 
-use std::fs;
+use std::{env, fs};
 
 pub(crate) struct Library {
     name: &'static str,
@@ -41,7 +40,6 @@ enum PlatformConfig {
     aarch64_apple_darwin,
     aarch64_unknown_linux_gnu,
     aarch64_unknown_linux_musl,
-    riscv64gc_unknown_linux_gnu,
     x86_64_apple_darwin,
     x86_64_unknown_linux_gnu,
     x86_64_unknown_linux_musl,
@@ -56,9 +54,6 @@ impl PlatformConfig {
             PlatformConfig::aarch64_unknown_linux_musl => {
                 aarch64_unknown_linux_musl::CRYPTO_LIBRARY
             }
-            PlatformConfig::riscv64gc_unknown_linux_gnu => {
-                riscv64gc_unknown_linux_gnu::CRYPTO_LIBRARY
-            }
             PlatformConfig::x86_64_apple_darwin => x86_64_apple_darwin::CRYPTO_LIBRARY,
             PlatformConfig::x86_64_unknown_linux_gnu => x86_64_unknown_linux_gnu::CRYPTO_LIBRARY,
             PlatformConfig::x86_64_unknown_linux_musl => x86_64_unknown_linux_musl::CRYPTO_LIBRARY,
@@ -72,7 +67,6 @@ impl PlatformConfig {
             "aarch64-apple-darwin" => Some(PlatformConfig::aarch64_apple_darwin),
             "aarch64-unknown-linux-gnu" => Some(PlatformConfig::aarch64_unknown_linux_gnu),
             "aarch64-unknown-linux-musl" => Some(PlatformConfig::aarch64_unknown_linux_musl),
-            "riscv64gc-unknown-linux-gnu" => Some(PlatformConfig::riscv64gc_unknown_linux_gnu),
             "x86_64-apple-darwin" => Some(PlatformConfig::x86_64_apple_darwin),
             "x86_64-unknown-linux-gnu" => Some(PlatformConfig::x86_64_unknown_linux_gnu),
             "x86_64-unknown-linux-musl" => Some(PlatformConfig::x86_64_unknown_linux_musl),
@@ -198,11 +192,11 @@ impl CcBuilder {
             }
         }
 
-        if let Some(cc) = optional_env_optional_crate_target("CC") {
-            set_env_for_target("CC", &cc);
+        if let Some(cc) = option_env("CC") {
+            emit_warning(&format!("CC environment variable set: {}", cc.clone()));
         }
-        if let Some(cxx) = optional_env_optional_crate_target("CXX") {
-            set_env_for_target("CXX", &cxx);
+        if let Some(cxx) = option_env("CXX") {
+            emit_warning(&format!("CXX environment variable set: {}", cxx.clone()));
         }
 
         if target_arch() == "x86" && !compiler_is_msvc {
@@ -306,14 +300,6 @@ impl CcBuilder {
             self.manifest_dir
                 .join("aws-lc")
                 .join("third_party")
-                .join("s2n-bignum")
-                .join("s2n-bignum-imported")
-                .join("include"),
-        ));
-        build_options.push(BuildOption::include(
-            self.manifest_dir
-                .join("aws-lc")
-                .join("third_party")
                 .join("jitterentropy")
                 .join("jitterentropy-library"),
         ));
@@ -336,13 +322,17 @@ impl CcBuilder {
         }
         let cflags = get_crate_cflags();
         if !cflags.is_empty() {
-            set_env_for_target("CFLAGS", cflags);
+            emit_warning(&format!(
+                "AWS_LC_SYS_CFLAGS found. Setting CFLAGS: '{cflags}'"
+            ));
+            env::set_var("CFLAGS", cflags);
         }
         cc_build
     }
 
-    fn add_all_files(&self, lib: &Library, cc_build: &mut cc::Build) {
+    fn add_all_files(&self, lib: &Library, cc_build: &mut cc::Build) -> Vec<PathBuf> {
         use core::str::FromStr;
+        cc_build.file(PathBuf::from_str("rust_wrapper.c").unwrap());
 
         // s2n_bignum is compiled separately due to needing extra flags
         let mut s2n_bignum_builder = cc_build.clone();
@@ -355,21 +345,30 @@ impl CcBuilder {
                 .display()
         ));
         s2n_bignum_builder.define("S2N_BN_HIDE_SYMBOLS", "1");
+        let cc_preprocessor = self.create_builder();
         for source in lib.sources {
             let source_path = self.manifest_dir.join("aws-lc").join(source);
             let is_s2n_bignum = std::path::Path::new(source).starts_with("third_party/s2n-bignum");
 
             if is_s2n_bignum {
-                s2n_bignum_builder.file(source_path);
+                let asm_output_path = if target_vendor() == "apple" && target_arch() == "aarch64" {
+                    let asm_output_path = self.out_dir.join(source);
+                    let mut cc_preprocessor = cc_preprocessor.clone();
+                    cc_preprocessor.file(source_path);
+                    let preprocessed_asm = String::from_utf8(cc_preprocessor.expand()).unwrap();
+                    let preprocessed_asm = preprocessed_asm.replace(';', "\n\t");
+                    fs::create_dir_all(asm_output_path.parent().unwrap()).unwrap();
+                    fs::write(asm_output_path.clone(), preprocessed_asm).unwrap();
+                    asm_output_path
+                } else {
+                    source_path.clone()
+                };
+                s2n_bignum_builder.file(asm_output_path);
             } else {
                 cc_build.file(source_path);
             }
         }
-        let object_files = s2n_bignum_builder.compile_intermediates();
-        for object in object_files {
-            cc_build.object(object);
-        }
-        cc_build.file(PathBuf::from_str("rust_wrapper.c").unwrap());
+        s2n_bignum_builder.compile_intermediates()
     }
 
     fn build_library(&self, lib: &Library) {
@@ -379,7 +378,10 @@ impl CcBuilder {
         }
         self.run_compiler_checks(&mut cc_build);
 
-        self.add_all_files(lib, &mut cc_build);
+        let object_files = self.add_all_files(lib, &mut cc_build);
+        for object in object_files {
+            cc_build.object(object);
+        }
         if let Some(prefix) = &self.build_prefix {
             cc_build.compile(format!("{}_crypto", prefix.as_str()).as_str());
         } else {

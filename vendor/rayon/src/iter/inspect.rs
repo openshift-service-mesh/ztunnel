@@ -9,21 +9,25 @@ use std::iter;
 ///
 /// This struct is created by the [`inspect()`] method on [`ParallelIterator`]
 ///
-/// [`inspect()`]: ParallelIterator::inspect()
+/// [`inspect()`]: trait.ParallelIterator.html#method.inspect
+/// [`ParallelIterator`]: trait.ParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Clone)]
-pub struct Inspect<I, F> {
+pub struct Inspect<I: ParallelIterator, F> {
     base: I,
     inspect_op: F,
 }
 
-impl<I: Debug, F> Debug for Inspect<I, F> {
+impl<I: ParallelIterator + Debug, F> Debug for Inspect<I, F> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Inspect").field("base", &self.base).finish()
     }
 }
 
-impl<I, F> Inspect<I, F> {
+impl<I, F> Inspect<I, F>
+where
+    I: ParallelIterator,
+{
     /// Creates a new `Inspect` iterator.
     pub(super) fn new(base: I, inspect_op: F) -> Self {
         Inspect { base, inspect_op }
@@ -102,7 +106,7 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////
 
 struct InspectProducer<'f, P, F> {
     base: P,
@@ -155,8 +159,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Consumer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Consumer implementation
 
 struct InspectConsumer<'f, C, F> {
     base: C,

@@ -53,8 +53,6 @@ use tokio::{
 /// `TaskTracker`, this does not happen. Once tasks exit, they are immediately removed from the
 /// `TaskTracker`.
 ///
-/// Note that unlike [`JoinSet`], dropping a `TaskTracker` does not abort the tasks.
-///
 /// # Examples
 ///
 /// For more examples, please see the topic page on [graceful shutdown].

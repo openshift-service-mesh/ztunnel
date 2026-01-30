@@ -4,14 +4,20 @@ use super::*;
 /// `FlattenIter` turns each element to a serial iterator, then flattens these iterators
 /// together. This struct is created by the [`flatten_iter()`] method on [`ParallelIterator`].
 ///
-/// [`flatten_iter()`]: ParallelIterator::flatten_iter()
+/// [`flatten_iter()`]: trait.ParallelIterator.html#method.flatten_iter
+/// [`ParallelIterator`]: trait.ParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Debug, Clone)]
-pub struct FlattenIter<I> {
+pub struct FlattenIter<I: ParallelIterator> {
     base: I,
 }
 
-impl<I> FlattenIter<I> {
+impl<I> FlattenIter<I>
+where
+    I: ParallelIterator,
+    I::Item: IntoIterator,
+    <I::Item as IntoIterator>::Item: Send,
+{
     /// Creates a new `FlattenIter` iterator.
     pub(super) fn new(base: I) -> Self {
         FlattenIter { base }
@@ -20,7 +26,9 @@ impl<I> FlattenIter<I> {
 
 impl<I> ParallelIterator for FlattenIter<I>
 where
-    I: ParallelIterator<Item: IntoIterator<Item: Send>>,
+    I: ParallelIterator,
+    I::Item: IntoIterator,
+    <I::Item as IntoIterator>::Item: Send,
 {
     type Item = <I::Item as IntoIterator>::Item;
 
@@ -33,8 +41,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Consumer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Consumer implementation
 
 struct FlattenIterConsumer<C> {
     base: C,

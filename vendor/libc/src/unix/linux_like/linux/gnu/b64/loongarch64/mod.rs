@@ -134,8 +134,6 @@ s! {
         __size: [c_ulong; 7],
     }
 
-    // FIXME(1.0): This should not implement `PartialEq`
-    #[allow(unpredictable_function_pointer_comparisons)]
     pub struct sigaction {
         pub sa_sigaction: crate::sighandler_t,
         pub sa_mask: crate::sigset_t,
@@ -237,6 +235,7 @@ s! {
 }
 
 s_no_extra_traits! {
+    #[allow(missing_debug_implementations)]
     #[repr(align(16))]
     pub struct max_align_t {
         priv_: [f64; 4],

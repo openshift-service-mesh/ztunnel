@@ -13,9 +13,7 @@ goto loop
 shift
 set "path=%~1"
 for %%f in ("%path%") do set "filename=%%~nxf"
-REM Extract the base filename before the first dot, similar to the shell script
-for /f "tokens=1 delims=." %%a in ("%filename%") do set "basename=%%a"
-copy "%ScriptDir%\prebuilt-nasm\%basename%.obj" "%path%"
+copy "%ScriptDir%\prebuilt-nasm\%filename%" "%path%"
 exit 0
 
 :failure

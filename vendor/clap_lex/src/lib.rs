@@ -520,7 +520,3 @@ fn is_number(arg: &str) -> bool {
         None => true,
     }
 }
-
-#[doc = include_str!("../README.md")]
-#[cfg(doctest)]
-pub struct ReadmeDoctests;

@@ -1,5 +1,18 @@
+windows_core::imp::define_interface!(IGeolocationProvider, IGeolocationProvider_Vtbl, 0xe4cf071d_3f64_509f_8dc2_0b74a059829d);
+impl windows_core::RuntimeType for IGeolocationProvider {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
+}
+#[repr(C)]
+pub struct IGeolocationProvider_Vtbl {
+    pub base__: windows_core::IInspectable_Vtbl,
+    pub IsOverridden: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
+    pub SetOverridePosition: unsafe extern "system" fn(*mut core::ffi::c_void, super::BasicGeoposition, super::PositionSource, f64, *mut LocationOverrideStatus) -> windows_core::HRESULT,
+    pub ClearOverridePosition: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub IsOverriddenChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub RemoveIsOverriddenChanged: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+}
 #[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct GeolocationProvider(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(GeolocationProvider, windows_core::IUnknown, windows_core::IInspectable);
 impl GeolocationProvider {
@@ -28,7 +41,7 @@ impl GeolocationProvider {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).ClearOverridePosition)(windows_core::Interface::as_raw(this)).ok() }
     }
-    pub fn IsOverriddenChanged<P0>(&self, handler: P0) -> windows_core::Result<i64>
+    pub fn IsOverriddenChanged<P0>(&self, handler: P0) -> windows_core::Result<super::super::super::Foundation::EventRegistrationToken>
     where
         P0: windows_core::Param<super::super::super::Foundation::EventHandler<windows_core::IInspectable>>,
     {
@@ -38,7 +51,7 @@ impl GeolocationProvider {
             (windows_core::Interface::vtable(this).IsOverriddenChanged)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         }
     }
-    pub fn RemoveIsOverriddenChanged(&self, token: i64) -> windows_core::Result<()> {
+    pub fn RemoveIsOverriddenChanged(&self, token: super::super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
         let this = self;
         unsafe { (windows_core::Interface::vtable(this).RemoveIsOverriddenChanged)(windows_core::Interface::as_raw(this), token).ok() }
     }
@@ -47,7 +60,7 @@ impl windows_core::RuntimeType for GeolocationProvider {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, IGeolocationProvider>();
 }
 unsafe impl windows_core::Interface for GeolocationProvider {
-    type Vtable = <IGeolocationProvider as windows_core::Interface>::Vtable;
+    type Vtable = IGeolocationProvider_Vtbl;
     const IID: windows_core::GUID = <IGeolocationProvider as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for GeolocationProvider {
@@ -55,22 +68,8 @@ impl windows_core::RuntimeName for GeolocationProvider {
 }
 unsafe impl Send for GeolocationProvider {}
 unsafe impl Sync for GeolocationProvider {}
-windows_core::imp::define_interface!(IGeolocationProvider, IGeolocationProvider_Vtbl, 0xe4cf071d_3f64_509f_8dc2_0b74a059829d);
-impl windows_core::RuntimeType for IGeolocationProvider {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
-}
-#[repr(C)]
-#[doc(hidden)]
-pub struct IGeolocationProvider_Vtbl {
-    pub base__: windows_core::IInspectable_Vtbl,
-    pub IsOverridden: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
-    pub SetOverridePosition: unsafe extern "system" fn(*mut core::ffi::c_void, super::BasicGeoposition, super::PositionSource, f64, *mut LocationOverrideStatus) -> windows_core::HRESULT,
-    pub ClearOverridePosition: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub IsOverriddenChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
-    pub RemoveIsOverriddenChanged: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
-}
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
 pub struct LocationOverrideStatus(pub i32);
 impl LocationOverrideStatus {
     pub const Success: Self = Self(0i32);
@@ -80,6 +79,11 @@ impl LocationOverrideStatus {
 }
 impl windows_core::TypeKind for LocationOverrideStatus {
     type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for LocationOverrideStatus {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("LocationOverrideStatus").field(&self.0).finish()
+    }
 }
 impl windows_core::RuntimeType for LocationOverrideStatus {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.Devices.Geolocation.Provider.LocationOverrideStatus;i4)");

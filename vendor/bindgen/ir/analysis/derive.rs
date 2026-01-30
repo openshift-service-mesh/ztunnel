@@ -104,7 +104,7 @@ fn consider_edge_default(kind: EdgeKind) -> bool {
     }
 }
 
-impl CannotDerive<'_> {
+impl<'ctx> CannotDerive<'ctx> {
     fn insert<Id: Into<ItemId>>(
         &mut self,
         id: Id,
@@ -112,8 +112,10 @@ impl CannotDerive<'_> {
     ) -> ConstrainResult {
         let id = id.into();
         trace!(
-            "inserting {id:?} can_derive<{}>={can_derive:?}",
+            "inserting {:?} can_derive<{}>={:?}",
+            id,
             self.derive_trait,
+            can_derive
         );
 
         if let CanDerive::Yes = can_derive {
@@ -166,7 +168,7 @@ impl CannotDerive<'_> {
             return CanDerive::No;
         }
 
-        trace!("ty: {ty:?}");
+        trace!("ty: {:?}", ty);
         if item.is_opaque(self.ctx, &()) {
             if !self.derive_trait.can_derive_union() &&
                 ty.is_union() &&
@@ -181,7 +183,7 @@ impl CannotDerive<'_> {
 
             let layout_can_derive =
                 ty.layout(self.ctx).map_or(CanDerive::Yes, |l| {
-                    l.opaque().array_size_within_derive_limit()
+                    l.opaque().array_size_within_derive_limit(self.ctx)
                 });
 
             match layout_can_derive {
@@ -215,7 +217,9 @@ impl CannotDerive<'_> {
             TypeKind::Reference(..) |
             TypeKind::ObjCInterface(..) |
             TypeKind::ObjCId |
-            TypeKind::ObjCSel => self.derive_trait.can_derive_simple(ty.kind()),
+            TypeKind::ObjCSel => {
+                return self.derive_trait.can_derive_simple(ty.kind());
+            }
             TypeKind::Pointer(inner) => {
                 let inner_type =
                     self.ctx.resolve_type(inner).canonical_type(self.ctx);
@@ -232,7 +236,7 @@ impl CannotDerive<'_> {
             // Complex cases need more information
             TypeKind::Array(t, len) => {
                 let inner_type =
-                    self.can_derive.get(&t.into()).copied().unwrap_or_default();
+                    self.can_derive.get(&t.into()).cloned().unwrap_or_default();
                 if inner_type != CanDerive::Yes {
                     trace!(
                         "    arrays of T for which we cannot derive {} \
@@ -271,7 +275,7 @@ impl CannotDerive<'_> {
             }
             TypeKind::Vector(t, len) => {
                 let inner_type =
-                    self.can_derive.get(&t.into()).copied().unwrap_or_default();
+                    self.can_derive.get(&t.into()).cloned().unwrap_or_default();
                 if inner_type != CanDerive::Yes {
                     trace!(
                         "    vectors of T for which we cannot derive {} \
@@ -340,7 +344,8 @@ impl CannotDerive<'_> {
 
                         let layout_can_derive =
                             ty.layout(self.ctx).map_or(CanDerive::Yes, |l| {
-                                l.opaque().array_size_within_derive_limit()
+                                l.opaque()
+                                    .array_size_within_derive_limit(self.ctx)
                             });
                         match layout_can_derive {
                             CanDerive::Yes => {
@@ -426,13 +431,13 @@ impl CannotDerive<'_> {
 
                 let can_derive = self.can_derive
                     .get(&sub_id)
-                    .copied()
+                    .cloned()
                     .unwrap_or_default();
 
                 match can_derive {
-                    CanDerive::Yes => trace!("    member {sub_id:?} can derive {}", self.derive_trait),
-                    CanDerive::Manually => trace!("    member {sub_id:?} cannot derive {}, but it may be implemented", self.derive_trait),
-                    CanDerive::No => trace!("    member {sub_id:?} cannot derive {}", self.derive_trait),
+                    CanDerive::Yes => trace!("    member {:?} can derive {}", sub_id, self.derive_trait),
+                    CanDerive::Manually => trace!("    member {:?} cannot derive {}, but it may be implemented", sub_id, self.derive_trait),
+                    CanDerive::No => trace!("    member {:?} cannot derive {}", sub_id, self.derive_trait),
                 }
 
                 *candidate.get_or_insert(CanDerive::Yes) |= can_derive;
@@ -525,40 +530,46 @@ impl DeriveTrait {
     fn can_derive_fnptr(&self, f: &FunctionSig) -> CanDerive {
         match (self, f.function_pointers_can_derive()) {
             (DeriveTrait::Copy, _) | (DeriveTrait::Default, _) | (_, true) => {
-                trace!("    function pointer can derive {self}");
+                trace!("    function pointer can derive {}", self);
                 CanDerive::Yes
             }
             (DeriveTrait::Debug, false) => {
-                trace!("    function pointer cannot derive {self}, but it may be implemented");
+                trace!("    function pointer cannot derive {}, but it may be implemented", self);
                 CanDerive::Manually
             }
             (_, false) => {
-                trace!("    function pointer cannot derive {self}");
+                trace!("    function pointer cannot derive {}", self);
                 CanDerive::No
             }
         }
     }
 
     fn can_derive_vector(&self) -> CanDerive {
-        if *self == DeriveTrait::PartialEqOrPartialOrd {
-            // FIXME: vectors always can derive PartialEq, but they should
-            // not derive PartialOrd:
-            // https://github.com/rust-lang-nursery/packed_simd/issues/48
-            trace!("    vectors cannot derive PartialOrd");
-            CanDerive::No
-        } else {
-            trace!("    vector can derive {self}");
-            CanDerive::Yes
+        match self {
+            DeriveTrait::PartialEqOrPartialOrd => {
+                // FIXME: vectors always can derive PartialEq, but they should
+                // not derive PartialOrd:
+                // https://github.com/rust-lang-nursery/packed_simd/issues/48
+                trace!("    vectors cannot derive PartialOrd");
+                CanDerive::No
+            }
+            _ => {
+                trace!("    vector can derive {}", self);
+                CanDerive::Yes
+            }
         }
     }
 
     fn can_derive_pointer(&self) -> CanDerive {
-        if *self == DeriveTrait::Default {
-            trace!("    pointer cannot derive Default");
-            CanDerive::No
-        } else {
-            trace!("    pointer can derive {self}");
-            CanDerive::Yes
+        match self {
+            DeriveTrait::Default => {
+                trace!("    pointer cannot derive Default");
+                CanDerive::No
+            }
+            _ => {
+                trace!("    pointer can derive {}", self);
+                CanDerive::Yes
+            }
         }
     }
 
@@ -589,7 +600,7 @@ impl DeriveTrait {
             }
             // === others ===
             _ => {
-                trace!("    simple type that can always derive {self}");
+                trace!("    simple type that can always derive {}", self);
                 CanDerive::Yes
             }
         }
@@ -634,7 +645,7 @@ impl<'ctx> MonotoneFramework for CannotDerive<'ctx> {
         self.ctx
             .allowlisted_items()
             .iter()
-            .copied()
+            .cloned()
             .flat_map(|i| {
                 let mut reachable = vec![i];
                 i.trace(
@@ -650,9 +661,9 @@ impl<'ctx> MonotoneFramework for CannotDerive<'ctx> {
     }
 
     fn constrain(&mut self, id: ItemId) -> ConstrainResult {
-        trace!("constrain: {id:?}");
+        trace!("constrain: {:?}", id);
 
-        if let Some(CanDerive::No) = self.can_derive.get(&id) {
+        if let Some(CanDerive::No) = self.can_derive.get(&id).cloned() {
             trace!("    already know it cannot derive {}", self.derive_trait);
             return ConstrainResult::Same;
         }
@@ -665,7 +676,7 @@ impl<'ctx> MonotoneFramework for CannotDerive<'ctx> {
                     let is_reached_limit =
                         |l: Layout| l.align > RUST_DERIVE_IN_ARRAY_LIMIT;
                     if !self.derive_trait.can_derive_large_array(self.ctx) &&
-                        ty.layout(self.ctx).is_some_and(is_reached_limit)
+                        ty.layout(self.ctx).map_or(false, is_reached_limit)
                     {
                         // We have to be conservative: the struct *could* have enough
                         // padding that we emit an array that is longer than
@@ -689,7 +700,7 @@ impl<'ctx> MonotoneFramework for CannotDerive<'ctx> {
     {
         if let Some(edges) = self.dependencies.get(&id) {
             for item in edges {
-                trace!("enqueue {item:?} into worklist");
+                trace!("enqueue {:?} into worklist", item);
                 f(*item);
             }
         }
@@ -716,6 +727,6 @@ pub(crate) fn as_cannot_derive_set(
 ) -> HashSet<ItemId> {
     can_derive
         .into_iter()
-        .filter_map(|(k, v)| if v == CanDerive::Yes { None } else { Some(k) })
+        .filter_map(|(k, v)| if v != CanDerive::Yes { Some(k) } else { None })
         .collect()
 }

@@ -5,9 +5,7 @@
 )]
 
 #[macro_use]
-mod snapshot;
-
-mod debug;
+mod macros;
 
 #[test]
 fn test_basic() {

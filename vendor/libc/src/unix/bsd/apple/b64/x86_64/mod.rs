@@ -109,8 +109,6 @@ s! {
         _private: [crate::uintptr_t; 16], // FIXME(macos): keeping private for now
     }
 
-    // FIXME(1.0): This should not implement `PartialEq`
-    #[allow(unpredictable_function_pointer_comparisons)]
     pub struct malloc_zone_t {
         _reserved1: *mut c_void,
         _reserved2: *mut c_void,
@@ -172,6 +170,7 @@ s! {
 }
 
 s_no_extra_traits! {
+    #[allow(missing_debug_implementations)]
     #[repr(align(16))]
     pub struct max_align_t {
         priv_: [f64; 2],

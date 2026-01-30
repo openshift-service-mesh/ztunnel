@@ -136,7 +136,8 @@ macro_rules! multizip_impls {
             impl<$( $T, )+> IntoParallelIterator for ($( $T, )+)
             where
                 $(
-                    $T: IntoParallelIterator<Iter: IndexedParallelIterator>,
+                    $T: IntoParallelIterator,
+                    $T::Iter: IndexedParallelIterator,
                 )+
             {
                 type Item = ($( $T::Item, )+);
@@ -152,7 +153,8 @@ macro_rules! multizip_impls {
             impl<'a, $( $T, )+> IntoParallelIterator for &'a ($( $T, )+)
             where
                 $(
-                    $T: IntoParallelRefIterator<'a, Iter: IndexedParallelIterator>,
+                    $T: IntoParallelRefIterator<'a>,
+                    $T::Iter: IndexedParallelIterator,
                 )+
             {
                 type Item = ($( $T::Item, )+);
@@ -168,7 +170,8 @@ macro_rules! multizip_impls {
             impl<'a, $( $T, )+> IntoParallelIterator for &'a mut ($( $T, )+)
             where
                 $(
-                    $T: IntoParallelRefMutIterator<'a, Iter: IndexedParallelIterator>,
+                    $T: IntoParallelRefMutIterator<'a>,
+                    $T::Iter: IndexedParallelIterator,
                 )+
             {
                 type Item = ($( $T::Item, )+);

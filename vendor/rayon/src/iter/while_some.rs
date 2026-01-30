@@ -7,14 +7,18 @@ use std::sync::atomic::{AtomicBool, Ordering};
 ///
 /// This struct is created by the [`while_some()`] method on [`ParallelIterator`]
 ///
-/// [`while_some()`]: ParallelIterator::while_some()
+/// [`while_some()`]: trait.ParallelIterator.html#method.while_some
+/// [`ParallelIterator`]: trait.ParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Debug, Clone)]
-pub struct WhileSome<I> {
+pub struct WhileSome<I: ParallelIterator> {
     base: I,
 }
 
-impl<I> WhileSome<I> {
+impl<I> WhileSome<I>
+where
+    I: ParallelIterator,
+{
     /// Creates a new `WhileSome` iterator.
     pub(super) fn new(base: I) -> Self {
         WhileSome { base }
@@ -41,8 +45,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Consumer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Consumer implementation
 
 struct WhileSomeConsumer<'f, C> {
     base: C,

@@ -28,7 +28,7 @@
 //! This single state field allows for code that is firing the timer to
 //! synchronize with any racing `reset` calls reliably.
 //!
-//! # Registered vs true timeouts
+//! # Cached vs true timeouts
 //!
 //! To allow for the use case of a timeout that is periodically reset before
 //! expiration to be as lightweight as possible, we support optimistically
@@ -43,8 +43,8 @@
 //!
 //! We do, however, also need to track what the expiration time was when we
 //! originally registered the timer; this is used to locate the right linked
-//! list when the timer is being cancelled.
-//! This is referred to as the `registered_when` internally.
+//! list when the timer is being cancelled. This is referred to as the "cached
+//! when" internally.
 //!
 //! There is of course a race condition between timer reset and timer
 //! expiration. If the driver fails to observe the updated expiration time, it
@@ -58,18 +58,19 @@ use crate::loom::cell::UnsafeCell;
 use crate::loom::sync::atomic::AtomicU64;
 use crate::loom::sync::atomic::Ordering;
 
+use crate::runtime::context;
 use crate::runtime::scheduler;
 use crate::sync::AtomicWaker;
 use crate::time::Instant;
 use crate::util::linked_list;
 
-use pin_project_lite::pin_project;
+use std::cell::UnsafeCell as StdUnsafeCell;
 use std::task::{Context, Poll, Waker};
 use std::{marker::PhantomPinned, pin::Pin, ptr::NonNull};
 
 type TimerResult = Result<(), crate::time::error::Error>;
 
-pub(in crate::runtime::time) const STATE_DEREGISTERED: u64 = u64::MAX;
+const STATE_DEREGISTERED: u64 = u64::MAX;
 const STATE_PENDING_FIRE: u64 = STATE_DEREGISTERED - 1;
 const STATE_MIN_VALUE: u64 = STATE_PENDING_FIRE;
 /// The largest safe integer to use for ticks.
@@ -273,40 +274,34 @@ impl StateCell {
     /// ordering, but is conservative - if it returns false, the timer is
     /// definitely _not_ registered.
     pub(super) fn might_be_registered(&self) -> bool {
-        self.state.load(Ordering::Relaxed) != STATE_DEREGISTERED
+        self.state.load(Ordering::Relaxed) != u64::MAX
     }
 }
 
-pin_project! {
-    // A timer entry.
-    //
-    // This is the handle to a timer that is controlled by the requester of the
-    // timer. As this participates in intrusive data structures, it must be pinned
-    // before polling.
-    #[derive(Debug)]
-    pub(crate) struct TimerEntry {
-        // Arc reference to the runtime handle. We can only free the driver after
-        // deregistering everything from their respective timer wheels.
-        driver: scheduler::Handle,
-        // Shared inner structure; this is part of an intrusive linked list, and
-        // therefore other references can exist to it while mutable references to
-        // Entry exist.
-        //
-        // This is manipulated only under the inner mutex.
-        #[pin]
-        inner: Option<TimerShared>,
-        // Deadline for the timer. This is used to register on the first
-        // poll, as we can't register prior to being pinned.
-        deadline: Instant,
-        // Whether the deadline has been registered.
-        registered: bool,
-    }
-
-    impl PinnedDrop for TimerEntry {
-        fn drop(this: Pin<&mut Self>) {
-            this.cancel();
-        }
-    }
+/// A timer entry.
+///
+/// This is the handle to a timer that is controlled by the requester of the
+/// timer. As this participates in intrusive data structures, it must be pinned
+/// before polling.
+#[derive(Debug)]
+pub(crate) struct TimerEntry {
+    /// Arc reference to the runtime handle. We can only free the driver after
+    /// deregistering everything from their respective timer wheels.
+    driver: scheduler::Handle,
+    /// Shared inner structure; this is part of an intrusive linked list, and
+    /// therefore other references can exist to it while mutable references to
+    /// Entry exist.
+    ///
+    /// This is manipulated only under the inner mutex. TODO: Can we use loom
+    /// cells for this?
+    inner: StdUnsafeCell<Option<TimerShared>>,
+    /// Deadline for the timer. This is used to register on the first
+    /// poll, as we can't register prior to being pinned.
+    deadline: Instant,
+    /// Whether the deadline has been registered.
+    registered: bool,
+    /// Ensure the type is !Unpin
+    _m: std::marker::PhantomPinned,
 }
 
 unsafe impl Send for TimerEntry {}
@@ -334,22 +329,18 @@ pub(super) type EntryList = crate::util::linked_list::LinkedList<TimerShared, Ti
 ///
 /// Note that this structure is located inside the `TimerEntry` structure.
 pub(crate) struct TimerShared {
+    /// The shard id. We should never change it.
+    shard_id: u32,
     /// A link within the doubly-linked list of timers on a particular level and
     /// slot. Valid only if state is equal to Registered.
     ///
     /// Only accessed under the entry lock.
     pointers: linked_list::Pointers<TimerShared>,
 
-    /// The time when the [`TimerEntry`] was registered into the Wheel,
-    /// [`STATE_DEREGISTERED`] means it is not registered.
-    ///
+    /// The expiration time for which this entry is currently registered.
     /// Generally owned by the driver, but is accessed by the entry when not
     /// registered.
-    ///
-    /// We use relaxed ordering for both loading and storing since this value
-    /// is only accessed either when holding the driver lock or through mutable
-    /// references to [`TimerEntry`].
-    registered_when: AtomicU64,
+    cached_when: AtomicU64,
 
     /// Current state. This records whether the timer entry is currently under
     /// the ownership of the driver, and if not, its current state (not
@@ -365,10 +356,7 @@ unsafe impl Sync for TimerShared {}
 impl std::fmt::Debug for TimerShared {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TimerShared")
-            .field(
-                "registered_when",
-                &self.registered_when.load(Ordering::Relaxed),
-            )
+            .field("cached_when", &self.cached_when.load(Ordering::Relaxed))
             .field("state", &self.state)
             .finish()
     }
@@ -383,9 +371,10 @@ generate_addr_of_methods! {
 }
 
 impl TimerShared {
-    pub(super) fn new() -> Self {
+    pub(super) fn new(shard_id: u32) -> Self {
         Self {
-            registered_when: AtomicU64::new(0),
+            shard_id,
+            cached_when: AtomicU64::new(0),
             pointers: linked_list::Pointers::new(),
             state: StateCell::default(),
             _p: PhantomPinned,
@@ -393,9 +382,9 @@ impl TimerShared {
     }
 
     /// Gets the cached time-of-expiration value.
-    pub(super) fn registered_when(&self) -> u64 {
+    pub(super) fn cached_when(&self) -> u64 {
         // Cached-when is only accessed under the driver lock, so we can use relaxed
-        self.registered_when.load(Ordering::Relaxed)
+        self.cached_when.load(Ordering::Relaxed)
     }
 
     /// Gets the true time-of-expiration value, and copies it into the cached
@@ -406,7 +395,7 @@ impl TimerShared {
     pub(super) unsafe fn sync_when(&self) -> u64 {
         let true_when = self.true_when();
 
-        self.registered_when.store(true_when, Ordering::Relaxed);
+        self.cached_when.store(true_when, Ordering::Relaxed);
 
         true_when
     }
@@ -415,8 +404,8 @@ impl TimerShared {
     ///
     /// SAFETY: Must be called with the driver lock held, and when this entry is
     /// not in any timer wheel lists.
-    unsafe fn set_registered_when(&self, when: u64) {
-        self.registered_when.store(when, Ordering::Relaxed);
+    unsafe fn set_cached_when(&self, when: u64) {
+        self.cached_when.store(when, Ordering::Relaxed);
     }
 
     /// Returns the true time-of-expiration value, with relaxed memory ordering.
@@ -431,7 +420,7 @@ impl TimerShared {
     /// in the timer wheel.
     pub(super) unsafe fn set_expiration(&self, t: u64) {
         self.state.set_expiration(t);
-        self.registered_when.store(t, Ordering::Relaxed);
+        self.cached_when.store(t, Ordering::Relaxed);
     }
 
     /// Sets the true time-of-expiration only if it is after the current.
@@ -452,6 +441,11 @@ impl TimerShared {
     /// definitely _not_ registered.
     pub(super) fn might_be_registered(&self) -> bool {
         self.state.might_be_registered()
+    }
+
+    /// Gets the shard id.
+    pub(super) fn shard_id(&self) -> u32 {
+        self.shard_id
     }
 }
 
@@ -485,21 +479,28 @@ impl TimerEntry {
 
         Self {
             driver: handle,
-            inner: None,
+            inner: StdUnsafeCell::new(None),
             deadline,
             registered: false,
+            _m: std::marker::PhantomPinned,
         }
     }
 
-    fn inner(&self) -> Option<&TimerShared> {
-        self.inner.as_ref()
+    fn is_inner_init(&self) -> bool {
+        unsafe { &*self.inner.get() }.is_some()
     }
 
-    fn init_inner(self: Pin<&mut Self>) {
-        match self.inner {
-            Some(_) => {}
-            None => self.project().inner.set(Some(TimerShared::new())),
+    // This lazy initialization is for performance purposes.
+    fn inner(&self) -> &TimerShared {
+        let inner = unsafe { &*self.inner.get() };
+        if inner.is_none() {
+            let shard_size = self.driver.driver().time().inner.get_shard_size();
+            let shard_id = generate_shard_id(shard_size);
+            unsafe {
+                *self.inner.get() = Some(TimerShared::new(shard_id));
+            }
         }
+        return inner.as_ref().unwrap();
     }
 
     pub(crate) fn deadline(&self) -> Instant {
@@ -507,42 +508,15 @@ impl TimerEntry {
     }
 
     pub(crate) fn is_elapsed(&self) -> bool {
-        let Some(inner) = self.inner() else {
-            return false;
-        };
-
-        // Is this timer still in the timer wheel?
-        let deregistered = !inner.might_be_registered();
-
-        // Once the timer has expired,
-        // it will be taken out of the wheel and be fired.
-        //
-        // So if we have already registered the timer into the wheel,
-        // but now it is not in the wheel, it means that it has been
-        // fired.
-        //
-        // +--------------+-----------------+----------+
-        // | deregistered | self.registered |  output  |
-        // +--------------+-----------------+----------+
-        // |     true     |      false      |  false   | <- never been registered
-        // +--------------+-----------------+----------+
-        // |     false    |      false      |  false   | <- never been registered
-        // +--------------+-----------------+----------+
-        // |     true     |      true       |  true    | <- registered into the wheel,
-        // |              |                 |          |    and then taken out of the wheel.
-        // +--------------+-----------------+----------+
-        // |     false    |      true       |  false   | <- still registered in the wheel
-        // +--------------+-----------------+----------+
-        deregistered && self.registered
+        self.is_inner_init() && !self.inner().state.might_be_registered() && self.registered
     }
 
     /// Cancels and deregisters the timer. This operation is irreversible.
     pub(crate) fn cancel(self: Pin<&mut Self>) {
         // Avoid calling the `clear_entry` method, because it has not been initialized yet.
-        let Some(inner) = self.inner() else {
+        if !self.is_inner_init() {
             return;
-        };
-
+        }
         // We need to perform an acq/rel fence with the driver thread, and the
         // simplest way to do so is to grab the driver lock.
         //
@@ -565,32 +539,24 @@ impl TimerEntry {
         // driver did so far and happens-before everything the driver does in
         // the future. While we have the lock held, we also go ahead and
         // deregister the entry if necessary.
-        unsafe { self.driver().clear_entry(NonNull::from(inner)) };
+        unsafe { self.driver().clear_entry(NonNull::from(self.inner())) };
     }
 
     pub(crate) fn reset(mut self: Pin<&mut Self>, new_time: Instant, reregister: bool) {
-        let this = self.as_mut().project();
-        *this.deadline = new_time;
-        *this.registered = reregister;
+        let this = unsafe { self.as_mut().get_unchecked_mut() };
+        this.deadline = new_time;
+        this.registered = reregister;
 
         let tick = self.driver().time_source().deadline_to_tick(new_time);
-        let inner = match self.inner() {
-            Some(inner) => inner,
-            None => {
-                self.as_mut().init_inner();
-                self.inner()
-                    .expect("inner should already be initialized by `this.init_inner()`")
-            }
-        };
 
-        if inner.extend_expiration(tick).is_ok() {
+        if self.inner().extend_expiration(tick).is_ok() {
             return;
         }
 
         if reregister {
             unsafe {
                 self.driver()
-                    .reregister(&self.driver.driver().io, tick, inner.into());
+                    .reregister(&self.driver.driver().io, tick, self.inner().into());
             }
         }
     }
@@ -610,10 +576,7 @@ impl TimerEntry {
             self.as_mut().reset(deadline, true);
         }
 
-        let inner = self
-            .inner()
-            .expect("inner should already be initialized by `self.reset()`");
-        inner.state.poll(cx.waker())
+        self.inner().state.poll(cx.waker())
     }
 
     pub(crate) fn driver(&self) -> &super::Handle {
@@ -627,8 +590,8 @@ impl TimerEntry {
 }
 
 impl TimerHandle {
-    pub(super) unsafe fn registered_when(&self) -> u64 {
-        unsafe { self.inner.as_ref().registered_when() }
+    pub(super) unsafe fn cached_when(&self) -> u64 {
+        unsafe { self.inner.as_ref().cached_when() }
     }
 
     pub(super) unsafe fn sync_when(&self) -> u64 {
@@ -650,7 +613,7 @@ impl TimerHandle {
     /// Attempts to mark this entry as pending. If the expiration time is after
     /// `not_after`, however, returns an Err with the current expiration time.
     ///
-    /// If an `Err` is returned, the `registered_when` value will be updated to this
+    /// If an `Err` is returned, the `cached_when` value will be updated to this
     /// new expiration time.
     ///
     /// SAFETY: The caller must ensure that the handle remains valid, the driver
@@ -659,12 +622,12 @@ impl TimerHandle {
     pub(super) unsafe fn mark_pending(&self, not_after: u64) -> Result<(), u64> {
         match self.inner.as_ref().state.mark_pending(not_after) {
             Ok(()) => {
-                // mark this as being on the pending queue in registered_when
-                self.inner.as_ref().set_registered_when(STATE_DEREGISTERED);
+                // mark this as being on the pending queue in cached_when
+                self.inner.as_ref().set_cached_when(u64::MAX);
                 Ok(())
             }
             Err(tick) => {
-                self.inner.as_ref().set_registered_when(tick);
+                self.inner.as_ref().set_cached_when(tick);
                 Err(tick)
             }
         }
@@ -683,5 +646,33 @@ impl TimerHandle {
     /// the entry must not be in any wheel linked lists.
     pub(super) unsafe fn fire(self, completed_state: TimerResult) -> Option<Waker> {
         self.inner.as_ref().state.fire(completed_state)
+    }
+}
+
+impl Drop for TimerEntry {
+    fn drop(&mut self) {
+        unsafe { Pin::new_unchecked(self) }.as_mut().cancel();
+    }
+}
+
+// Generates a shard id. If current thread is a worker thread, we use its worker index as a shard id.
+// Otherwise, we use a random number generator to obtain the shard id.
+cfg_rt! {
+    fn generate_shard_id(shard_size: u32) -> u32 {
+        let id = context::with_scheduler(|ctx| match ctx {
+            Some(scheduler::Context::CurrentThread(_ctx)) => 0,
+            #[cfg(feature = "rt-multi-thread")]
+            Some(scheduler::Context::MultiThread(ctx)) => ctx.get_worker_index() as u32,
+            #[cfg(all(tokio_unstable, feature = "rt-multi-thread"))]
+            Some(scheduler::Context::MultiThreadAlt(ctx)) => ctx.get_worker_index() as u32,
+            None => context::thread_rng_n(shard_size),
+        });
+        id % shard_size
+    }
+}
+
+cfg_not_rt! {
+    fn generate_shard_id(shard_size: u32) -> u32 {
+        context::thread_rng_n(shard_size)
     }
 }

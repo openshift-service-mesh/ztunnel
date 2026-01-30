@@ -55,9 +55,9 @@ pub trait ParallelBridge: Sized {
     fn par_bridge(self) -> IterBridge<Self>;
 }
 
-impl<T> ParallelBridge for T
+impl<T: Iterator + Send> ParallelBridge for T
 where
-    T: Iterator<Item: Send> + Send,
+    T::Item: Send,
 {
     fn par_bridge(self) -> IterBridge<Self> {
         IterBridge { iter: self }
@@ -68,14 +68,16 @@ where
 ///
 /// This type is created when using the `par_bridge` method on `ParallelBridge`. See the
 /// [`ParallelBridge`] documentation for details.
+///
+/// [`ParallelBridge`]: trait.ParallelBridge.html
 #[derive(Debug, Clone)]
 pub struct IterBridge<Iter> {
     iter: Iter,
 }
 
-impl<Iter> ParallelIterator for IterBridge<Iter>
+impl<Iter: Iterator + Send> ParallelIterator for IterBridge<Iter>
 where
-    Iter: Iterator<Item: Send> + Send,
+    Iter::Item: Send,
 {
     type Item = Iter::Item;
 

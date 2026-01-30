@@ -288,7 +288,7 @@ impl BacktraceFrameFmt<'_, '_, '_> {
             write!(self.fmt.fmt, ":{colno}")?;
         }
 
-        writeln!(self.fmt.fmt)?;
+        write!(self.fmt.fmt, "\n")?;
         Ok(())
     }
 

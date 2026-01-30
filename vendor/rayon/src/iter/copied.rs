@@ -7,14 +7,18 @@ use std::iter;
 ///
 /// This struct is created by the [`copied()`] method on [`ParallelIterator`]
 ///
-/// [`copied()`]: ParallelIterator::copied()
+/// [`copied()`]: trait.ParallelIterator.html#method.copied
+/// [`ParallelIterator`]: trait.ParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Debug, Clone)]
-pub struct Copied<I> {
+pub struct Copied<I: ParallelIterator> {
     base: I,
 }
 
-impl<I> Copied<I> {
+impl<I> Copied<I>
+where
+    I: ParallelIterator,
+{
     /// Creates a new `Copied` iterator.
     pub(super) fn new(base: I) -> Self {
         Copied { base }
@@ -86,7 +90,7 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////
 
 struct CopiedProducer<P> {
     base: P,
@@ -128,8 +132,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// Consumer implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// Consumer implementation
 
 struct CopiedConsumer<C> {
     base: C,

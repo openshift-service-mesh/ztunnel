@@ -12,16 +12,15 @@
 [package]
 edition = "2021"
 name = "local-ip-address"
-version = "0.6.5"
-authors = ["Leo Borai <estebanborai@gmail.com>"]
+version = "0.6.3"
+authors = ["Esteban Borai <estebanborai@gmail.com>"]
 build = false
-autolib = false
 autobins = false
 autoexamples = false
 autotests = false
 autobenches = false
 description = "Retrieve system's local IP address and Network Interfaces/Adapters on Linux, macOS and Windows."
-homepage = "https://github.com/LeoBorai/local-ip-address"
+homepage = "https://github.com/EstebanBorai/local-ip-address"
 readme = "README.md"
 keywords = [
     "local",
@@ -35,7 +34,7 @@ categories = [
     "network-programming",
 ]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/LeoBorai/local-ip-address"
+repository = "https://github.com/EstebanBorai/local-ip-address"
 
 [lib]
 name = "local_ip_address"
@@ -46,7 +45,7 @@ name = "example"
 path = "examples/show_ip_and_ifs.rs"
 
 [dependencies.thiserror]
-version = "2"
+version = "1"
 
 [target.'cfg(target_os = "linux")'.dependencies.neli]
 version = "0.6"

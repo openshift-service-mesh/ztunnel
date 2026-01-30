@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.71"
 name = "rustls"
-version = "0.23.31"
+version = "0.23.26"
 build = "build.rs"
 exclude = [
     "src/testdata",
@@ -70,7 +70,6 @@ custom-provider = []
 default = [
     "aws_lc_rs",
     "logging",
-    "prefer-post-quantum",
     "std",
     "tls12",
 ]
@@ -117,13 +116,13 @@ optional = true
 default-features = false
 
 [dependencies.brotli]
-version = "8"
+version = "7"
 features = ["std"]
 optional = true
 default-features = false
 
 [dependencies.brotli-decompressor]
-version = "5.0.0"
+version = "4.0.1"
 optional = true
 
 [dependencies.hashbrown]
@@ -148,7 +147,7 @@ features = [
 default-features = false
 
 [dependencies.pki-types]
-version = "1.12"
+version = "1.11"
 features = ["alloc"]
 package = "rustls-pki-types"
 
@@ -161,7 +160,7 @@ version = "2.5.0"
 default-features = false
 
 [dependencies.webpki]
-version = "0.103.4"
+version = "0.103"
 features = ["alloc"]
 default-features = false
 package = "rustls-webpki"
@@ -195,7 +194,7 @@ version = "0.2"
 version = "0.4.4"
 
 [dev-dependencies.rcgen]
-version = "0.14"
+version = "0.13"
 features = [
     "pem",
     "aws_lc_rs",
@@ -214,7 +213,7 @@ version = "0.3.6"
 default-features = false
 
 [dev-dependencies.webpki-roots]
-version = "1"
+version = "0.26"
 
 [dev-dependencies.x509-parser]
 version = "0.17"

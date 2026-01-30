@@ -47,6 +47,7 @@ s! {
 }
 
 s_no_extra_traits! {
+    #[allow(missing_debug_implementations)]
     pub struct max_align_t {
         priv_: f64,
     }

@@ -7,7 +7,6 @@ impl windows_core::RuntimeType for IInteractiveSessionStatics {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct IInteractiveSessionStatics_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub IsRemote: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
@@ -20,7 +19,8 @@ impl InteractiveSession {
             (windows_core::Interface::vtable(this).IsRemote)(windows_core::Interface::as_raw(this), &mut result__).map(|| result__)
         })
     }
-    fn IInteractiveSessionStatics<R, F: FnOnce(&IInteractiveSessionStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    #[doc(hidden)]
+    pub fn IInteractiveSessionStatics<R, F: FnOnce(&IInteractiveSessionStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<InteractiveSession, IInteractiveSessionStatics> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }

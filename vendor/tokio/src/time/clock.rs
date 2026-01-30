@@ -185,18 +185,8 @@ cfg_test_util! {
     ///
     /// # Panics
     ///
-    /// Panics if any of the following conditions are met:
-    ///
-    /// - The clock is not frozen, which means that you must
-    ///   call [`pause`] before calling this method.
-    /// - If called outside of the Tokio runtime.
-    /// - If the input `duration` is too large (such as [`Duration::MAX`])
-    ///   to be safely added to the current time without causing an overflow.
-    ///
-    /// # Caveats
-    ///
-    /// Using a very large `duration` is not recommended,
-    /// as it may cause panicking due to overflow.
+    /// Panics if time is not frozen or if called from outside of the Tokio
+    /// runtime.
     ///
     /// # Auto-advance
     ///
@@ -261,6 +251,7 @@ cfg_test_util! {
             let mut inner = self.inner.lock();
 
             if !inner.enable_pausing {
+                drop(inner); // avoid poisoning the lock
                 return Err("`time::pause()` requires the `current_thread` Tokio runtime. \
                         This is the default Runtime used by `#[tokio::test].");
             }

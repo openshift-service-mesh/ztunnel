@@ -470,6 +470,8 @@ impl HelpTemplate<'_, '_> {
         debug!("HelpTemplate::write_args {_category}");
         // The shortest an arg can legally be is 2 (i.e. '-x')
         let mut longest = 2;
+        let mut longest_without_short = 2;
+        let mut has_short = false;
         let mut ord_v = BTreeMap::new();
 
         // Determine the longest
@@ -479,6 +481,10 @@ impl HelpTemplate<'_, '_> {
             // args alignment
             should_show_arg(self.use_long, arg)
         }) {
+            if !has_short && arg.get_short().is_some() {
+                has_short = true;
+            }
+
             if longest_filter(arg) {
                 let width = display_width(&arg.to_string());
                 let actual_width = if arg.is_positional() {
@@ -487,6 +493,9 @@ impl HelpTemplate<'_, '_> {
                     width + SHORT_SIZE
                 };
                 longest = longest.max(actual_width);
+                if !has_short {
+                    longest_without_short = longest_without_short.max(width);
+                }
                 debug!(
                     "HelpTemplate::write_args: arg={:?} longest={}",
                     arg.get_id(),
@@ -498,6 +507,10 @@ impl HelpTemplate<'_, '_> {
             ord_v.insert(key, arg);
         }
 
+        if !has_short {
+            longest = longest_without_short;
+        }
+
         let next_line_help = self.will_args_wrap(args, longest);
 
         for (i, (_, arg)) in ord_v.iter().enumerate() {
@@ -507,20 +520,22 @@ impl HelpTemplate<'_, '_> {
                     self.writer.push_str("\n");
                 }
             }
-            self.write_arg(arg, next_line_help, longest);
+            self.write_arg(arg, next_line_help, longest, has_short);
         }
     }
 
     /// Writes help for an argument to the wrapped stream.
-    fn write_arg(&mut self, arg: &Arg, next_line_help: bool, longest: usize) {
+    fn write_arg(&mut self, arg: &Arg, next_line_help: bool, longest: usize, has_short: bool) {
         let spec_vals = &self.spec_vals(arg);
 
         self.writer.push_str(TAB);
-        self.short(arg);
+        if has_short {
+            self.short(arg);
+        }
         self.long(arg);
         self.writer
             .push_styled(&arg.stylize_arg_suffix(self.styles, None));
-        self.align_to_about(arg, next_line_help, longest);
+        self.align_to_about(arg, next_line_help, longest, has_short);
 
         let about = if self.use_long {
             arg.get_long_help()
@@ -563,7 +578,7 @@ impl HelpTemplate<'_, '_> {
     }
 
     /// Write alignment padding between arg's switches/values and its about message.
-    fn align_to_about(&mut self, arg: &Arg, next_line_help: bool, longest: usize) {
+    fn align_to_about(&mut self, arg: &Arg, next_line_help: bool, longest: usize, has_short: bool) {
         debug!(
             "HelpTemplate::align_to_about: arg={}, next_line_help={}, longest={}",
             arg.get_id(),
@@ -575,7 +590,10 @@ impl HelpTemplate<'_, '_> {
             debug!("HelpTemplate::align_to_about: printing long help so skip alignment");
             0
         } else if !arg.is_positional() {
-            let self_len = display_width(&arg.to_string()) + SHORT_SIZE;
+            let mut self_len = display_width(&arg.to_string());
+            if has_short {
+                self_len += SHORT_SIZE;
+            }
             // Since we're writing spaces from the tab point we first need to know if we
             // had a long and short, or just short
             let padding = if arg.get_long().is_some() {
@@ -635,19 +653,18 @@ impl HelpTemplate<'_, '_> {
         let trailing_indent = self.get_spaces(trailing_indent);
 
         let mut help = about.clone();
-        let mut help_is_empty = help.is_empty();
         help.replace_newline_var();
-
-        let next_line_specs = self.use_long && arg.is_some();
-        if !spec_vals.is_empty() && !next_line_specs {
-            if !help_is_empty {
-                let sep = " ";
+        if !spec_vals.is_empty() {
+            if !help.is_empty() {
+                let sep = if self.use_long && arg.is_some() {
+                    "\n\n"
+                } else {
+                    " "
+                };
                 help.push_str(sep);
             }
             help.push_str(spec_vals);
-            help_is_empty = help.is_empty();
         }
-
         let avail_chars = self.term_w.saturating_sub(spaces);
         debug!(
             "HelpTemplate::help: help_width={}, spaces={}, avail={}",
@@ -657,8 +674,8 @@ impl HelpTemplate<'_, '_> {
         );
         help.wrap(avail_chars);
         help.indent("", &trailing_indent);
+        let help_is_empty = help.is_empty();
         self.writer.push_styled(&help);
-
         if let Some(arg) = arg {
             if !arg.is_hide_possible_values_set() && self.use_long_pv(arg) {
                 const DASH_SPACE: usize = "- ".len();
@@ -708,19 +725,6 @@ impl HelpTemplate<'_, '_> {
                 }
             }
         }
-
-        if !spec_vals.is_empty() && next_line_specs {
-            let mut help = StyledStr::new();
-            if !help_is_empty {
-                let sep = "\n\n";
-                help.push_str(sep);
-            }
-            help.push_str(spec_vals);
-
-            help.wrap(avail_chars);
-            help.indent("", &trailing_indent);
-            self.writer.push_styled(&help);
-        }
     }
 
     /// Will use next line help on writing args.
@@ -753,10 +757,6 @@ impl HelpTemplate<'_, '_> {
 
     fn spec_vals(&self, a: &Arg) -> String {
         debug!("HelpTemplate::spec_vals: a={a}");
-        let ctx = &self.styles.get_context();
-        let ctx_val = &self.styles.get_context_value();
-        let val_sep = format!("{ctx}, {ctx:#}"); // context values styled separator
-
         let mut spec_vals = Vec::new();
         #[cfg(feature = "env")]
         if let Some(ref env) = a.env {
@@ -776,11 +776,7 @@ impl HelpTemplate<'_, '_> {
                 } else {
                     Default::default()
                 };
-                let env_info = format!(
-                    "{ctx}[env: {ctx:#}{ctx_val}{}{}{ctx_val:#}{ctx}]{ctx:#}",
-                    env.0.to_string_lossy(),
-                    env_val
-                );
+                let env_info = format!("[env: {}{}]", env.0.to_string_lossy(), env_val);
                 spec_vals.push(env_info);
             }
         }
@@ -790,49 +786,48 @@ impl HelpTemplate<'_, '_> {
                 a.default_vals
             );
 
-            let dvs = a
+            let pvs = a
                 .default_vals
                 .iter()
-                .map(|dv| dv.to_string_lossy())
-                .map(|dv| {
-                    if dv.contains(char::is_whitespace) {
-                        Cow::from(format!("{dv:?}"))
+                .map(|pvs| pvs.to_string_lossy())
+                .map(|pvs| {
+                    if pvs.contains(char::is_whitespace) {
+                        Cow::from(format!("{pvs:?}"))
                     } else {
-                        dv
+                        pvs
                     }
                 })
                 .collect::<Vec<_>>()
                 .join(" ");
 
-            spec_vals.push(format!(
-                "{ctx}[default: {ctx:#}{ctx_val}{dvs}{ctx_val:#}{ctx}]{ctx:#}"
-            ));
+            spec_vals.push(format!("[default: {pvs}]"));
         }
 
-        let mut als = Vec::new();
-
-        let short_als = a
-            .short_aliases
-            .iter()
-            .filter(|&als| als.1) // visible
-            .map(|als| format!("{ctx_val}-{}{ctx_val:#}", als.0)); // name
-        debug!(
-            "HelpTemplate::spec_vals: Found short aliases...{:?}",
-            a.short_aliases
-        );
-        als.extend(short_als);
-
-        let long_als = a
+        let als = a
             .aliases
             .iter()
             .filter(|&als| als.1) // visible
-            .map(|als| format!("{ctx_val}--{}{ctx_val:#}", als.0)); // name
-        debug!("HelpTemplate::spec_vals: Found aliases...{:?}", a.aliases);
-        als.extend(long_als);
-
+            .map(|als| als.0.as_str()) // name
+            .collect::<Vec<_>>()
+            .join(", ");
         if !als.is_empty() {
-            let als = als.join(&val_sep);
-            spec_vals.push(format!("{ctx}[aliases: {ctx:#}{als}{ctx}]{ctx:#}"));
+            debug!("HelpTemplate::spec_vals: Found aliases...{:?}", a.aliases);
+            spec_vals.push(format!("[aliases: {als}]"));
+        }
+
+        let als = a
+            .short_aliases
+            .iter()
+            .filter(|&als| als.1) // visible
+            .map(|&als| als.0.to_string()) // name
+            .collect::<Vec<_>>()
+            .join(", ");
+        if !als.is_empty() {
+            debug!(
+                "HelpTemplate::spec_vals: Found short aliases...{:?}",
+                a.short_aliases
+            );
+            spec_vals.push(format!("[short aliases: {als}]"));
         }
 
         if !a.is_hide_possible_values_set() && !self.use_long_pv(a) {
@@ -843,11 +838,10 @@ impl HelpTemplate<'_, '_> {
                 let pvs = possible_vals
                     .iter()
                     .filter_map(PossibleValue::get_visible_quoted_name)
-                    .map(|pv| format!("{ctx_val}{pv}{ctx_val:#}"))
                     .collect::<Vec<_>>()
-                    .join(&val_sep);
+                    .join(", ");
 
-                spec_vals.push(format!("{ctx}[possible values: {ctx:#}{pvs}{ctx}]{ctx:#}"));
+                spec_vals.push(format!("[possible values: {pvs}]"));
             }
         }
         let connector = if self.use_long { "\n" } else { " " };
@@ -1010,24 +1004,15 @@ impl HelpTemplate<'_, '_> {
 
     fn sc_spec_vals(&self, a: &Command) -> String {
         debug!("HelpTemplate::sc_spec_vals: a={}", a.get_name());
-        let ctx = &self.styles.get_context();
-        let ctx_val = &self.styles.get_context_value();
-        let val_sep = format!("{ctx}, {ctx:#}"); // context values styled separator
         let mut spec_vals = vec![];
 
         let mut short_als = a
             .get_visible_short_flag_aliases()
-            .map(|s| format!("{ctx_val}-{s}{ctx_val:#}"))
+            .map(|a| format!("-{a}"))
             .collect::<Vec<_>>();
-        let long_als = a
-            .get_visible_long_flag_aliases()
-            .map(|s| format!("{ctx_val}--{s}{ctx_val:#}"));
-        short_als.extend(long_als);
-        let als = a
-            .get_visible_aliases()
-            .map(|s| format!("{ctx_val}{s}{ctx_val:#}"));
+        let als = a.get_visible_aliases().map(|s| s.to_string());
         short_als.extend(als);
-        let all_als = short_als.join(&val_sep);
+        let all_als = short_als.join(", ");
         if !all_als.is_empty() {
             debug!(
                 "HelpTemplate::spec_vals: Found aliases...{:?}",
@@ -1037,11 +1022,7 @@ impl HelpTemplate<'_, '_> {
                 "HelpTemplate::spec_vals: Found short flag aliases...{:?}",
                 a.get_all_short_flag_aliases().collect::<Vec<_>>()
             );
-            debug!(
-                "HelpTemplate::spec_vals: Found long flag aliases...{:?}",
-                a.get_all_long_flag_aliases().collect::<Vec<_>>()
-            );
-            spec_vals.push(format!("{ctx}[aliases: {ctx:#}{all_als}{ctx}]{ctx:#}"));
+            spec_vals.push(format!("[aliases: {all_als}]"));
         }
 
         spec_vals.join(" ")

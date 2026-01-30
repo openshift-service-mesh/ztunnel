@@ -246,20 +246,9 @@ mod atomic_64_macros {
     cfg(any(
         all(
             target_arch = "aarch64",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
             any(not(portable_atomic_no_asm), portable_atomic_unstable_asm),
         ),
-        all(
-            target_arch = "arm64ec",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
-            not(portable_atomic_no_asm),
-        ),
+        all(target_arch = "arm64ec", not(portable_atomic_no_asm)),
         all(
             target_arch = "x86_64",
             not(all(
@@ -277,24 +266,13 @@ mod atomic_64_macros {
         ),
         all(
             target_arch = "powerpc64",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
             portable_atomic_unstable_asm_experimental_arch,
             any(
                 target_feature = "quadword-atomics",
                 portable_atomic_target_feature = "quadword-atomics",
             ),
         ),
-        all(
-            target_arch = "s390x",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
-            not(portable_atomic_no_asm),
-        ),
+        all(target_arch = "s390x", not(portable_atomic_no_asm)),
     ))
 )]
 #[cfg_attr(
@@ -335,20 +313,9 @@ mod atomic_128_macros {
     cfg(not(any(
         all(
             target_arch = "aarch64",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
             any(not(portable_atomic_no_asm), portable_atomic_unstable_asm),
         ),
-        all(
-            target_arch = "arm64ec",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
-            not(portable_atomic_no_asm),
-        ),
+        all(target_arch = "arm64ec", not(portable_atomic_no_asm)),
         all(
             target_arch = "x86_64",
             not(all(
@@ -366,24 +333,13 @@ mod atomic_128_macros {
         ),
         all(
             target_arch = "powerpc64",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
             portable_atomic_unstable_asm_experimental_arch,
             any(
                 target_feature = "quadword-atomics",
                 portable_atomic_target_feature = "quadword-atomics",
             ),
         ),
-        all(
-            target_arch = "s390x",
-            not(all(
-                any(miri, portable_atomic_sanitize_thread),
-                not(portable_atomic_atomic_intrinsics),
-            )),
-            not(portable_atomic_no_asm),
-        ),
+        all(target_arch = "s390x", not(portable_atomic_no_asm)),
     )))
 )]
 #[cfg_attr(

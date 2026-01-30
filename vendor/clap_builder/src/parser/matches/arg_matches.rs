@@ -308,6 +308,7 @@ impl ArgMatches {
     /// ```
     /// [`Iterator`]: std::iter::Iterator
     /// [`OsSt`]: std::ffi::OsStr
+    /// [values]: OsValues
     /// [`String`]: std::string::String
     #[cfg_attr(debug_assertions, track_caller)]
     pub fn get_raw(&self, id: &str) -> Option<RawValues<'_>> {
@@ -362,6 +363,7 @@ impl ArgMatches {
     /// ```
     /// [`Iterator`]: std::iter::Iterator
     /// [`OsStr`]: std::ffi::OsStr
+    /// [values]: OsValues
     /// [`String`]: std::string::String
     #[cfg_attr(debug_assertions, track_caller)]
     pub fn get_raw_occurrences(&self, id: &str) -> Option<RawOccurrences<'_>> {
@@ -851,6 +853,7 @@ impl ArgMatches {
     /// assert_eq!(m.indices_of("option").unwrap().collect::<Vec<_>>(), &[2]);
     /// ```
     /// [`ArgMatches::index_of`]: ArgMatches::index_of()
+    /// [delimiter]: Arg::value_delimiter()
     #[cfg_attr(debug_assertions, track_caller)]
     pub fn indices_of(&self, id: &str) -> Option<Indices<'_>> {
         let arg = some!(self.get_arg(id));
@@ -1222,18 +1225,6 @@ impl ArgMatches {
 
         let presence = self.args.contains_key(id);
         Ok(presence)
-    }
-
-    /// Clears the values for the given `id`
-    ///
-    /// Alternative to [`try_remove_*`][ArgMatches::try_remove_one] when the type is not known.
-    ///
-    /// Returns `Err([``MatchesError``])` if the given `id` isn't valid for current `ArgMatches` instance.
-    ///
-    /// Returns `Ok(true)` if there were any matches with the given `id`, `Ok(false)` otherwise.
-    pub fn try_clear_id(&mut self, id: &str) -> Result<bool, MatchesError> {
-        ok!(self.verify_arg(id));
-        Ok(self.args.remove_entry(id).is_some())
     }
 }
 
@@ -1616,6 +1607,58 @@ impl Default for RawValues<'_> {
 // repo: https://github.com/contain-rs/vec-map
 // commit: be5e1fa3c26e351761b33010ddbdaf5f05dbcc33
 // license: MIT - Copyright (c) 2015 The Rust Project Developers
+
+#[derive(Clone, Debug)]
+#[deprecated(since = "4.1.0", note = "Use Occurrences instead")]
+pub(crate) struct GroupedValues<'a> {
+    #[allow(clippy::type_complexity)]
+    iter: Map<Iter<'a, Vec<AnyValue>>, fn(&Vec<AnyValue>) -> Vec<&str>>,
+    len: usize,
+}
+
+#[allow(deprecated)]
+impl<'a> Iterator for GroupedValues<'a> {
+    type Item = Vec<&'a str>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(next) = self.iter.next() {
+            self.len -= 1;
+            Some(next)
+        } else {
+            None
+        }
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.len, Some(self.len))
+    }
+}
+
+#[allow(deprecated)]
+impl DoubleEndedIterator for GroupedValues<'_> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if let Some(next) = self.iter.next_back() {
+            self.len -= 1;
+            Some(next)
+        } else {
+            None
+        }
+    }
+}
+
+#[allow(deprecated)]
+impl ExactSizeIterator for GroupedValues<'_> {}
+
+/// Creates an empty iterator. Used for `unwrap_or_default()`.
+#[allow(deprecated)]
+impl Default for GroupedValues<'_> {
+    fn default() -> Self {
+        static EMPTY: [Vec<AnyValue>; 0] = [];
+        GroupedValues {
+            iter: EMPTY[..].iter().map(|_| unreachable!()),
+            len: 0,
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct Occurrences<T> {
@@ -2008,38 +2051,5 @@ mod tests {
         dbg!(&b_value);
         let b = b_index.into_iter().zip(b_value).rev().collect::<Vec<_>>();
         dbg!(b);
-    }
-
-    #[test]
-    fn delete_id_without_returning() {
-        let mut matches = crate::Command::new("myprog")
-            .arg(crate::Arg::new("a").short('a').action(ArgAction::Append))
-            .arg(crate::Arg::new("b").short('b').action(ArgAction::Append))
-            .arg(crate::Arg::new("c").short('c').action(ArgAction::Append))
-            .try_get_matches_from(vec!["myprog", "-b1", "-a1", "-b2"])
-            .unwrap();
-        let matches_ids_count = matches.ids().count();
-        assert_eq!(matches_ids_count, 2);
-
-        let _ = matches
-            .try_clear_id("d")
-            .expect_err("should fail due to there is no arg 'd'");
-
-        let c_was_presented = matches
-            .try_clear_id("c")
-            .expect("doesn't fail because there is no matches for 'c' argument");
-        assert!(!c_was_presented);
-        let matches_ids_count = matches.ids().count();
-        assert_eq!(matches_ids_count, 2);
-
-        let b_was_presented = matches.try_clear_id("b").unwrap();
-        assert!(b_was_presented);
-        let matches_ids_count = matches.ids().count();
-        assert_eq!(matches_ids_count, 1);
-
-        let a_was_presented = matches.try_clear_id("a").unwrap();
-        assert!(a_was_presented);
-        let matches_ids_count = matches.ids().count();
-        assert_eq!(matches_ids_count, 0);
     }
 }

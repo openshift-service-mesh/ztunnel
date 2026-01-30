@@ -113,6 +113,7 @@ static int do_pk8pkey(BIO *bp, const EVP_PKEY *x, int isder, int nid,
   }
   if (enc || (nid != -1)) {
     if (!pass) {
+      pass_len = 0;
       if (!cb) {
         cb = PEM_def_callback;
       }
@@ -160,6 +161,7 @@ EVP_PKEY *d2i_PKCS8PrivateKey_bio(BIO *bp, EVP_PKEY **x, pem_password_cb *cb,
     return NULL;
   }
 
+  pass_len = 0;
   if (!cb) {
     cb = PEM_def_callback;
   }

@@ -23,10 +23,8 @@ fn main() {}
 #[repr(transparent)]
 struct Foo<T>(T);
 
-const _: () = unsafe {
-    impl_or_verify!(T => TryFromBytes for Foo<T>);
-    impl_or_verify!(T => FromZeros for Foo<T>);
-    impl_or_verify!(T => FromBytes for Foo<T>);
-    impl_or_verify!(T => IntoBytes for Foo<T>);
-    impl_or_verify!(T => Unaligned for Foo<T>);
-};
+impl_or_verify!(T => TryFromBytes for Foo<T>);
+impl_or_verify!(T => FromZeros for Foo<T>);
+impl_or_verify!(T => FromBytes for Foo<T>);
+impl_or_verify!(T => IntoBytes for Foo<T>);
+impl_or_verify!(T => Unaligned for Foo<T>);

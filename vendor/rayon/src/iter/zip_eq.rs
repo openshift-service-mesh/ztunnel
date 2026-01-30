@@ -7,14 +7,19 @@ use super::*;
 /// This struct is created by the [`zip_eq`] method on [`IndexedParallelIterator`],
 /// see its documentation for more information.
 ///
-/// [`zip_eq`]: IndexedParallelIterator::zip_eq()
+/// [`zip_eq`]: trait.IndexedParallelIterator.html#method.zip_eq
+/// [`IndexedParallelIterator`]: trait.IndexedParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Debug, Clone)]
-pub struct ZipEq<A, B> {
+pub struct ZipEq<A: IndexedParallelIterator, B: IndexedParallelIterator> {
     zip: Zip<A, B>,
 }
 
-impl<A, B> ZipEq<A, B> {
+impl<A, B> ZipEq<A, B>
+where
+    A: IndexedParallelIterator,
+    B: IndexedParallelIterator,
+{
     /// Creates a new `ZipEq` iterator.
     pub(super) fn new(a: A, b: B) -> Self {
         ZipEq {

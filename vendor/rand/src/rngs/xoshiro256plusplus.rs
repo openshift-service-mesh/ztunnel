@@ -132,12 +132,10 @@ mod tests {
     }
 
     #[test]
-    fn stable_seed_from_u64_and_from_seed() {
+    fn stable_seed_from_u64() {
         // We don't guarantee value-stability for SmallRng but this
         // could influence keeping stability whenever possible (e.g. after optimizations).
         let mut rng = Xoshiro256PlusPlus::seed_from_u64(0);
-        // from_seed([0; 32]) should produce the same state as seed_from_u64(0).
-        let mut rng_from_seed_0 = Xoshiro256PlusPlus::from_seed([0; 32]);
         let expected = [
             5987356902031041503,
             7051070477665621255,
@@ -152,7 +150,6 @@ mod tests {
         ];
         for &e in &expected {
             assert_eq!(rng.next_u64(), e);
-            assert_eq!(rng_from_seed_0.next_u64(), e);
         }
     }
 }

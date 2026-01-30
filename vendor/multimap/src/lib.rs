@@ -254,15 +254,15 @@ where
     /// assert_eq!(map.contains_key(&1), true);
     /// assert_eq!(map.contains_key(&2), false);
     /// ```
-    pub fn contains_key<Q>(&self, k: &Q) -> bool
+    pub fn contains_key<Q: ?Sized>(&self, k: &Q) -> bool
     where
         K: Borrow<Q>,
-        Q: Eq + Hash + ?Sized,
+        Q: Eq + Hash,
     {
         self.inner.contains_key(k)
     }
 
-    /// Returns the number of unique keys in the map.
+    /// Returns the number of elements in the map.
     ///
     /// # Examples
     ///
@@ -272,7 +272,6 @@ where
     /// let mut map = MultiMap::new();
     /// map.insert(1, 42);
     /// map.insert(2, 1337);
-    /// map.insert(2, 31337);
     /// assert_eq!(map.len(), 2);
     /// ```
     pub fn len(&self) -> usize {
@@ -296,10 +295,10 @@ where
     /// assert_eq!(map.remove(&1), Some(vec![42, 1337]));
     /// assert_eq!(map.remove(&1), None);
     /// ```
-    pub fn remove<Q>(&mut self, k: &Q) -> Option<Vec<V>>
+    pub fn remove<Q: ?Sized>(&mut self, k: &Q) -> Option<Vec<V>>
     where
         K: Borrow<Q>,
-        Q: Eq + Hash + ?Sized,
+        Q: Eq + Hash,
     {
         self.inner.remove(k)
     }
@@ -320,12 +319,12 @@ where
     /// map.insert(1, 1337);
     /// assert_eq!(map.get(&1), Some(&42));
     /// ```
-    pub fn get<Q>(&self, k: &Q) -> Option<&V>
+    pub fn get<Q: ?Sized>(&self, k: &Q) -> Option<&V>
     where
         K: Borrow<Q>,
-        Q: Eq + Hash + ?Sized,
+        Q: Eq + Hash,
     {
-        self.inner.get(k)?.first()
+        self.inner.get(k)?.get(0)
     }
 
     /// Returns a mutable reference to the first item in the vector corresponding to
@@ -347,10 +346,10 @@ where
     /// }
     /// assert_eq!(map[&1], 99);
     /// ```
-    pub fn get_mut<Q>(&mut self, k: &Q) -> Option<&mut V>
+    pub fn get_mut<Q: ?Sized>(&mut self, k: &Q) -> Option<&mut V>
     where
         K: Borrow<Q>,
-        Q: Eq + Hash + ?Sized,
+        Q: Eq + Hash,
     {
         self.inner.get_mut(k)?.get_mut(0)
     }
@@ -370,10 +369,10 @@ where
     /// map.insert(1, 1337);
     /// assert_eq!(map.get_vec(&1), Some(&vec![42, 1337]));
     /// ```
-    pub fn get_vec<Q>(&self, k: &Q) -> Option<&Vec<V>>
+    pub fn get_vec<Q: ?Sized>(&self, k: &Q) -> Option<&Vec<V>>
     where
         K: Borrow<Q>,
-        Q: Eq + Hash + ?Sized,
+        Q: Eq + Hash,
     {
         self.inner.get(k)
     }
@@ -397,10 +396,10 @@ where
     /// }
     /// assert_eq!(map.get_vec(&1), Some(&vec![1991, 2332]));
     /// ```
-    pub fn get_vec_mut<Q>(&mut self, k: &Q) -> Option<&mut Vec<V>>
+    pub fn get_vec_mut<Q: ?Sized>(&mut self, k: &Q) -> Option<&mut Vec<V>>
     where
         K: Borrow<Q>,
-        Q: Eq + Hash + ?Sized,
+        Q: Eq + Hash,
     {
         self.inner.get_mut(k)
     }
@@ -424,10 +423,10 @@ where
     /// assert_eq!(map.is_vec(&2), false);  // key is single-valued
     /// assert_eq!(map.is_vec(&3), false);  // key not in map
     /// ```
-    pub fn is_vec<Q>(&self, k: &Q) -> bool
+    pub fn is_vec<Q: ?Sized>(&self, k: &Q) -> bool
     where
         K: Borrow<Q>,
-        Q: Eq + Hash + ?Sized,
+        Q: Eq + Hash,
     {
         match self.get_vec(k) {
             Some(val) => val.len() > 1,
@@ -504,15 +503,9 @@ where
         self.inner.keys()
     }
 
-    /// An iterator visiting pairs of each key and its first value in arbitrary order.
-    /// The iterator returns
+    /// An iterator visiting all key-value pairs in arbitrary order. The iterator returns
     /// a reference to the key and the first element in the corresponding key's vector.
     /// Iterator element type is (&'a K, &'a V).
-    ///
-    /// See [`flat_iter`](Self::flat_iter)
-    /// for visiting all key-value pairs,
-    /// or [`iter_all`](Self::iter_all)
-    /// for visiting each key and its vector of values.
     ///
     /// # Examples
     ///
@@ -535,15 +528,9 @@ where
         }
     }
 
-    /// A mutable iterator visiting pairs of each key and its first value
-    /// in arbitrary order. The iterator returns
+    /// An iterator visiting all key-value pairs in arbitrary order. The iterator returns
     /// a reference to the key and a mutable reference to the first element in the
     /// corresponding key's vector. Iterator element type is (&'a K, &'a mut V).
-    ///
-    /// See [`flat_iter_mut`](Self::flat_iter_mut)
-    /// for visiting all key-value pairs,
-    /// or [`iter_all_mut`](Self::iter_all_mut)
-    /// for visiting each key and its vector of values.
     ///
     /// # Examples
     ///
@@ -622,7 +609,9 @@ where
         self.inner.iter_mut()
     }
 
-    /// An iterator visiting all key-value pairs in arbitrary order.
+    /// An iterator visiting all key-value pairs in arbitrary order. The iterator returns
+    /// a reference to the key and the first element in the corresponding key's vector.
+    /// Iterator element type is (&'a K, &'a V).
     ///
     /// # Examples
     ///
@@ -635,16 +624,18 @@ where
     /// map.insert(3,2332);
     /// map.insert(4,1991);
     ///
-    /// let mut pairs: Vec<_> = map.flat_iter().collect();
-    /// pairs.sort();
-    /// assert_eq!(pairs, [(&1, &42), (&1, &1337), (&3, &2332), (&4, &1991)]);
+    /// for (key, value) in map.flat_iter() {
+    ///     println!("key: {:?}, val: {:?}", key, value);
+    /// }
     /// ```
     pub fn flat_iter(&self) -> impl Iterator<Item = (&K, &V)> {
         self.iter_all()
             .flat_map(|(k, v)| v.iter().map(move |i| (k, i)))
     }
 
-    /// A mutable iterator visiting all key-value pairs in arbitrary order.
+    /// An iterator visiting all key-value pairs in arbitrary order. The iterator returns
+    /// a reference to the key and the first element in the corresponding key's vector.
+    /// Iterator element type is (&'a K, &'a V).
     ///
     /// # Examples
     ///
@@ -658,12 +649,8 @@ where
     /// map.insert(4,1991);
     ///
     /// for (key, value) in map.flat_iter_mut() {
-    ///     *value *= key;
+    ///     println!("key: {:?}, val: {:?}", key, value);
     /// }
-    ///
-    /// let mut pairs: Vec<_> = map.flat_iter().collect();
-    /// pairs.sort();
-    /// assert_eq!(pairs, [(&1, &42), (&1, &1337), (&3, &6996), (&4, &7964)]);
     /// ```
     pub fn flat_iter_mut(&mut self) -> impl Iterator<Item = (&K, &mut V)> {
         self.iter_all_mut()
@@ -734,10 +721,10 @@ where
     }
 }
 
-impl<K, V, S, Q> Index<&Q> for MultiMap<K, V, S>
+impl<'a, K, V, S, Q: ?Sized> Index<&'a Q> for MultiMap<K, V, S>
 where
     K: Eq + Hash + Borrow<Q>,
-    Q: Eq + Hash + ?Sized,
+    Q: Eq + Hash,
     S: BuildHasher,
 {
     type Output = V;
@@ -774,7 +761,7 @@ where
         }
 
         self.iter_all()
-            .all(|(key, value)| other.get_vec(key).is_some_and(|v| *value == *v))
+            .all(|(key, value)| other.get_vec(key).map_or(false, |v| *value == *v))
     }
 }
 
@@ -949,7 +936,7 @@ impl<'a, K, V> Iterator for Iter<'a, K, V> {
     }
 }
 
-impl<K, V> ExactSizeIterator for Iter<'_, K, V> {
+impl<'a, K, V> ExactSizeIterator for Iter<'a, K, V> {
     fn len(&self) -> usize {
         self.inner.len()
     }
@@ -973,7 +960,7 @@ impl<'a, K, V> Iterator for IterMut<'a, K, V> {
     }
 }
 
-impl<K, V> ExactSizeIterator for IterMut<'_, K, V> {
+impl<'a, K, V> ExactSizeIterator for IterMut<'a, K, V> {
     fn len(&self) -> usize {
         self.inner.len()
     }
@@ -1303,7 +1290,7 @@ mod tests {
         m.insert(4, 42);
         m.insert(8, 42);
 
-        let keys = [1, 4, 8];
+        let keys = vec![1, 4, 8];
 
         for (key, value) in m.flat_iter() {
             assert!(keys.contains(key));
@@ -1324,7 +1311,7 @@ mod tests {
         m.insert(4, 42);
         m.insert(8, 42);
 
-        let keys = [1, 4, 8];
+        let keys = vec![1, 4, 8];
 
         for (key, value) in m.flat_iter_mut() {
             assert!(keys.contains(key));
@@ -1351,7 +1338,7 @@ mod tests {
         m.insert(4, 42);
         m.insert(8, 42);
 
-        let keys = [1, 4, 8];
+        let keys = vec![1, 4, 8];
 
         for (key, value) in &m {
             assert!(keys.contains(key));
@@ -1372,7 +1359,7 @@ mod tests {
         m.insert(4, 42);
         m.insert(8, 42);
 
-        let keys = [1, 4, 8];
+        let keys = vec![1, 4, 8];
 
         for (key, value) in &mut m {
             assert!(keys.contains(key));
@@ -1396,7 +1383,7 @@ mod tests {
         m.insert(4, 42);
         m.insert(8, 42);
 
-        let keys = [1, 4, 8];
+        let keys = vec![1, 4, 8];
 
         for (key, value) in m {
             assert!(keys.contains(&key));

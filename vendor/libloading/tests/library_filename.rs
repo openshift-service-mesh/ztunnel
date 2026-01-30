@@ -2,7 +2,7 @@ extern crate libloading;
 use libloading::library_filename;
 use std::path::Path;
 
-#[cfg(any(target_os = "windows", target_os = "cygwin"))]
+#[cfg(target_os = "windows")]
 const EXPECTED: &str = "audioengine.dll";
 #[cfg(target_os = "linux")]
 const EXPECTED: &str = "libaudioengine.so";

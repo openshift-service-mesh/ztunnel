@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.82"
+rust-version = "1.73"
 name = "symbolic-demangle"
-version = "12.16.2"
+version = "12.15.1"
 authors = [
     "Armin Ronacher <armin.ronacher@active-4.com>",
     "Jan Michael Auer <mail@jauer.org>",
@@ -66,7 +66,7 @@ version = "0.1.21"
 optional = true
 
 [dependencies.symbolic-common]
-version = "12.16.2"
+version = "12.15.1"
 
 [dev-dependencies.similar-asserts]
 version = "1.4.2"

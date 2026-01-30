@@ -1,9 +1,7 @@
-use super::mystd::ffi::OsStr;
+use super::mystd::borrow::ToOwned;
+use super::mystd::ffi::{CStr, OsStr};
 use super::mystd::os::unix::prelude::*;
-use super::{Library, LibrarySegment};
-use alloc::borrow::ToOwned;
-use alloc::vec::Vec;
-use core::ffi::CStr;
+use super::{Library, LibrarySegment, Vec};
 use core::mem;
 use object::NativeEndian;
 
@@ -26,7 +24,7 @@ struct LinkMap {
 const RTLD_SELF: *const libc::c_void = -3isize as *const libc::c_void;
 const RTLD_DI_LINKMAP: libc::c_int = 2;
 
-unsafe extern "C" {
+extern "C" {
     fn dlinfo(
         handle: *const libc::c_void,
         request: libc::c_int,

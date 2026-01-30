@@ -3,13 +3,12 @@ impl windows_core::RuntimeType for ISystemUpdateItem {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct ISystemUpdateItem_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub State: unsafe extern "system" fn(*mut core::ffi::c_void, *mut SystemUpdateItemState) -> windows_core::HRESULT,
-    pub Title: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub Description: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub Id: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub Title: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Description: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
+    pub Id: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
     pub Revision: unsafe extern "system" fn(*mut core::ffi::c_void, *mut u32) -> windows_core::HRESULT,
     pub DownloadProgress: unsafe extern "system" fn(*mut core::ffi::c_void, *mut f64) -> windows_core::HRESULT,
     pub InstallProgress: unsafe extern "system" fn(*mut core::ffi::c_void, *mut f64) -> windows_core::HRESULT,
@@ -20,7 +19,6 @@ impl windows_core::RuntimeType for ISystemUpdateLastErrorInfo {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct ISystemUpdateLastErrorInfo_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub State: unsafe extern "system" fn(*mut core::ffi::c_void, *mut SystemUpdateManagerState) -> windows_core::HRESULT,
@@ -32,13 +30,12 @@ impl windows_core::RuntimeType for ISystemUpdateManagerStatics {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_interface::<Self>();
 }
 #[repr(C)]
-#[doc(hidden)]
 pub struct ISystemUpdateManagerStatics_Vtbl {
     pub base__: windows_core::IInspectable_Vtbl,
     pub IsSupported: unsafe extern "system" fn(*mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
     pub State: unsafe extern "system" fn(*mut core::ffi::c_void, *mut SystemUpdateManagerState) -> windows_core::HRESULT,
-    pub StateChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
-    pub RemoveStateChanged: unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
+    pub StateChanged: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
+    pub RemoveStateChanged: unsafe extern "system" fn(*mut core::ffi::c_void, super::super::Foundation::EventRegistrationToken) -> windows_core::HRESULT,
     pub DownloadProgress: unsafe extern "system" fn(*mut core::ffi::c_void, *mut f64) -> windows_core::HRESULT,
     pub InstallProgress: unsafe extern "system" fn(*mut core::ffi::c_void, *mut f64) -> windows_core::HRESULT,
     pub UserActiveHoursStart: unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::super::Foundation::TimeSpan) -> windows_core::HRESULT,
@@ -48,36 +45,26 @@ pub struct ISystemUpdateManagerStatics_Vtbl {
     pub LastUpdateCheckTime: unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::super::Foundation::DateTime) -> windows_core::HRESULT,
     pub LastUpdateInstallTime: unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::super::Foundation::DateTime) -> windows_core::HRESULT,
     pub LastErrorInfo: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    #[cfg(feature = "Foundation_Collections")]
     pub GetAutomaticRebootBlockIds: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub BlockAutomaticRebootAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
-    pub UnblockAutomaticRebootAsync: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    #[cfg(not(feature = "Foundation_Collections"))]
+    GetAutomaticRebootBlockIds: usize,
+    pub BlockAutomaticRebootAsync: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub UnblockAutomaticRebootAsync: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
     pub ExtendedError: unsafe extern "system" fn(*mut core::ffi::c_void, *mut windows_core::HRESULT) -> windows_core::HRESULT,
+    #[cfg(feature = "Foundation_Collections")]
     pub GetUpdateItems: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    #[cfg(not(feature = "Foundation_Collections"))]
+    GetUpdateItems: usize,
     pub AttentionRequiredReason: unsafe extern "system" fn(*mut core::ffi::c_void, *mut SystemUpdateAttentionRequiredReason) -> windows_core::HRESULT,
-    pub SetFlightRing: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::ffi::c_void, *mut bool) -> windows_core::HRESULT,
-    pub GetFlightRing: unsafe extern "system" fn(*mut core::ffi::c_void, *mut *mut core::ffi::c_void) -> windows_core::HRESULT,
+    pub SetFlightRing: unsafe extern "system" fn(*mut core::ffi::c_void, core::mem::MaybeUninit<windows_core::HSTRING>, *mut bool) -> windows_core::HRESULT,
+    pub GetFlightRing: unsafe extern "system" fn(*mut core::ffi::c_void, *mut core::mem::MaybeUninit<windows_core::HSTRING>) -> windows_core::HRESULT,
     pub StartInstall: unsafe extern "system" fn(*mut core::ffi::c_void, SystemUpdateStartInstallAction) -> windows_core::HRESULT,
     pub RebootToCompleteInstall: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::HRESULT,
     pub StartCancelUpdates: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::HRESULT,
 }
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct SystemUpdateAttentionRequiredReason(pub i32);
-impl SystemUpdateAttentionRequiredReason {
-    pub const None: Self = Self(0i32);
-    pub const NetworkRequired: Self = Self(1i32);
-    pub const InsufficientDiskSpace: Self = Self(2i32);
-    pub const InsufficientBattery: Self = Self(3i32);
-    pub const UpdateBlocked: Self = Self(4i32);
-}
-impl windows_core::TypeKind for SystemUpdateAttentionRequiredReason {
-    type TypeKind = windows_core::CopyType;
-}
-impl windows_core::RuntimeType for SystemUpdateAttentionRequiredReason {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.System.Update.SystemUpdateAttentionRequiredReason;i4)");
-}
-#[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct SystemUpdateItem(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(SystemUpdateItem, windows_core::IUnknown, windows_core::IInspectable);
 impl SystemUpdateItem {
@@ -92,21 +79,21 @@ impl SystemUpdateItem {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Title)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).Title)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
     pub fn Description(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Description)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).Description)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
     pub fn Id(&self) -> windows_core::Result<windows_core::HSTRING> {
         let this = self;
         unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).Id)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).Id)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         }
     }
     pub fn Revision(&self) -> windows_core::Result<u32> {
@@ -142,7 +129,7 @@ impl windows_core::RuntimeType for SystemUpdateItem {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ISystemUpdateItem>();
 }
 unsafe impl windows_core::Interface for SystemUpdateItem {
-    type Vtable = <ISystemUpdateItem as windows_core::Interface>::Vtable;
+    type Vtable = ISystemUpdateItem_Vtbl;
     const IID: windows_core::GUID = <ISystemUpdateItem as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for SystemUpdateItem {
@@ -151,27 +138,7 @@ impl windows_core::RuntimeName for SystemUpdateItem {
 unsafe impl Send for SystemUpdateItem {}
 unsafe impl Sync for SystemUpdateItem {}
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct SystemUpdateItemState(pub i32);
-impl SystemUpdateItemState {
-    pub const NotStarted: Self = Self(0i32);
-    pub const Initializing: Self = Self(1i32);
-    pub const Preparing: Self = Self(2i32);
-    pub const Calculating: Self = Self(3i32);
-    pub const Downloading: Self = Self(4i32);
-    pub const Installing: Self = Self(5i32);
-    pub const Completed: Self = Self(6i32);
-    pub const RebootRequired: Self = Self(7i32);
-    pub const Error: Self = Self(8i32);
-}
-impl windows_core::TypeKind for SystemUpdateItemState {
-    type TypeKind = windows_core::CopyType;
-}
-impl windows_core::RuntimeType for SystemUpdateItemState {
-    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.System.Update.SystemUpdateItemState;i4)");
-}
-#[repr(transparent)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct SystemUpdateLastErrorInfo(windows_core::IUnknown);
 windows_core::imp::interface_hierarchy!(SystemUpdateLastErrorInfo, windows_core::IUnknown, windows_core::IInspectable);
 impl SystemUpdateLastErrorInfo {
@@ -201,7 +168,7 @@ impl windows_core::RuntimeType for SystemUpdateLastErrorInfo {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::for_class::<Self, ISystemUpdateLastErrorInfo>();
 }
 unsafe impl windows_core::Interface for SystemUpdateLastErrorInfo {
-    type Vtable = <ISystemUpdateLastErrorInfo as windows_core::Interface>::Vtable;
+    type Vtable = ISystemUpdateLastErrorInfo_Vtbl;
     const IID: windows_core::GUID = <ISystemUpdateLastErrorInfo as windows_core::Interface>::IID;
 }
 impl windows_core::RuntimeName for SystemUpdateLastErrorInfo {
@@ -223,7 +190,7 @@ impl SystemUpdateManager {
             (windows_core::Interface::vtable(this).State)(windows_core::Interface::as_raw(this), &mut result__).map(|| result__)
         })
     }
-    pub fn StateChanged<P0>(handler: P0) -> windows_core::Result<i64>
+    pub fn StateChanged<P0>(handler: P0) -> windows_core::Result<super::super::Foundation::EventRegistrationToken>
     where
         P0: windows_core::Param<super::super::Foundation::EventHandler<windows_core::IInspectable>>,
     {
@@ -232,7 +199,7 @@ impl SystemUpdateManager {
             (windows_core::Interface::vtable(this).StateChanged)(windows_core::Interface::as_raw(this), handler.param().abi(), &mut result__).map(|| result__)
         })
     }
-    pub fn RemoveStateChanged(token: i64) -> windows_core::Result<()> {
+    pub fn RemoveStateChanged(token: super::super::Foundation::EventRegistrationToken) -> windows_core::Result<()> {
         Self::ISystemUpdateManagerStatics(|this| unsafe { (windows_core::Interface::vtable(this).RemoveStateChanged)(windows_core::Interface::as_raw(this), token).ok() })
     }
     pub fn DownloadProgress() -> windows_core::Result<f64> {
@@ -289,19 +256,20 @@ impl SystemUpdateManager {
             (windows_core::Interface::vtable(this).LastErrorInfo)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    pub fn GetAutomaticRebootBlockIds() -> windows_core::Result<windows_collections::IVectorView<windows_core::HSTRING>> {
+    #[cfg(feature = "Foundation_Collections")]
+    pub fn GetAutomaticRebootBlockIds() -> windows_core::Result<super::super::Foundation::Collections::IVectorView<windows_core::HSTRING>> {
         Self::ISystemUpdateManagerStatics(|this| unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).GetAutomaticRebootBlockIds)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    pub fn BlockAutomaticRebootAsync(lockid: &windows_core::HSTRING) -> windows_core::Result<windows_future::IAsyncOperation<bool>> {
+    pub fn BlockAutomaticRebootAsync(lockid: &windows_core::HSTRING) -> windows_core::Result<super::super::Foundation::IAsyncOperation<bool>> {
         Self::ISystemUpdateManagerStatics(|this| unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).BlockAutomaticRebootAsync)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(lockid), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
-    pub fn UnblockAutomaticRebootAsync(lockid: &windows_core::HSTRING) -> windows_core::Result<windows_future::IAsyncOperation<bool>> {
+    pub fn UnblockAutomaticRebootAsync(lockid: &windows_core::HSTRING) -> windows_core::Result<super::super::Foundation::IAsyncOperation<bool>> {
         Self::ISystemUpdateManagerStatics(|this| unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).UnblockAutomaticRebootAsync)(windows_core::Interface::as_raw(this), core::mem::transmute_copy(lockid), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
@@ -313,7 +281,8 @@ impl SystemUpdateManager {
             (windows_core::Interface::vtable(this).ExtendedError)(windows_core::Interface::as_raw(this), &mut result__).map(|| result__)
         })
     }
-    pub fn GetUpdateItems() -> windows_core::Result<windows_collections::IVectorView<SystemUpdateItem>> {
+    #[cfg(feature = "Foundation_Collections")]
+    pub fn GetUpdateItems() -> windows_core::Result<super::super::Foundation::Collections::IVectorView<SystemUpdateItem>> {
         Self::ISystemUpdateManagerStatics(|this| unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(this).GetUpdateItems)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
@@ -334,7 +303,7 @@ impl SystemUpdateManager {
     pub fn GetFlightRing() -> windows_core::Result<windows_core::HSTRING> {
         Self::ISystemUpdateManagerStatics(|this| unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(this).GetFlightRing)(windows_core::Interface::as_raw(this), &mut result__).map(|| core::mem::transmute(result__))
+            (windows_core::Interface::vtable(this).GetFlightRing)(windows_core::Interface::as_raw(this), &mut result__).and_then(|| windows_core::Type::from_abi(result__))
         })
     }
     pub fn StartInstall(action: SystemUpdateStartInstallAction) -> windows_core::Result<()> {
@@ -346,7 +315,8 @@ impl SystemUpdateManager {
     pub fn StartCancelUpdates() -> windows_core::Result<()> {
         Self::ISystemUpdateManagerStatics(|this| unsafe { (windows_core::Interface::vtable(this).StartCancelUpdates)(windows_core::Interface::as_raw(this)).ok() })
     }
-    fn ISystemUpdateManagerStatics<R, F: FnOnce(&ISystemUpdateManagerStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
+    #[doc(hidden)]
+    pub fn ISystemUpdateManagerStatics<R, F: FnOnce(&ISystemUpdateManagerStatics) -> windows_core::Result<R>>(callback: F) -> windows_core::Result<R> {
         static SHARED: windows_core::imp::FactoryCache<SystemUpdateManager, ISystemUpdateManagerStatics> = windows_core::imp::FactoryCache::new();
         SHARED.call(callback)
     }
@@ -355,7 +325,53 @@ impl windows_core::RuntimeName for SystemUpdateManager {
     const NAME: &'static str = "Windows.System.Update.SystemUpdateManager";
 }
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct SystemUpdateAttentionRequiredReason(pub i32);
+impl SystemUpdateAttentionRequiredReason {
+    pub const None: Self = Self(0i32);
+    pub const NetworkRequired: Self = Self(1i32);
+    pub const InsufficientDiskSpace: Self = Self(2i32);
+    pub const InsufficientBattery: Self = Self(3i32);
+    pub const UpdateBlocked: Self = Self(4i32);
+}
+impl windows_core::TypeKind for SystemUpdateAttentionRequiredReason {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for SystemUpdateAttentionRequiredReason {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("SystemUpdateAttentionRequiredReason").field(&self.0).finish()
+    }
+}
+impl windows_core::RuntimeType for SystemUpdateAttentionRequiredReason {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.System.Update.SystemUpdateAttentionRequiredReason;i4)");
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct SystemUpdateItemState(pub i32);
+impl SystemUpdateItemState {
+    pub const NotStarted: Self = Self(0i32);
+    pub const Initializing: Self = Self(1i32);
+    pub const Preparing: Self = Self(2i32);
+    pub const Calculating: Self = Self(3i32);
+    pub const Downloading: Self = Self(4i32);
+    pub const Installing: Self = Self(5i32);
+    pub const Completed: Self = Self(6i32);
+    pub const RebootRequired: Self = Self(7i32);
+    pub const Error: Self = Self(8i32);
+}
+impl windows_core::TypeKind for SystemUpdateItemState {
+    type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for SystemUpdateItemState {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("SystemUpdateItemState").field(&self.0).finish()
+    }
+}
+impl windows_core::RuntimeType for SystemUpdateItemState {
+    const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.System.Update.SystemUpdateItemState;i4)");
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
 pub struct SystemUpdateManagerState(pub i32);
 impl SystemUpdateManagerState {
     pub const Idle: Self = Self(0i32);
@@ -374,11 +390,16 @@ impl SystemUpdateManagerState {
 impl windows_core::TypeKind for SystemUpdateManagerState {
     type TypeKind = windows_core::CopyType;
 }
+impl core::fmt::Debug for SystemUpdateManagerState {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("SystemUpdateManagerState").field(&self.0).finish()
+    }
+}
 impl windows_core::RuntimeType for SystemUpdateManagerState {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.System.Update.SystemUpdateManagerState;i4)");
 }
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
 pub struct SystemUpdateStartInstallAction(pub i32);
 impl SystemUpdateStartInstallAction {
     pub const UpToReboot: Self = Self(0i32);
@@ -386,6 +407,11 @@ impl SystemUpdateStartInstallAction {
 }
 impl windows_core::TypeKind for SystemUpdateStartInstallAction {
     type TypeKind = windows_core::CopyType;
+}
+impl core::fmt::Debug for SystemUpdateStartInstallAction {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("SystemUpdateStartInstallAction").field(&self.0).finish()
+    }
 }
 impl windows_core::RuntimeType for SystemUpdateStartInstallAction {
     const SIGNATURE: windows_core::imp::ConstBuffer = windows_core::imp::ConstBuffer::from_slice(b"enum(Windows.System.Update.SystemUpdateStartInstallAction;i4)");

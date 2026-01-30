@@ -4,15 +4,19 @@ use super::*;
 /// `MinLen` is an iterator that imposes a minimum length on iterator splits.
 /// This struct is created by the [`with_min_len()`] method on [`IndexedParallelIterator`]
 ///
-/// [`with_min_len()`]: IndexedParallelIterator::with_min_len()
+/// [`with_min_len()`]: trait.IndexedParallelIterator.html#method.with_min_len
+/// [`IndexedParallelIterator`]: trait.IndexedParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Debug, Clone)]
-pub struct MinLen<I> {
+pub struct MinLen<I: IndexedParallelIterator> {
     base: I,
     min: usize,
 }
 
-impl<I> MinLen<I> {
+impl<I> MinLen<I>
+where
+    I: IndexedParallelIterator,
+{
     /// Creates a new `MinLen` iterator.
     pub(super) fn new(base: I, min: usize) -> Self {
         MinLen { base, min }
@@ -82,8 +86,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// `MinLenProducer` implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// `MinLenProducer` implementation
 
 struct MinLenProducer<P> {
     base: P,
@@ -134,15 +138,19 @@ where
 /// `MaxLen` is an iterator that imposes a maximum length on iterator splits.
 /// This struct is created by the [`with_max_len()`] method on [`IndexedParallelIterator`]
 ///
-/// [`with_max_len()`]: IndexedParallelIterator::with_max_len()
+/// [`with_max_len()`]: trait.IndexedParallelIterator.html#method.with_max_len
+/// [`IndexedParallelIterator`]: trait.IndexedParallelIterator.html
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Debug, Clone)]
-pub struct MaxLen<I> {
+pub struct MaxLen<I: IndexedParallelIterator> {
     base: I,
     max: usize,
 }
 
-impl<I> MaxLen<I> {
+impl<I> MaxLen<I>
+where
+    I: IndexedParallelIterator,
+{
     /// Creates a new `MaxLen` iterator.
     pub(super) fn new(base: I, max: usize) -> Self {
         MaxLen { base, max }
@@ -212,8 +220,8 @@ where
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// `MaxLenProducer` implementation
+/// ////////////////////////////////////////////////////////////////////////
+/// `MaxLenProducer` implementation
 
 struct MaxLenProducer<P> {
     base: P,

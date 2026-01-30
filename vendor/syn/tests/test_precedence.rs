@@ -28,8 +28,7 @@
     clippy::match_wildcard_for_single_variants,
     clippy::needless_lifetimes,
     clippy::too_many_lines,
-    clippy::uninlined_format_args,
-    clippy::unnecessary_box_returns
+    clippy::uninlined_format_args
 )]
 
 extern crate rustc_ast;
@@ -44,10 +43,10 @@ use crate::common::eq::SpanlessEq;
 use crate::common::parse;
 use quote::ToTokens;
 use rustc_ast::ast;
+use rustc_ast::ptr::P;
 use rustc_ast_pretty::pprust;
 use rustc_span::edition::Edition;
 use std::fs;
-use std::mem;
 use std::path::Path;
 use std::process;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -197,17 +196,17 @@ fn test_expressions(path: &Path, edition: Edition, exprs: Vec<syn::Expr>) -> (us
     (passed, failed)
 }
 
-fn librustc_parse_and_rewrite(input: &str) -> Option<Box<ast::Expr>> {
+fn librustc_parse_and_rewrite(input: &str) -> Option<P<ast::Expr>> {
     parse::librustc_expr(input).map(librustc_parenthesize)
 }
 
-fn librustc_parenthesize(mut librustc_expr: Box<ast::Expr>) -> Box<ast::Expr> {
+fn librustc_parenthesize(mut librustc_expr: P<ast::Expr>) -> P<ast::Expr> {
     use rustc_ast::ast::{
         AssocItem, AssocItemKind, Attribute, BinOpKind, Block, BoundConstness, Expr, ExprField,
         ExprKind, GenericArg, GenericBound, Local, LocalKind, Pat, PolyTraitRef, Stmt, StmtKind,
         StructExpr, StructRest, TraitBoundModifiers, Ty,
     };
-    use rustc_ast::mut_visit::{walk_flat_map_assoc_item, MutVisitor};
+    use rustc_ast::mut_visit::{visit_clobber, walk_flat_map_assoc_item, MutVisitor};
     use rustc_ast::visit::{AssocCtxt, BoundKind};
     use rustc_data_structures::flat_map_in_place::FlatMapInPlace;
     use rustc_span::DUMMY_SP;
@@ -264,9 +263,7 @@ fn librustc_parenthesize(mut librustc_expr: Box<ast::Expr>) -> Box<ast::Expr> {
                     fields,
                     rest,
                 } = expr.deref_mut();
-                if let Some(qself) = qself {
-                    vis.visit_qself(qself);
-                }
+                vis.visit_qself(qself);
                 vis.visit_path(path);
                 fields.flat_map_in_place(|field| flat_map_field(field, vis));
                 if let StructRest::Base(rest) = rest {
@@ -278,21 +275,18 @@ fn librustc_parenthesize(mut librustc_expr: Box<ast::Expr>) -> Box<ast::Expr> {
     }
 
     impl MutVisitor for FullyParenthesize {
-        fn visit_expr(&mut self, e: &mut Expr) {
+        fn visit_expr(&mut self, e: &mut P<Expr>) {
             noop_visit_expr(e, self);
             match e.kind {
                 ExprKind::Block(..) | ExprKind::If(..) | ExprKind::Let(..) => {}
                 ExprKind::Binary(..) if contains_let_chain(e) => {}
-                _ => {
-                    let inner = mem::replace(e, Expr::dummy());
-                    *e = Expr {
-                        id: ast::DUMMY_NODE_ID,
-                        kind: ExprKind::Paren(Box::new(inner)),
-                        span: DUMMY_SP,
-                        attrs: ThinVec::new(),
-                        tokens: None,
-                    };
-                }
+                _ => visit_clobber(&mut **e, |inner| Expr {
+                    id: ast::DUMMY_NODE_ID,
+                    kind: ExprKind::Paren(P(inner)),
+                    span: DUMMY_SP,
+                    attrs: ThinVec::new(),
+                    tokens: None,
+                }),
             }
         }
 
@@ -325,7 +319,7 @@ fn librustc_parenthesize(mut librustc_expr: Box<ast::Expr>) -> Box<ast::Expr> {
             }
         }
 
-        fn visit_block(&mut self, block: &mut Block) {
+        fn visit_block(&mut self, block: &mut P<Block>) {
             self.visit_id(&mut block.id);
             block
                 .stmts
@@ -333,7 +327,7 @@ fn librustc_parenthesize(mut librustc_expr: Box<ast::Expr>) -> Box<ast::Expr> {
             self.visit_span(&mut block.span);
         }
 
-        fn visit_local(&mut self, local: &mut Local) {
+        fn visit_local(&mut self, local: &mut P<Local>) {
             match &mut local.kind {
                 LocalKind::Decl => {}
                 LocalKind::Init(init) => {
@@ -348,9 +342,9 @@ fn librustc_parenthesize(mut librustc_expr: Box<ast::Expr>) -> Box<ast::Expr> {
 
         fn flat_map_assoc_item(
             &mut self,
-            item: Box<AssocItem>,
+            item: P<AssocItem>,
             ctxt: AssocCtxt,
-        ) -> SmallVec<[Box<AssocItem>; 1]> {
+        ) -> SmallVec<[P<AssocItem>; 1]> {
             match &item.kind {
                 AssocItemKind::Const(const_item)
                     if !const_item.generics.params.is_empty()
@@ -365,11 +359,11 @@ fn librustc_parenthesize(mut librustc_expr: Box<ast::Expr>) -> Box<ast::Expr> {
         // We don't want to look at expressions that might appear in patterns or
         // types yet. We'll look into comparing those in the future. For now
         // focus on expressions appearing in other places.
-        fn visit_pat(&mut self, pat: &mut Pat) {
+        fn visit_pat(&mut self, pat: &mut P<Pat>) {
             let _ = pat;
         }
 
-        fn visit_ty(&mut self, ty: &mut Ty) {
+        fn visit_ty(&mut self, ty: &mut P<Ty>) {
             let _ = ty;
         }
 

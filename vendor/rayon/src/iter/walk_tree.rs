@@ -13,7 +13,8 @@ impl<S, B, I> UnindexedProducer for WalkTreePrefixProducer<'_, S, B>
 where
     S: Send,
     B: Fn(&S) -> I + Send + Sync,
-    I: IntoIterator<Item = S, IntoIter: DoubleEndedIterator>,
+    I: IntoIterator<Item = S>,
+    I::IntoIter: DoubleEndedIterator,
 {
     type Item = S;
 
@@ -82,7 +83,8 @@ impl<S, B, I> ParallelIterator for WalkTreePrefix<S, B>
 where
     S: Send,
     B: Fn(&S) -> I + Send + Sync,
-    I: IntoIterator<Item = S, IntoIter: DoubleEndedIterator>,
+    I: IntoIterator<Item = S>,
+    I::IntoIter: DoubleEndedIterator,
 {
     type Item = S;
 
@@ -205,7 +207,8 @@ pub fn walk_tree_prefix<S, B, I>(root: S, children_of: B) -> WalkTreePrefix<S, B
 where
     S: Send,
     B: Fn(&S) -> I + Send + Sync,
-    I: IntoIterator<Item = S, IntoIter: DoubleEndedIterator>,
+    I: IntoIterator<Item = S>,
+    I::IntoIter: DoubleEndedIterator,
 {
     WalkTreePrefix {
         initial_state: root,
@@ -498,7 +501,8 @@ pub fn walk_tree<S, B, I>(root: S, children_of: B) -> WalkTree<S, B>
 where
     S: Send,
     B: Fn(&S) -> I + Send + Sync,
-    I: IntoIterator<Item = S, IntoIter: DoubleEndedIterator>,
+    I: IntoIterator<Item = S>,
+    I::IntoIter: DoubleEndedIterator,
 {
     let walker = WalkTreePostfix {
         initial_state: root,
@@ -511,7 +515,8 @@ impl<S, B, I> ParallelIterator for WalkTree<S, B>
 where
     S: Send,
     B: Fn(&S) -> I + Send + Sync,
-    I: IntoIterator<Item = S, IntoIter: DoubleEndedIterator> + Send,
+    I: IntoIterator<Item = S> + Send,
+    I::IntoIter: DoubleEndedIterator,
 {
     type Item = S;
 
