@@ -19,6 +19,10 @@ use crate::PQC_ENABLED;
 use crate::TLS12_ENABLED;
 use crate::identity::{self, Identity};
 
+#[cfg(feature = "tls-openssl")]
+use once_cell::sync::Lazy;
+#[cfg(feature = "tls-openssl")]
+use std::env;
 use std::fmt::Debug;
 
 use std::sync::Arc;
@@ -28,6 +32,46 @@ use rustls::crypto::CryptoProvider;
 
 use rustls::ClientConfig;
 use rustls::ServerConfig;
+
+// Comma-separated cipher suite names. Empty or unset = use defaults.
+#[cfg(feature = "tls-openssl")]
+static MESH_CIPHER_SUITES: Lazy<Option<Vec<rustls::SupportedCipherSuite>>> = Lazy::new(|| {
+    use rustls_openssl::cipher_suite as cs;
+    let names: Vec<String> = match env::var("MESH_CIPHER_SUITES").ok() {
+        Some(s) => s.split(',').map(|v| v.trim().to_string()).filter(|v| !v.is_empty()).collect(),
+        None => {
+            tracing::info!("MESH_CIPHER_SUITES not set, using defaults");
+            return None;
+        }
+    };
+    if names.is_empty() {
+        tracing::info!("MESH_CIPHER_SUITES not set, using defaults");
+        return None;
+    }
+    let mut suites = Vec::new();
+    let mut applied = Vec::new();
+    for name in &names {
+        match name.as_str() {
+            "TLS_AES_256_GCM_SHA384" => { suites.push(cs::TLS13_AES_256_GCM_SHA384); applied.push(name.as_str()); }
+            "TLS_AES_128_GCM_SHA256" => { suites.push(cs::TLS13_AES_128_GCM_SHA256); applied.push(name.as_str()); }
+            "TLS_CHACHA20_POLY1305_SHA256" => { suites.push(cs::TLS13_CHACHA20_POLY1305_SHA256); applied.push(name.as_str()); }
+            "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384" => { suites.push(cs::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384); applied.push(name.as_str()); }
+            "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256" => { suites.push(cs::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256); applied.push(name.as_str()); }
+            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384" => { suites.push(cs::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384); applied.push(name.as_str()); }
+            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" => { suites.push(cs::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); applied.push(name.as_str()); }
+            "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256" => { suites.push(cs::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256); applied.push(name.as_str()); }
+            "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256" => { suites.push(cs::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256); applied.push(name.as_str()); }
+            unknown => tracing::warn!("MESH_CIPHER_SUITES: unknown cipher suite '{unknown}', ignoring"),
+        }
+    }
+    if suites.is_empty() {
+        tracing::warn!("MESH_CIPHER_SUITES: all values unrecognized, falling back to defaults");
+        None
+    } else {
+        tracing::info!("MESH_CIPHER_SUITES: applied {applied:?}");
+        Some(suites)
+    }
+});
 
 #[async_trait::async_trait]
 pub trait ControlPlaneClientCertProvider: Send + Sync {
@@ -123,19 +167,23 @@ pub(super) fn provider() -> Arc<CryptoProvider> {
 
 #[cfg(feature = "tls-openssl")]
 pub(super) fn provider() -> Arc<CryptoProvider> {
-    let mut cipher_suites = vec![
-        rustls_openssl::cipher_suite::TLS13_AES_256_GCM_SHA384,
-        rustls_openssl::cipher_suite::TLS13_AES_128_GCM_SHA256,
-    ];
-    if *TLS12_ENABLED {
-        // Add TLS 1.2 FIPS-compatible cipher suites
-        cipher_suites.extend([
-            rustls_openssl::cipher_suite::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-            rustls_openssl::cipher_suite::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-            rustls_openssl::cipher_suite::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-            rustls_openssl::cipher_suite::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-        ]);
-    }
+    let cipher_suites = if let Some(suites) = MESH_CIPHER_SUITES.as_ref() {
+        suites.clone()
+    } else {
+        let mut suites = vec![
+            rustls_openssl::cipher_suite::TLS13_AES_256_GCM_SHA384,
+            rustls_openssl::cipher_suite::TLS13_AES_128_GCM_SHA256,
+        ];
+        if *TLS12_ENABLED {
+            suites.extend([
+                rustls_openssl::cipher_suite::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+                rustls_openssl::cipher_suite::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+                rustls_openssl::cipher_suite::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+                rustls_openssl::cipher_suite::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+            ]);
+        }
+        suites
+    };
 
     let kx_groups: Vec<&'static dyn rustls::crypto::SupportedKxGroup> = if *PQC_ENABLED {
         // To use PQC with OpenSSL provider the binary needs to be
