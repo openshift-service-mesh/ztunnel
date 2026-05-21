@@ -55,12 +55,6 @@ static MESH_CIPHER_SUITES: Lazy<Option<Vec<rustls::SupportedCipherSuite>>> = Laz
             "TLS_AES_256_GCM_SHA384" => { suites.push(cs::TLS13_AES_256_GCM_SHA384); applied.push(name.as_str()); }
             "TLS_AES_128_GCM_SHA256" => { suites.push(cs::TLS13_AES_128_GCM_SHA256); applied.push(name.as_str()); }
             "TLS_CHACHA20_POLY1305_SHA256" => { suites.push(cs::TLS13_CHACHA20_POLY1305_SHA256); applied.push(name.as_str()); }
-            "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384" => { suites.push(cs::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384); applied.push(name.as_str()); }
-            "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256" => { suites.push(cs::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256); applied.push(name.as_str()); }
-            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384" => { suites.push(cs::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384); applied.push(name.as_str()); }
-            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" => { suites.push(cs::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); applied.push(name.as_str()); }
-            "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256" => { suites.push(cs::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256); applied.push(name.as_str()); }
-            "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256" => { suites.push(cs::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256); applied.push(name.as_str()); }
             unknown => tracing::warn!("MESH_CIPHER_SUITES: unknown cipher suite '{unknown}', ignoring"),
         }
     }
