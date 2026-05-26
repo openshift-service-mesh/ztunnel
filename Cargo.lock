@@ -266,7 +266,7 @@ dependencies = [
  "bitflags 2.9.1",
  "cexpr",
  "clang-sys",
- "itertools 0.10.5",
+ "itertools 0.12.1",
  "lazy_static",
  "lazycell",
  "log",
@@ -1836,7 +1836,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.53.3",
 ]
 
 [[package]]
@@ -3093,8 +3093,9 @@ dependencies = [
 
 [[package]]
 name = "rustls-openssl"
-version = "0.3.0"
-source = "git+https://github.com/tofay/rustls-openssl?rev=a21035c#a21035c0ff42c78cfbce4ba15f8c1e0dd3c09660"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bce63aeefbba181bc32fe7519a3d7edcdfa9fc2aa1f5e7f152493a25275ec14a"
 dependencies = [
  "foreign-types 0.3.2",
  "once_cell",
