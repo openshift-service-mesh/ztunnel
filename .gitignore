@@ -2,3 +2,7 @@ out/
 var/
 .idea/
 .vscode/
+docs/agents/.claims.yml
+docs/agents/STATUS.md
+.scribe/
+.claude/
