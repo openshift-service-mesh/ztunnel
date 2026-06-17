@@ -261,9 +261,7 @@ dependencies = [
  "bitflags 2.10.0",
  "cexpr",
  "clang-sys",
- "itertools 0.10.5",
- "lazy_static",
- "lazycell",
+ "itertools 0.12.1",
  "log",
  "prettyplease",
  "proc-macro2",
@@ -1795,15 +1793,6 @@ dependencies = [
 
 [[package]]
 name = "itertools"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
-dependencies = [
- "either",
-]
-
-[[package]]
-name = "itertools"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285"
@@ -1957,7 +1946,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d7c4b02199fee7c5d21a5ae7d8cfa79a6ef5bb2fc834d6e9058e89c825efdc55"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-link",
 ]
 
 [[package]]
@@ -3195,9 +3184,8 @@ dependencies = [
 
 [[package]]
 name = "rustls-openssl"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bce63aeefbba181bc32fe7519a3d7edcdfa9fc2aa1f5e7f152493a25275ec14a"
+version = "0.3.0"
+source = "git+https://github.com/tofay/rustls-openssl?rev=a21035c#a21035c0ff42c78cfbce4ba15f8c1e0dd3c09660"
 dependencies = [
  "foreign-types 0.3.2",
  "once_cell",
