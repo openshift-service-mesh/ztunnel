@@ -39,11 +39,12 @@ MERGE_BRANCH=${MERGE_BRANCH:-"main"}
 merge() {
   git checkout -b"$MERGE_BRANCH"-downstream
   git remote add -f -t "$MERGE_BRANCH" upstream "$MERGE_REPOSITORY"
+  git fetch upstream --tags
   echo "Using branch $MERGE_BRANCH"
 
   set +e # git returns a non-zero exit code on merge failure, which fails the script
   if [ "${MERGE_STRATEGY}" == "merge" ]; then
-    git -c "user.name=$GIT_USERNAME" -c "user.email=$GIT_EMAIL" merge --no-ff -m "$GIT_COMMIT_MESSAGE" --log upstream/"$MERGE_BRANCH" --strategy-option theirs
+    git -c "user.name=$GIT_USERNAME" -c "user.email=$GIT_EMAIL" merge --no-ff -m "$GIT_COMMIT_MESSAGE" --log upstream/"$MERGE_BRANCH"
   else
     git -c "user.name=$GIT_USERNAME" -c "user.email=$GIT_EMAIL" rebase upstream/"$MERGE_BRANCH"
   fi
@@ -53,7 +54,12 @@ merge() {
 }
 
 merge
-[[ $? -ne 0 ]] && echo "Merge failed." >&2 && exit 1
+if [[ $? -ne 0 ]]; then
+  echo "Merge failed." >&2
+  git checkout "$MERGE_BRANCH"
+  git branch -D "$MERGE_BRANCH"-downstream
+  exit 1
+fi
 
 cargo vendor
 if [ -n "$(git status --porcelain)" ]; then
