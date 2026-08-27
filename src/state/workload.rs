@@ -21,6 +21,7 @@ use crate::xds::istio::workload::{Port, PortList};
 use crate::{strng, xds};
 use bytes::Bytes;
 use ipnet::IpNet;
+use itertools::{Either, Itertools};
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
@@ -320,6 +321,83 @@ impl Workload {
             region: (!self.locality.region.is_empty()).then_some(self.locality.region.clone()),
             zone: (!self.locality.zone.is_empty()).then_some(self.locality.zone.clone()),
         }
+    }
+}
+
+/// Represents the reason a workload was matched during headless pod DNS lookup.
+/// Used with fold_while to implement priority-based workload selection
+/// with short-circuit on best match (client namespace).
+///
+/// Priority order (lower is better): NamespaceAndCluster > Namespace > Cluster > First
+#[derive(Debug)]
+pub enum HeadlessServiceMatch {
+    NamespaceAndCluster(Arc<Workload>),
+    Namespace(Arc<Workload>),
+    Cluster(Arc<Workload>),
+    First(Arc<Workload>),
+    None,
+}
+
+impl From<HeadlessServiceMatch> for Option<Arc<Workload>> {
+    fn from(value: HeadlessServiceMatch) -> Option<Arc<Workload>> {
+        match value {
+            HeadlessServiceMatch::NamespaceAndCluster(w)
+            | HeadlessServiceMatch::Namespace(w)
+            | HeadlessServiceMatch::Cluster(w)
+            | HeadlessServiceMatch::First(w) => Some(w),
+            HeadlessServiceMatch::None => None,
+        }
+    }
+}
+
+impl HeadlessServiceMatch {
+    /// Finds the best matching workload from an iterator using fold_while.
+    /// Short-circuits on NamespaceAndCluster match - the best possible result.
+    pub fn find_best_match(
+        mut workloads: impl Iterator<Item = Arc<Workload>>,
+        client_ns: &Strng,
+        client_cluster_id: &Strng,
+    ) -> Option<Arc<Workload>> {
+        workloads
+            .fold_while(HeadlessServiceMatch::None, |r, w| {
+                let ns_match = &w.namespace == client_ns;
+                let cluster_match = &w.cluster_id == client_cluster_id;
+
+                if ns_match && cluster_match {
+                    itertools::FoldWhile::Done(HeadlessServiceMatch::NamespaceAndCluster(w))
+                } else if cluster_match {
+                    match r {
+                        HeadlessServiceMatch::None | HeadlessServiceMatch::First(_) => {
+                            itertools::FoldWhile::Continue(HeadlessServiceMatch::Cluster(w))
+                        }
+                        HeadlessServiceMatch::Namespace(_) => {
+                            // Old match must be from a different cluster due to the
+                            // order of the match guards. Prefer pods from local cluster.
+                            itertools::FoldWhile::Continue(HeadlessServiceMatch::Cluster(w))
+                        }
+                        HeadlessServiceMatch::Cluster(_) => itertools::FoldWhile::Continue(r),
+                        HeadlessServiceMatch::NamespaceAndCluster(_) => unreachable!(),
+                    }
+                } else if ns_match {
+                    match r {
+                        HeadlessServiceMatch::None | HeadlessServiceMatch::First(_) => {
+                            itertools::FoldWhile::Continue(HeadlessServiceMatch::Namespace(w))
+                        }
+                        HeadlessServiceMatch::Namespace(_) => itertools::FoldWhile::Continue(r),
+                        HeadlessServiceMatch::Cluster(_)
+                        | HeadlessServiceMatch::NamespaceAndCluster(_) => unreachable!(),
+                    }
+                } else {
+                    match r {
+                        HeadlessServiceMatch::None => {
+                            itertools::FoldWhile::Continue(HeadlessServiceMatch::First(w))
+                        }
+                        _ => itertools::FoldWhile::Continue(r),
+                    }
+                }
+            })
+            .into_inner()
+            .into()
     }
 }
 
@@ -737,6 +815,86 @@ pub struct WorkloadStore {
     pub(super) by_uid: HashMap<Strng, Arc<Workload>>,
     // Identity->Set of UIDs. Only stores local nodes
     node_local_by_identity: HashMap<WorkloadIdentity, HashSet<Strng>>,
+    /// by_name maps workload names to workload UIDs.
+    by_name: HashMap<Strng, WorkloadByName>,
+}
+
+#[derive(Debug, Default)]
+/// WorkloadByAddr is a small wrapper around a single or multiple Workloads
+/// We split these as in the vast majority of cases there is only a single one, so we save HashSet allocation.
+enum WorkloadByName {
+    #[default]
+    None,
+    Single(Strng),
+    Many(HashSet<Strng>),
+}
+
+impl WorkloadByName {
+    // Inserts uid into the set, converting from None -> Single or Single -> Many if it's
+    // not already present.
+    fn insert(&mut self, uid: Strng) {
+        match std::mem::take(self) {
+            WorkloadByName::None => {
+                *self = WorkloadByName::Single(uid);
+            }
+            WorkloadByName::Single(existing) => {
+                if *existing == uid {
+                    *self = WorkloadByName::Single(existing);
+                    return;
+                }
+                let mut uids = HashSet::new();
+                uids.insert(existing);
+                uids.insert(uid);
+                *self = WorkloadByName::Many(uids)
+            }
+            WorkloadByName::Many(mut uids) => {
+                uids.insert(uid);
+                *self = WorkloadByName::Many(uids)
+            }
+        }
+    }
+
+    // Remove uid from the set, converting from Many -> Single -> None when appropriate.
+    // Returns whether uid was present in the set.
+    fn remove(&mut self, uid: &Strng) -> bool {
+        match std::mem::take(self) {
+            WorkloadByName::None => false,
+            WorkloadByName::Single(ref existing) if existing == uid => {
+                *self = WorkloadByName::None;
+                true
+            }
+            WorkloadByName::Single(existing) => {
+                *self = WorkloadByName::Single(existing);
+                false
+            }
+            WorkloadByName::Many(mut uids) => {
+                let removed = uids.remove(uid);
+                if uids.len() == 1 {
+                    let uid = uids.into_iter().next().expect("set has one item");
+                    *self = WorkloadByName::Single(uid);
+                } else {
+                    *self = WorkloadByName::Many(uids);
+                }
+                removed
+            }
+        }
+    }
+
+    fn is_empty(&self) -> bool {
+        match self {
+            WorkloadByName::None => true,
+            WorkloadByName::Single(_) => false,
+            WorkloadByName::Many(uids) => uids.is_empty(),
+        }
+    }
+
+    fn iter(&self) -> Box<dyn Iterator<Item = &Strng> + '_> {
+        match self {
+            WorkloadByName::None => Box::new(std::iter::empty()),
+            WorkloadByName::Single(uid) => Box::new(std::iter::once(uid)),
+            WorkloadByName::Many(uids) => Box::new(uids.iter()),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -816,6 +974,7 @@ impl WorkloadStore {
             by_addr: Default::default(),
             node_local_by_identity: Default::default(),
             by_uid: Default::default(),
+            by_name: Default::default(),
         }
     }
 
@@ -848,6 +1007,11 @@ impl WorkloadStore {
                 .insert(w.uid.clone());
         }
 
+        self.by_name
+            .entry(w.name.clone())
+            .or_default()
+            .insert(w.uid.clone());
+
         // We have stored a newly inserted workload, notify watchers
         // (if any) to wake.
         self.insert_notifier.send_replace(());
@@ -878,6 +1042,13 @@ impl WorkloadStore {
                     }
                 }
 
+                if let Some(set) = self.by_name.get_mut(&prev.name) {
+                    set.remove(&prev.uid);
+                    if set.is_empty() {
+                        self.by_name.remove(&prev.name);
+                    }
+                }
+
                 Some(prev.deref().clone())
             }
         }
@@ -904,6 +1075,29 @@ impl WorkloadStore {
     /// Finds the workload by uid.
     pub fn find_uid(&self, uid: &Strng) -> Option<Arc<Workload>> {
         self.by_uid.get(uid).cloned()
+    }
+
+    /// Finds the workloads by name
+    pub fn find_by_name<'a>(&'a self, name: &str) -> impl Iterator<Item = Arc<Workload>> + 'a {
+        self.by_name
+            .get(name)
+            .into_iter()
+            .flat_map(|uids| uids.iter().filter_map(|uid| self.find_uid(uid)))
+    }
+
+    /// Finds workloads by name that back the given k8s headless service.
+    pub fn find_pod_workloads_by_svc(
+        &self,
+        pod_name: &str,
+        services: &[NamespacedHostname],
+    ) -> impl Iterator<Item = Arc<Workload>> {
+        if services.is_empty() {
+            return Either::Left(std::iter::empty());
+        }
+        Either::Right(
+            self.find_by_name(pod_name)
+                .filter(|wl| wl.services.iter().any(|svc| services.contains(svc))),
+        )
     }
 
     // was_last_identity_on_node is a specialized function to help determine if we should clear a certificate.
@@ -973,6 +1167,141 @@ mod tests {
         let actual_error: WorkloadError = result.unwrap_err();
         let expected_error = WorkloadError::ByteAddressParse(garbage.len());
         assert_eq!(actual_error, expected_error);
+    }
+
+    #[test]
+    fn workload_by_name_insert_remove() {
+        let uid1: Strng = "uid1".into();
+        let uid2: Strng = "uid2".into();
+        let missing: Strng = "missing".into();
+
+        let mut by_name = WorkloadByName::default();
+        assert!(by_name.is_empty());
+        assert_eq!(by_name.iter().count(), 0);
+
+        by_name.insert(uid1.clone());
+        assert_eq!(
+            by_name.iter().cloned().collect::<HashSet<_>>(),
+            HashSet::from([uid1.clone()])
+        );
+
+        by_name.insert(uid1.clone());
+        assert_eq!(
+            by_name.iter().cloned().collect::<HashSet<_>>(),
+            HashSet::from([uid1.clone()])
+        );
+
+        by_name.insert(uid2.clone());
+        assert_eq!(
+            by_name.iter().cloned().collect::<HashSet<_>>(),
+            HashSet::from([uid1.clone(), uid2.clone()])
+        );
+
+        assert!(!by_name.remove(&missing));
+        assert_eq!(
+            by_name.iter().cloned().collect::<HashSet<_>>(),
+            HashSet::from([uid1.clone(), uid2.clone()])
+        );
+
+        assert!(by_name.remove(&uid1));
+        assert_eq!(
+            by_name.iter().cloned().collect::<HashSet<_>>(),
+            HashSet::from([uid2.clone()])
+        );
+        assert!(!by_name.is_empty());
+
+        assert!(by_name.remove(&uid2));
+        assert!(by_name.is_empty());
+        assert_eq!(by_name.iter().count(), 0);
+    }
+
+    fn test_workload(
+        name: &str,
+        ns: &str,
+        cluster_id: &str,
+        service_hostname: &str,
+    ) -> Arc<Workload> {
+        Arc::new(Workload {
+            name: name.into(),
+            namespace: ns.into(),
+            cluster_id: cluster_id.into(),
+            services: vec![NamespacedHostname {
+                namespace: ns.into(),
+                hostname: service_hostname.into(),
+            }],
+            ..test_helpers::test_default_workload()
+        })
+    }
+
+    #[test]
+    fn headless_service_match_prefers_client_namespace() {
+        let ns1: Strng = "ns1".into();
+        let ns2: Strng = "ns2".into();
+        let cluster: Strng = "cluster-a".into();
+        let local = test_workload("pod", "ns1", "cluster-a", "svc.ns1.svc.cluster.local");
+        let remote = test_workload("pod", "ns2", "cluster-a", "svc.ns2.svc.cluster.local");
+        let other = test_workload("pod", "other", "cluster-a", "svc.other.svc.cluster.local");
+
+        assert_eq!(
+            HeadlessServiceMatch::find_best_match(
+                vec![remote.clone(), other.clone(), local.clone()].into_iter(),
+                &ns1,
+                &cluster,
+            )
+            .unwrap()
+            .namespace,
+            ns1
+        );
+
+        assert_eq!(
+            HeadlessServiceMatch::find_best_match(
+                vec![remote.clone(), other].into_iter(),
+                &ns1,
+                &cluster,
+            )
+            .unwrap()
+            .namespace,
+            ns2
+        );
+
+        assert_eq!(
+            HeadlessServiceMatch::find_best_match(vec![remote, local].into_iter(), &ns1, &cluster,)
+                .unwrap()
+                .namespace,
+            ns1
+        );
+    }
+
+    #[test]
+    fn headless_service_match_prefers_client_cluster() {
+        let ns1: Strng = "ns1".into();
+        let local: Strng = "local".into();
+        let remote_cluster = test_workload("pod", "ns1", "remote", "svc.ns1.svc.cluster.local");
+        let local_cluster = test_workload("pod", "ns1", "local", "svc.ns1.svc.cluster.local");
+
+        assert_eq!(
+            HeadlessServiceMatch::find_best_match(
+                vec![remote_cluster.clone(), local_cluster.clone()].into_iter(),
+                &ns1,
+                &local,
+            )
+            .unwrap()
+            .cluster_id,
+            local
+        );
+
+        let ns_only = test_workload("pod", "ns1", "remote", "svc.ns1.svc.cluster.local");
+        let cluster_only = test_workload("pod", "ns2", "local", "svc.ns2.svc.cluster.local");
+        assert_eq!(
+            HeadlessServiceMatch::find_best_match(
+                vec![ns_only, cluster_only].into_iter(),
+                &ns1,
+                &local,
+            )
+            .unwrap()
+            .cluster_id,
+            local
+        );
     }
 
     #[test]
@@ -1084,6 +1413,7 @@ mod tests {
             .unwrap();
         assert_eq!(state.read().unwrap().workloads.by_addr.len(), 1);
         assert_eq!(state.read().unwrap().workloads.by_uid.len(), 1);
+        assert_eq!(state.read().unwrap().workloads.by_name.len(), 1);
         assert_eq!(
             state.read().unwrap().workloads.find_address(&nw_addr1),
             Some(Arc::new(Workload {
@@ -1126,6 +1456,7 @@ mod tests {
         );
         assert_eq!(state.read().unwrap().workloads.by_addr.len(), 0);
         assert_eq!(state.read().unwrap().workloads.by_uid.len(), 0);
+        assert_eq!(state.read().unwrap().workloads.by_name.len(), 0);
 
         // Add two workloads into the VIP. Add out of order to further test
         updater
@@ -1478,6 +1809,7 @@ mod tests {
             .unwrap();
         assert_eq!(state.read().unwrap().workloads.by_addr.len(), 1);
         assert_eq!(state.read().unwrap().workloads.by_uid.len(), 2);
+        assert_eq!(state.read().unwrap().workloads.by_name.len(), 2);
         {
             let read = state.read().unwrap();
             let WorkloadByAddr::Many(wls) = read.workloads.by_addr.get(&nw_addr1).unwrap() else {
@@ -1500,6 +1832,7 @@ mod tests {
         updater.remove(&mut state.write().unwrap(), &uid1.as_str().into());
         assert_eq!(state.read().unwrap().workloads.by_addr.len(), 1);
         assert_eq!(state.read().unwrap().workloads.by_uid.len(), 1);
+        assert_eq!(state.read().unwrap().workloads.by_name.len(), 1);
         assert_eq!(
             state.read().unwrap().workloads.find_address(&nw_addr1),
             Some(Arc::new(Workload {
@@ -1519,6 +1852,7 @@ mod tests {
 
         assert_eq!(state.read().unwrap().workloads.by_addr.len(), 0);
         assert_eq!(state.read().unwrap().workloads.by_uid.len(), 0);
+        assert_eq!(state.read().unwrap().workloads.by_name.len(), 0);
     }
 
     #[test]
@@ -1824,6 +2158,7 @@ mod tests {
         let (state, demand, updater) = setup_test();
         assert_eq!((state.read().unwrap().workloads.by_addr.len()), 0);
         assert_eq!((state.read().unwrap().workloads.by_uid.len()), 0);
+        assert_eq!((state.read().unwrap().workloads.by_name.len()), 0);
         assert_eq!((state.read().unwrap().services.num_vips()), 0);
         assert_eq!((state.read().unwrap().services.num_services()), 0);
         assert_eq!((state.read().unwrap().services.num_staged_services()), 0);
