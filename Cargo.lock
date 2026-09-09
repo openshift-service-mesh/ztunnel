@@ -297,7 +297,7 @@ dependencies = [
  "bitflags 2.10.0",
  "cexpr",
  "clang-sys",
- "itertools 0.13.0",
+ "itertools 0.12.1",
  "log",
  "prettyplease",
  "proc-macro2",
@@ -3257,9 +3257,8 @@ dependencies = [
 
 [[package]]
 name = "rustls-openssl"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bce63aeefbba181bc32fe7519a3d7edcdfa9fc2aa1f5e7f152493a25275ec14a"
+version = "0.4.1"
+source = "git+https://github.com/tofay/rustls-openssl?rev=a225c011b47bb83509731957c9838db05f79df15#a225c011b47bb83509731957c9838db05f79df15"
 dependencies = [
  "foreign-types 0.3.2",
  "once_cell",
