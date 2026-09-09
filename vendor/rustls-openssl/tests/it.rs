@@ -18,6 +18,12 @@ use std::sync::Arc;
 
 pub mod server;
 
+fn suite_is_available(suite: CipherSuite) -> bool {
+    rustls_openssl::available_cipher_suites()
+        .iter()
+        .any(|supported| supported.suite() == suite)
+}
+
 fn test_with_provider(
     provider: CryptoProvider,
     port: u16,
@@ -90,7 +96,7 @@ fn test_with_provider(
     CipherSuite::TLS13_AES_256_GCM_SHA384
 )]
 #[cfg_attr(
-    all(chacha, not(feature = "fips")),
+    chacha,
     case::tls13_chacha20_poly1305_sha256(
         rustls_openssl::cipher_suite::TLS13_CHACHA20_POLY1305_SHA256,
         rustls_openssl::kx_group::SECP256R1,
@@ -132,7 +138,7 @@ fn test_with_provider(
     CipherSuite::TLS13_AES_256_GCM_SHA384
 )]
 #[cfg_attr(
-    all(feature = "tls12", chacha, not(feature = "fips")),
+    all(feature = "tls12", chacha),
     case::tls_ecdhe_rsa_with_chacha20_poly1305_sha256(
         rustls_openssl::cipher_suite::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
         rustls_openssl::kx_group::SECP256R1,
@@ -179,16 +185,49 @@ fn test_client_and_server(
     #[case] alg: server::Alg,
     #[case] expected: CipherSuite,
 ) {
+    if !suite_is_available(suite.suite()) {
+        return;
+    }
+
     // Run against a server using our default provider
-    let (port, certificate) = start_server(alg);
+    let (port, certificate, handle) = start_server(alg, None);
     let provider = custom_provider(vec![suite], vec![group]);
     let actual_suite = test_with_provider(provider, port, vec![certificate]);
     assert_eq!(actual_suite, expected);
+    handle.join().unwrap();
+}
+
+#[cfg(ossl350)]
+#[test]
+fn test_classical_completion() {
+    if rustls_openssl::kx_group::X25519.start().is_err() {
+        return;
+    }
+
+    // Run against a server that only supports the classical component
+    let provider = custom_provider(
+        rustls_openssl::ALL_CIPHER_SUITES.to_vec(),
+        vec![rustls_openssl::kx_group::X25519],
+    );
+
+    let (port, certificate, handle) =
+        start_server(server::Alg::PKCS_ECDSA_P256_SHA256, Some(provider));
+    let provider = custom_provider(
+        vec![rustls_openssl::cipher_suite::TLS13_AES_256_GCM_SHA384],
+        // specifying both, with the hybrid first, causes rustls to reuse the classical component from the hybrid
+        vec![
+            rustls_openssl::kx_group::X25519MLKEM768,
+            rustls_openssl::kx_group::X25519,
+        ],
+    );
+    let actual_suite = test_with_provider(provider, port, vec![certificate]);
+    assert_eq!(actual_suite, CipherSuite::TLS13_AES_256_GCM_SHA384);
+    handle.join().unwrap();
 }
 
 #[rstest]
 #[cfg_attr(
-    all(feature = "tls12", chacha, not(feature = "fips")),
+    all(feature = "tls12", chacha),
     case(
         rustls_openssl::cipher_suite::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
         rustls_openssl::kx_group::SECP384R1,
@@ -205,6 +244,10 @@ fn test_to_internet(
     #[case] group: &'static dyn SupportedKxGroup,
     #[case] expected: CipherSuite,
 ) {
+    if !suite_is_available(suite.suite()) {
+        return;
+    }
+
     #[cfg(feature = "fips")]
     {
         rustls_openssl::fips::enable();
@@ -269,9 +312,10 @@ fn test_to_internet(
 /// Test that the default provider returns the highest priority cipher suite
 #[test]
 fn test_default_client() {
-    let (port, certificate) = start_server(server::Alg::PKCS_RSA_SHA512);
+    let (port, certificate, handle) = start_server(server::Alg::PKCS_RSA_SHA512, None);
     let actual_suite = test_with_provider(default_provider(), port, vec![certificate]);
     assert_eq!(actual_suite, CipherSuite::TLS13_AES_256_GCM_SHA384);
+    handle.join().unwrap();
 }
 
 static RSA_SIGNING_SCHEMES: &[SignatureScheme] = &[
@@ -420,9 +464,10 @@ fn sign_and_verify(
         .map(|(_k, v)| *v)
         .expect("verifying provider supports this scheme");
     assert!(!algs.is_empty());
-    assert!(algs
-        .iter()
-        .any(|alg| { alg.verify_signature(pub_key, data, &signature).is_ok() }));
+    assert!(
+        algs.iter()
+            .any(|alg| { alg.verify_signature(pub_key, data, &signature).is_ok() })
+    );
 }
 
 #[cfg(feature = "fips")]

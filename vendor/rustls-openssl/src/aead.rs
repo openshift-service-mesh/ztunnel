@@ -1,13 +1,13 @@
 use openssl::cipher::{Cipher, CipherRef};
 use openssl::cipher_ctx::CipherCtx;
-use rustls::crypto::cipher::NONCE_LEN;
 use rustls::Error;
+use rustls::crypto::cipher::NONCE_LEN;
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Algorithm {
     Aes128Gcm,
     Aes256Gcm,
-    #[cfg(all(chacha, not(feature = "fips")))]
+    #[cfg(chacha)]
     ChaCha20Poly1305,
 }
 
@@ -19,13 +19,25 @@ impl Algorithm {
         match self {
             Self::Aes128Gcm => Cipher::aes_128_gcm(),
             Self::Aes256Gcm => Cipher::aes_256_gcm(),
-            #[cfg(all(chacha, not(feature = "fips")))]
+            #[cfg(chacha)]
             Self::ChaCha20Poly1305 => Cipher::chacha20_poly1305(),
         }
     }
 
     pub(crate) fn key_size(self) -> usize {
         self.openssl_cipher().key_length()
+    }
+
+    /// Returns `true` when OpenSSL can initialize this AEAD at runtime.
+    pub(crate) fn is_available(self) -> bool {
+        let key = vec![0u8; self.key_size()];
+        let nonce = [0u8; NONCE_LEN];
+
+        CipherCtx::new()
+            .and_then(|mut ctx| {
+                ctx.encrypt_init(Some(self.openssl_cipher()), Some(&key), Some(&nonce))
+            })
+            .is_ok()
     }
 
     /// Encrypts data in place and returns the tag.
@@ -88,14 +100,14 @@ impl Algorithm {
 
 #[cfg(test)]
 mod test {
-    use wycheproof::{aead::TestFlag, TestResult};
+    use wycheproof::{TestResult, aead::TestFlag};
 
     fn test_aead(alg: super::Algorithm) {
         let test_name = match alg {
             super::Algorithm::Aes128Gcm | super::Algorithm::Aes256Gcm => {
                 wycheproof::aead::TestName::AesGcm
             }
-            #[cfg(all(chacha, not(feature = "fips")))]
+            #[cfg(chacha)]
             super::Algorithm::ChaCha20Poly1305 => wycheproof::aead::TestName::ChaCha20Poly1305,
         };
         let test_set = wycheproof::aead::TestSet::load(test_name).unwrap();
@@ -120,7 +132,7 @@ mod test {
 
                 match &test.result {
                     TestResult::Invalid => {
-                        if test.flags.iter().any(|flag| *flag == TestFlag::ModifiedTag) {
+                        if test.flags.contains(&TestFlag::ModifiedTag) {
                             assert_ne!(
                                 actual_tag[..],
                                 test.tag[..],
@@ -178,9 +190,18 @@ mod test {
         test_aead(super::Algorithm::Aes256Gcm);
     }
 
-    #[cfg(all(chacha, not(feature = "fips")))]
+    #[test]
+    fn test_aes_available() {
+        assert!(super::Algorithm::Aes128Gcm.is_available());
+        assert!(super::Algorithm::Aes256Gcm.is_available());
+    }
+
+    #[cfg(chacha)]
     #[test]
     fn test_chacha() {
+        if !super::Algorithm::ChaCha20Poly1305.is_available() {
+            return;
+        }
         test_aead(super::Algorithm::ChaCha20Poly1305);
     }
 }

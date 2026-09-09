@@ -10,9 +10,9 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
+edition = "2024"
 name = "rustls-openssl"
-version = "0.2.1"
+version = "0.4.1"
 authors = ["Tom Fay <tom@teamfay.co.uk>"]
 build = "build.rs"
 autolib = false
@@ -27,9 +27,14 @@ license = "MIT"
 repository = "https://github.com/tofay/rustls-openssl"
 
 [features]
-default = ["tls12"]
+default = [
+    "tls12",
+    "prefer-post-quantum",
+]
 fips = []
+prefer-post-quantum = []
 tls12 = ["rustls/tls12"]
+vendored = ["openssl/vendored"]
 
 [lib]
 name = "rustls_openssl"
@@ -43,45 +48,31 @@ path = "tests/it.rs"
 name = "server"
 path = "tests/server.rs"
 
-[dependencies.foreign-types]
-version = "0.3.1"
-
-[dependencies.once_cell]
-version = "1.8.0"
-
-[dependencies.openssl]
-version = "0.10.68"
-
-[dependencies.openssl-sys]
-version = "0.9.104"
+[dependencies]
+foreign-types = "0.3.1"
+once_cell = "1.8.0"
+openssl = "0.10.79"
+openssl-sys = "0.9.104"
+zeroize = "1.8.1"
 
 [dependencies.rustls]
 version = "0.23.20"
 default-features = false
 
-[dependencies.zeroize]
-version = "1.8.1"
-
-[dev-dependencies.hex]
-version = "0.4.3"
+[dev-dependencies]
+hex = "0.4.3"
+rstest = "0.26.1"
+rustls-pemfile = "2"
+webpki-roots = "1.0"
 
 [dev-dependencies.rcgen]
-version = "0.13.1"
+version = "0.14.8"
 features = ["aws_lc_rs"]
 default-features = false
-
-[dev-dependencies.rstest]
-version = "0.25.0"
 
 [dev-dependencies.rustls]
 version = "0.23.0"
 features = ["aws_lc_rs"]
-
-[dev-dependencies.rustls-pemfile]
-version = "2"
-
-[dev-dependencies.webpki-roots]
-version = "0.26"
 
 [dev-dependencies.wycheproof]
 version = "0.6.0"

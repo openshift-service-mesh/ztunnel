@@ -107,22 +107,27 @@ impl RustlsHkdfExpander for HkdfExpander {
     }
 }
 
-#[cfg(bugged_add_hkdf_info)]
 fn add_hkdf_info<T>(ctx: &mut PkeyCtxRef<T>, info: &[&[u8]]) -> Result<(), ErrorStack> {
-    // Concatenate the info strings to work around https://github.com/openssl/openssl/issues/23448
-    let infos = info.iter().fold(Vec::new(), |mut acc, i| {
-        acc.extend_from_slice(i);
-        acc
-    });
-    ctx.add_hkdf_info(&infos)
-}
+    #[cfg(bugged_add_hkdf_info)]
+    let bugged_version = true;
 
-#[cfg(not(bugged_add_hkdf_info))]
-fn add_hkdf_info<T>(ctx: &mut PkeyCtxRef<T>, info: &[&[u8]]) -> Result<(), ErrorStack> {
-    for info in info {
-        ctx.add_hkdf_info(info)?;
+    #[cfg(not(bugged_add_hkdf_info))]
+    let bugged_version = false;
+
+    if bugged_version || crate::fips::enabled() {
+        // Concatenate the info strings to work around
+        // https://github.com/openssl/openssl/issues/23448
+        let infos = info.iter().fold(Vec::new(), |mut acc, i| {
+            acc.extend_from_slice(i);
+            acc
+        });
+        ctx.add_hkdf_info(&infos)
+    } else {
+        for info in info {
+            ctx.add_hkdf_info(info)?;
+        }
+        Ok(())
     }
-    Ok(())
 }
 
 impl Drop for HkdfExpander {
@@ -134,7 +139,7 @@ impl Drop for HkdfExpander {
 #[cfg(test)]
 mod test {
     use rustls::crypto::tls13::Hkdf;
-    use wycheproof::{hkdf::TestName, TestResult};
+    use wycheproof::{TestResult, hkdf::TestName};
 
     fn test_hkdf(hkdf: &dyn Hkdf, test_name: TestName) {
         let test_set = wycheproof::hkdf::TestSet::load(test_name).unwrap();

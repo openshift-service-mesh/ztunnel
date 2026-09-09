@@ -4,9 +4,10 @@ use std::sync::Arc;
 
 use openssl::pkey::PKey;
 use rcgen::SignatureAlgorithm;
+use rustls::ServerConfig;
+use rustls::crypto::CryptoProvider;
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::Acceptor;
-use rustls::ServerConfig;
 
 /// Algorithm to use for the server keypair. Required to workaround
 /// https://github.com/openssl/openssl/issues/10468 and rcgen::SignatureAlgorithm not
@@ -24,9 +25,14 @@ pub enum Alg {
 /// generating a certificate for `localhost` with the specified algorithm.
 ///
 /// The server will handle a single connection.
+/// Tests must call `join` on the returned thread handle to ensure the server has completed before exiting,
+/// otherwise OpenSSL cleanup may be called while the server thread is still running, which can cause a crash.
 ///
 /// Returns the port the server is listening on and the CA certificate used to sign the server certificate.
-pub fn start_server(alg: Alg) -> (u16, CertificateDer<'static>) {
+pub fn start_server(
+    alg: Alg,
+    provider: Option<CryptoProvider>,
+) -> (u16, CertificateDer<'static>, std::thread::JoinHandle<()>) {
     #[cfg(feature = "fips")]
     {
         rustls_openssl::fips::enable();
@@ -34,38 +40,33 @@ pub fn start_server(alg: Alg) -> (u16, CertificateDer<'static>) {
 
     let pki = TestPki::for_algorithm(alg);
     let ca_cert_der = pki.ca_cert_der.clone();
-    let server_config = pki.server_config();
+    let server_config = pki.with_provider(provider.unwrap_or(rustls_openssl::default_provider()));
 
     let listener = std::net::TcpListener::bind("[::]:0").unwrap();
     let port = listener.local_addr().unwrap().port();
-    std::thread::spawn(move || {
+    let handle = std::thread::spawn(move || {
         let mut stream = listener.incoming().next().unwrap().unwrap();
         let mut acceptor = Acceptor::default();
 
-        loop {
-            acceptor.read_tls(&mut stream).unwrap();
-            if let Some(accepted) = acceptor.accept().unwrap() {
-                let mut conn = accepted.into_connection(server_config.clone()).unwrap();
-                let msg = concat!(
-                    "HTTP/1.1 200 OK\r\n",
-                    "Connection: Closed\r\n",
-                    "Content-Type: text/html\r\n",
-                    "\r\n",
-                    "<h1>Hello World!</h1>\r\n"
-                )
-                .as_bytes();
+        acceptor.read_tls(&mut stream).unwrap();
+        if let Some(accepted) = acceptor.accept().unwrap() {
+            let mut conn = accepted.into_connection(server_config.clone()).unwrap();
+            let msg = concat!(
+                "HTTP/1.1 200 OK\r\n",
+                "Connection: Closed\r\n",
+                "Content-Type: text/html\r\n",
+                "\r\n",
+                "<h1>Hello World!</h1>\r\n"
+            )
+            .as_bytes();
 
-                conn.writer().write_all(msg).unwrap();
-                conn.write_tls(&mut stream).unwrap();
-                conn.complete_io(&mut stream).unwrap();
-
-                conn.send_close_notify();
-                conn.write_tls(&mut stream).unwrap();
-                conn.complete_io(&mut stream).unwrap();
-            }
+            conn.writer().write_all(msg).unwrap();
+            conn.send_close_notify();
+            conn.write_tls(&mut stream).unwrap();
+            conn.complete_io(&mut stream).unwrap();
         }
     });
-    (port, ca_cert_der)
+    (port, ca_cert_der, handle)
 }
 
 struct TestPki {
@@ -103,6 +104,7 @@ impl TestPki {
         let ca_key = generate_for(alg);
 
         let ca_cert = ca_params.self_signed(&ca_key).unwrap();
+        let issuer = rcgen::Issuer::from_params(&ca_params, ca_key);
 
         // Create a server end entity cert issued by the CA.
         let mut server_ee_params =
@@ -110,9 +112,7 @@ impl TestPki {
         server_ee_params.is_ca = rcgen::IsCa::NoCa;
         server_ee_params.extended_key_usages = vec![rcgen::ExtendedKeyUsagePurpose::ServerAuth];
         let server_key = generate_for(alg);
-        let server_cert = server_ee_params
-            .signed_by(&server_key, &ca_cert, &ca_key)
-            .unwrap();
+        let server_cert = server_ee_params.signed_by(&server_key, &issuer).unwrap();
 
         Self {
             ca_cert_der: ca_cert.into(),
@@ -121,14 +121,13 @@ impl TestPki {
         }
     }
 
-    fn server_config(self) -> Arc<ServerConfig> {
-        let mut server_config =
-            ServerConfig::builder_with_provider(rustls_openssl::default_provider().into())
-                .with_safe_default_protocol_versions()
-                .unwrap()
-                .with_no_client_auth()
-                .with_single_cert(vec![self.server_cert_der], self.server_key_der)
-                .unwrap();
+    fn with_provider(self, provider: CryptoProvider) -> Arc<ServerConfig> {
+        let mut server_config = ServerConfig::builder_with_provider(provider.into())
+            .with_safe_default_protocol_versions()
+            .unwrap()
+            .with_no_client_auth()
+            .with_single_cert(vec![self.server_cert_der], self.server_key_der)
+            .unwrap();
 
         server_config.key_log = Arc::new(rustls::KeyLogFile::new());
 

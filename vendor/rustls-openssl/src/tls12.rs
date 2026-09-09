@@ -2,12 +2,12 @@ use crate::aead::{self, TAG_LEN};
 use crate::hash::{SHA256, SHA384};
 use crate::prf::Prf;
 use crate::signer::RSA_SCHEMES;
-use rustls::crypto::cipher::{
-    make_tls12_aad, AeadKey, InboundOpaqueMessage, InboundPlainMessage, Iv, KeyBlockShape,
-    MessageDecrypter, MessageEncrypter, Nonce, OutboundOpaqueMessage, OutboundPlainMessage,
-    PrefixedPayload, Tls12AeadAlgorithm, UnsupportedOperationError, NONCE_LEN,
-};
 use rustls::crypto::KeyExchangeAlgorithm;
+use rustls::crypto::cipher::{
+    AeadKey, InboundOpaqueMessage, InboundPlainMessage, Iv, KeyBlockShape, MessageDecrypter,
+    MessageEncrypter, NONCE_LEN, Nonce, OutboundOpaqueMessage, OutboundPlainMessage,
+    PrefixedPayload, Tls12AeadAlgorithm, UnsupportedOperationError, make_tls12_aad,
+};
 use rustls::{
     CipherSuite, CipherSuiteCommon, ConnectionTrafficSecrets, Error, SignatureScheme,
     SupportedCipherSuite, Tls12CipherSuite,
@@ -17,7 +17,6 @@ const GCM_EXPLICIT_NONCE_LENGTH: usize = 8;
 const GCM_IMPLICIT_NONCE_LENGTH: usize = 4;
 
 static ECDSA_SCHEMES: &[SignatureScheme] = &[
-    #[cfg(not(feature = "fips"))]
     SignatureScheme::ED25519,
     SignatureScheme::ECDSA_NISTP521_SHA512,
     SignatureScheme::ECDSA_NISTP384_SHA384,
@@ -25,7 +24,7 @@ static ECDSA_SCHEMES: &[SignatureScheme] = &[
 ];
 
 /// The TLS1.2 ciphersuite `TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256`.
-#[cfg(all(chacha, not(feature = "fips")))]
+#[cfg(chacha)]
 pub static TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256: SupportedCipherSuite =
     SupportedCipherSuite::Tls12(&Tls12CipherSuite {
         common: CipherSuiteCommon {
@@ -40,7 +39,7 @@ pub static TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256: SupportedCipherSuite =
     });
 
 /// The TLS1.2 ciphersuite `TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256`
-#[cfg(all(chacha, not(feature = "fips")))]
+#[cfg(chacha)]
 pub static TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256: SupportedCipherSuite =
     SupportedCipherSuite::Tls12(&Tls12CipherSuite {
         common: CipherSuiteCommon {
@@ -106,7 +105,7 @@ pub static TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384: SupportedCipherSuite =
         },
         kx: KeyExchangeAlgorithm::ECDHE,
         sign: ECDSA_SCHEMES,
-        aead_alg: &aead::Algorithm::Aes128Gcm,
+        aead_alg: &aead::Algorithm::Aes256Gcm,
         prf_provider: &Prf(SHA384),
     });
 
@@ -122,7 +121,7 @@ struct AesGcmEncrypter {
     full_iv: Iv,
 }
 
-#[cfg(all(chacha, not(feature = "fips")))]
+#[cfg(chacha)]
 pub(crate) struct ChaCha20Poly1305Crypter {
     key: AeadKey,
     iv: Iv,
@@ -141,7 +140,7 @@ impl Tls12AeadAlgorithm for aead::Algorithm {
                     full_iv: Iv::new(full_iv),
                 })
             }
-            #[cfg(all(chacha, not(feature = "fips")))]
+            #[cfg(chacha)]
             aead::Algorithm::ChaCha20Poly1305 => Box::new(ChaCha20Poly1305Crypter {
                 key,
                 iv: Iv::copy(iv),
@@ -161,7 +160,7 @@ impl Tls12AeadAlgorithm for aead::Algorithm {
                     implicit_iv,
                 })
             }
-            #[cfg(all(chacha, not(feature = "fips")))]
+            #[cfg(chacha)]
             aead::Algorithm::ChaCha20Poly1305 => Box::new(ChaCha20Poly1305Crypter {
                 key,
                 iv: Iv::copy(iv),
@@ -176,7 +175,7 @@ impl Tls12AeadAlgorithm for aead::Algorithm {
                 fixed_iv_len: GCM_IMPLICIT_NONCE_LENGTH,
                 explicit_nonce_len: GCM_EXPLICIT_NONCE_LENGTH,
             },
-            #[cfg(all(chacha, not(feature = "fips")))]
+            #[cfg(chacha)]
             aead::Algorithm::ChaCha20Poly1305 => KeyBlockShape {
                 enc_key_len: self.key_size(),
                 fixed_iv_len: NONCE_LEN,
@@ -210,7 +209,7 @@ impl Tls12AeadAlgorithm for aead::Algorithm {
                     iv: Iv::new(gcm_iv),
                 })
             }
-            #[cfg(all(chacha, not(feature = "fips")))]
+            #[cfg(chacha)]
             aead::Algorithm::ChaCha20Poly1305 => Ok(ConnectionTrafficSecrets::Chacha20Poly1305 {
                 key,
                 iv: Iv::new(iv[..].try_into().map_err(|_| UnsupportedOperationError)?),
@@ -221,7 +220,7 @@ impl Tls12AeadAlgorithm for aead::Algorithm {
     fn fips(&self) -> bool {
         match self {
             aead::Algorithm::Aes128Gcm | aead::Algorithm::Aes256Gcm => crate::fips::enabled(),
-            #[cfg(all(chacha, not(feature = "fips")))]
+            #[cfg(chacha)]
             aead::Algorithm::ChaCha20Poly1305 => false,
         }
     }
@@ -298,7 +297,7 @@ impl MessageDecrypter for AesGcmDecrypter {
     }
 }
 
-#[cfg(all(chacha, not(feature = "fips")))]
+#[cfg(chacha)]
 impl MessageEncrypter for ChaCha20Poly1305Crypter {
     fn encrypt(
         &mut self,
@@ -327,7 +326,7 @@ impl MessageEncrypter for ChaCha20Poly1305Crypter {
     }
 }
 
-#[cfg(all(chacha, not(feature = "fips")))]
+#[cfg(chacha)]
 impl MessageDecrypter for ChaCha20Poly1305Crypter {
     fn decrypt<'a>(
         &mut self,
