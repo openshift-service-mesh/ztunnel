@@ -11,5 +11,10 @@ replace-with = "vendored-sources"
 git = "https://github.com/janrueth/boring-rustls-provider"
 replace-with = "vendored-sources"
 
+[source."git+https://github.com/tofay/rustls-openssl?rev=a225c011b47bb83509731957c9838db05f79df15"]
+git = "https://github.com/tofay/rustls-openssl"
+rev = "a225c011b47bb83509731957c9838db05f79df15"
+replace-with = "vendored-sources"
+
 [source.vendored-sources]
 directory = "vendor"

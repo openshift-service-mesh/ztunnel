@@ -1,8 +1,9 @@
 use crate::aead;
-use openssl::symm::{encrypt, Cipher};
+use openssl::symm::{Cipher, encrypt};
 use rustls::{
+    Error,
     crypto::cipher::{AeadKey, Iv, Nonce},
-    quic, Error,
+    quic,
 };
 
 pub(crate) struct KeyBuilder {
@@ -26,7 +27,7 @@ struct PacketKey {
 pub(crate) enum HeaderProtectionAlgorithm {
     Aes128,
     Aes256,
-    #[cfg(all(chacha, not(feature = "fips")))]
+    #[cfg(chacha)]
     ChaCha20,
 }
 
@@ -182,7 +183,7 @@ impl HeaderProtectionAlgorithm {
         match self {
             HeaderProtectionAlgorithm::Aes128 => Cipher::aes_128_ecb(),
             HeaderProtectionAlgorithm::Aes256 => Cipher::aes_256_ecb(),
-            #[cfg(all(chacha, not(feature = "fips")))]
+            #[cfg(chacha)]
             HeaderProtectionAlgorithm::ChaCha20 => Cipher::chacha20(),
         }
     }
@@ -198,8 +199,8 @@ impl HeaderProtectionKey {
                     .map_err(|e| Error::General(format!("OpenSSL error: {e}")))?;
                 mask.copy_from_slice(&block[..5]);
             }
-            #[cfg(all(chacha, not(feature = "fips")))]
             // https://datatracker.ietf.org/doc/html/rfc9001#section-5.4.4
+            #[cfg(chacha)]
             HeaderProtectionAlgorithm::ChaCha20 => {
                 let block = encrypt(
                     self.algo.openssl_cipher(),
@@ -217,12 +218,27 @@ impl HeaderProtectionKey {
 
 #[cfg(test)]
 mod test {
+    #[cfg(chacha)]
+    use openssl::symm::encrypt;
     use rustls::{
-        quic::{Keys, Version},
         Side,
+        quic::{Keys, Version},
     };
 
     use super::super::tls13::TLS13_AES_128_GCM_SHA256_INTERNAL;
+
+    #[cfg(chacha)]
+    fn chacha20_is_available() -> bool {
+        let key = [0u8; 32];
+        let iv = [0u8; 16];
+        encrypt(
+            super::HeaderProtectionAlgorithm::ChaCha20.openssl_cipher(),
+            &key,
+            Some(&iv),
+            &[0u8; 5],
+        )
+        .is_ok()
+    }
 
     // Taken from rustls: Copyright (c) 2016 Joseph Birr-Pixton <jpixton@gmail.com>
     #[test]
@@ -284,9 +300,13 @@ mod test {
         assert_eq!(server_packet[..], expected_server_packet[..]);
     }
 
-    #[cfg(all(chacha, not(feature = "fips")))]
+    #[cfg(chacha)]
     #[test]
     fn test_short_packet_length() {
+        if !chacha20_is_available() {
+            return;
+        }
+
         use rustls::crypto::cipher::AeadKey;
         let sample = [
             0x5e, 0x5c, 0xd5, 0x5c, 0x41, 0xf6, 0x90, 0x80, 0x57, 0x5d, 0x79, 0x99, 0xc2, 0x5a,

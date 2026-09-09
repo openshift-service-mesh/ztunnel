@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.63.0"
+rust-version = "1.80.0"
 name = "openssl"
-version = "0.10.72"
+version = "0.10.81"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 build = "build.rs"
 autolib = false
@@ -34,10 +34,11 @@ categories = [
     "api-bindings",
 ]
 license = "Apache-2.0"
-repository = "https://github.com/sfackler/rust-openssl"
+repository = "https://github.com/rust-openssl/rust-openssl"
 
 [features]
 aws-lc = ["ffi/aws-lc"]
+aws-lc-fips = ["ffi/aws-lc-fips"]
 bindgen = ["ffi/bindgen"]
 default = []
 unstable_boringssl = ["ffi/unstable_boringssl"]
@@ -62,7 +63,7 @@ version = "2.2.1"
 version = "1.0"
 
 [dependencies.ffi]
-version = "0.9.107"
+version = "0.9.117"
 package = "openssl-sys"
 
 [dependencies.foreign-types]
@@ -70,9 +71,6 @@ version = "0.3.1"
 
 [dependencies.libc]
 version = "0.2"
-
-[dependencies.once_cell]
-version = "1.5.2"
 
 [dependencies.openssl-macros]
 version = "0.1.1"

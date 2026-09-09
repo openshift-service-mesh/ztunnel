@@ -2,22 +2,22 @@ use crate::aead;
 use crate::hash::{SHA256, SHA384};
 use crate::hkdf::Hkdf;
 use crate::quic;
-use rustls::crypto::cipher::{
-    make_tls13_aad, AeadKey, InboundOpaqueMessage, InboundPlainMessage, Iv, MessageDecrypter,
-    MessageEncrypter, Nonce, OutboundOpaqueMessage, OutboundPlainMessage, PrefixedPayload,
-    Tls13AeadAlgorithm, UnsupportedOperationError,
-};
 use rustls::crypto::CipherSuiteCommon;
+use rustls::crypto::cipher::{
+    AeadKey, InboundOpaqueMessage, InboundPlainMessage, Iv, MessageDecrypter, MessageEncrypter,
+    Nonce, OutboundOpaqueMessage, OutboundPlainMessage, PrefixedPayload, Tls13AeadAlgorithm,
+    UnsupportedOperationError, make_tls13_aad,
+};
 use rustls::{
     CipherSuite, ConnectionTrafficSecrets, Error, SupportedCipherSuite, Tls13CipherSuite,
 };
 
 /// The TLS1.3 ciphersuite `TLS_CHACHA20_POLY1305_SHA256`
-#[cfg(all(chacha, not(feature = "fips")))]
+#[cfg(chacha)]
 pub static TLS13_CHACHA20_POLY1305_SHA256: SupportedCipherSuite =
     SupportedCipherSuite::Tls13(TLS13_CHACHA20_POLY1305_SHA256_INTERNAL);
 
-#[cfg(all(chacha, not(feature = "fips")))]
+#[cfg(chacha)]
 pub static TLS13_CHACHA20_POLY1305_SHA256_INTERNAL: &Tls13CipherSuite = &Tls13CipherSuite {
     common: CipherSuiteCommon {
         suite: CipherSuite::TLS13_CHACHA20_POLY1305_SHA256,
@@ -113,7 +113,7 @@ impl Tls13AeadAlgorithm for aead::Algorithm {
         Ok(match self {
             aead::Algorithm::Aes128Gcm => ConnectionTrafficSecrets::Aes128Gcm { key, iv },
             aead::Algorithm::Aes256Gcm => ConnectionTrafficSecrets::Aes256Gcm { key, iv },
-            #[cfg(all(chacha, not(feature = "fips")))]
+            #[cfg(chacha)]
             aead::Algorithm::ChaCha20Poly1305 => {
                 ConnectionTrafficSecrets::Chacha20Poly1305 { key, iv }
             }
