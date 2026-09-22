@@ -11,7 +11,7 @@ OpenShift Service Mesh fork.
 
 - `AGENTS.md` — project overview, layout, OSSM concerns
 - `ARCHITECTURE.md` — threading model (main vs worker Tokio runtimes) and port table
-- `docs/upstream.md` — OSSM-only annotation convention and PR label definitions
+- `docs/upstream.md` — OSSM-only annotation convention
 
 ## Review checklist
 
@@ -29,7 +29,7 @@ OpenShift Service Mesh fork.
 
 **Test coverage**
 
-- New code paths must have unit or integration tests in `tests/`.
+- New code paths must have unit tests (inline `#[cfg(test)]` modules) or integration tests in `tests/`.
 - TLS changes must be tested with both `cargo test` and `cargo test --features tls-openssl`.
 
 **Code quality**
