@@ -2,3 +2,13 @@ out/
 var/
 .idea/
 .vscode/
+
+# AI agents (local-only files excluded; committed config tracked)
+.claude/settings.local.json
+.claude/*.local.json
+.claude/local-*.md
+.claude/worktrees/
+.cursor/
+.aider*
+.copilot/
+.continue/

@@ -1,3 +1,17 @@
+# Ztunnel — OpenShift Service Mesh Midstream Fork
+
+> **This is the Red Hat midstream fork of [istio/ztunnel](https://github.com/istio/ztunnel),
+> maintained for [OpenShift Service Mesh (OSSM)](https://www.redhat.com/en/technologies/cloud-computing/openshift/what-is-openshift-service-mesh).**
+>
+> - Upstream repository: <https://github.com/istio/ztunnel>
+> - Midstream repository: <https://github.com/openshift-service-mesh/ztunnel>
+>
+> For details on how this fork relates to upstream, branch mapping, and the sync process,
+> see [docs/upstream.md](docs/upstream.md).
+> For AI agent guidance, see [AGENTS.md](AGENTS.md) and [`.claude/`](.claude/) for Claude Code configuration.
+
+---
+
 # Ztunnel
 
 Ztunnel provides an implementation of the ztunnel component of
@@ -170,3 +184,21 @@ Access logs are emitted upon _completion_ of each connection.
 Logs for connect _establishment_ are also logged (with less information) at `debug` level.
 
 Currently, the access log format is considered unstable and subject to changes.
+
+## AI Agents
+
+The repository ships a `.claude/` directory with project-specific configuration for [Claude Code](https://claude.ai/claude-code). `CLAUDE.md` is a symlink to `AGENTS.md`, which is the primary agent instructions document.
+
+| Path | Purpose |
+|---|---|
+| `CLAUDE.md` | Entry point — symlink to `AGENTS.md` |
+| `.claude/settings.json` | Allowed Bash and WebFetch permissions for this project |
+| `.claude/rules/` | Code style, testing, and API/annotation conventions |
+| `.claude/skills/upstream-sync-review/` | Workflow to evaluate sync readiness and annotation correctness |
+| `.claude/agents/code-reviewer.md` | Reviewer persona: runtime isolation, TLS feature flags, OSSM annotations, test coverage |
+| `.claude/agents/sync-auditor.md` | Sync auditor persona: annotation audit, upstream-first compliance |
+| `.claude/commands/submit-pr.md` | PR submission checklist |
+| `.claude/commands/sync-check.md` | Decision guide: OSSM-specific vs upstream candidate |
+| `.claude/commands/cherry-pick.md` | Backport workflow to release branches |
+
+> **Note:** `.claude/settings.local.json` and `local-*.md` files are excluded by `.gitignore` and safe for machine-local overrides.
