@@ -38,7 +38,11 @@ use rustls::ServerConfig;
 static MESH_CIPHER_SUITES: Lazy<Option<Vec<rustls::SupportedCipherSuite>>> = Lazy::new(|| {
     use rustls_openssl::cipher_suite as cs;
     let names: Vec<String> = match env::var("MESH_CIPHER_SUITES").ok() {
-        Some(s) => s.split(',').map(|v| v.trim().to_string()).filter(|v| !v.is_empty()).collect(),
+        Some(s) => s
+            .split(',')
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty())
+            .collect(),
         None => {
             tracing::info!("MESH_CIPHER_SUITES not set, using defaults");
             return None;
@@ -52,10 +56,21 @@ static MESH_CIPHER_SUITES: Lazy<Option<Vec<rustls::SupportedCipherSuite>>> = Laz
     let mut applied = Vec::new();
     for name in &names {
         match name.as_str() {
-            "TLS_AES_256_GCM_SHA384" => { suites.push(cs::TLS13_AES_256_GCM_SHA384); applied.push(name.as_str()); }
-            "TLS_AES_128_GCM_SHA256" => { suites.push(cs::TLS13_AES_128_GCM_SHA256); applied.push(name.as_str()); }
-            "TLS_CHACHA20_POLY1305_SHA256" => { suites.push(cs::TLS13_CHACHA20_POLY1305_SHA256); applied.push(name.as_str()); }
-            unknown => tracing::warn!("MESH_CIPHER_SUITES: unknown cipher suite '{unknown}', ignoring"),
+            "TLS_AES_256_GCM_SHA384" => {
+                suites.push(cs::TLS13_AES_256_GCM_SHA384);
+                applied.push(name.as_str());
+            }
+            "TLS_AES_128_GCM_SHA256" => {
+                suites.push(cs::TLS13_AES_128_GCM_SHA256);
+                applied.push(name.as_str());
+            }
+            "TLS_CHACHA20_POLY1305_SHA256" => {
+                suites.push(cs::TLS13_CHACHA20_POLY1305_SHA256);
+                applied.push(name.as_str());
+            }
+            unknown => {
+                tracing::warn!("MESH_CIPHER_SUITES: unknown cipher suite '{unknown}', ignoring")
+            }
         }
     }
     if suites.is_empty() {
@@ -161,6 +176,7 @@ pub(super) fn provider() -> Arc<CryptoProvider> {
 
 #[cfg(feature = "tls-openssl")]
 pub(super) fn provider() -> Arc<CryptoProvider> {
+    rustls_openssl::fips::enable();
     let cipher_suites = if let Some(suites) = MESH_CIPHER_SUITES.as_ref() {
         suites.clone()
     } else {
@@ -178,34 +194,32 @@ pub(super) fn provider() -> Arc<CryptoProvider> {
         }
         suites
     };
+    let mut provider = CryptoProvider {
+        cipher_suites,
+        ..rustls_openssl::default_provider()
+    };
 
-    let kx_groups: Vec<&'static dyn rustls::crypto::SupportedKxGroup> = if *PQC_ENABLED {
+    if *PQC_ENABLED {
         // To use PQC with OpenSSL provider the binary needs to be
         // both compiled and used with OpenSSL >= 3.5.0.
-        #[cfg(ossl350)]
-        {
-            if openssl::version::number() >= 0x30500000 {
-                vec![rustls_openssl::kx_group::X25519MLKEM768]
-            } else {
-                panic!("COMPLIANCE_POLICY=pqc requires OpenSSL >=3.5.0");
-            }
-        }
         #[cfg(not(ossl350))]
         {
             panic!("COMPLIANCE_POLICY=pqc requires compilation with OpenSSL >=3.5.0");
         }
-    } else {
-        vec![
-            rustls_openssl::kx_group::SECP256R1,
-            rustls_openssl::kx_group::SECP384R1,
-        ]
-    };
+        #[cfg(ossl350)]
+        {
+            if openssl::version::number() < 0x30500000 {
+                panic!("COMPLIANCE_POLICY=pqc requires OpenSSL >=3.5.0");
+            }
+            // Only explicitly set kx_groups for PQC.
+            // Otherwise use the defaults for the openssl provider.
+            // Since we set fips::enable(), these will be filtered
+            // to only FIPS compatible groups by rustls_openssl.
+            provider.kx_groups = vec![rustls_openssl::kx_group::X25519MLKEM768];
+        }
+    }
 
-    Arc::new(CryptoProvider {
-        cipher_suites,
-        kx_groups,
-        ..rustls_openssl::default_provider()
-    })
+    Arc::new(provider)
 }
 
 /// Returns true if the given [`std::io::Error`] wraps a rustls
@@ -356,13 +370,25 @@ pub mod tests {
     fn test_openssl_provider_kx_groups_valid() {
         // Provider must have valid key exchange groups regardless of PQC state
         let provider = super::provider();
-        let expected_len = if *crate::PQC_ENABLED { 1 } else { 2 };
+        let actual_groups: Vec<_> = provider
+            .kx_groups
+            .iter()
+            .map(|group| group.name())
+            .collect();
+        let expected_groups: Vec<_> = if *crate::PQC_ENABLED {
+            vec![rustls::NamedGroup::X25519MLKEM768]
+        } else {
+            rustls_openssl::default_provider()
+                .kx_groups
+                .iter()
+                .map(|group| group.name())
+                .collect()
+        };
         assert_eq!(
-            provider.kx_groups.len(),
-            expected_len,
-            "PQC={} should have {} kx groups",
+            actual_groups,
+            expected_groups,
+            "PQC={} should select the expected key exchange groups",
             *crate::PQC_ENABLED,
-            expected_len
         );
     }
 
