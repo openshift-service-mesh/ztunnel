@@ -195,10 +195,17 @@ pub(super) fn provider() -> Arc<CryptoProvider> {
             panic!("COMPLIANCE_POLICY=pqc requires compilation with OpenSSL >=3.5.0");
         }
     } else {
-        vec![
+        let mut groups: Vec<&'static dyn rustls::crypto::SupportedKxGroup> = Vec::new();
+        // Prefer hybrid MLKEM when both build-time and runtime OpenSSL support it.
+        #[cfg(ossl350)]
+        if openssl::version::number() >= 0x30500000 {
+            groups.push(rustls_openssl::kx_group::X25519MLKEM768);
+        }
+        groups.extend([
             rustls_openssl::kx_group::SECP256R1,
             rustls_openssl::kx_group::SECP384R1,
-        ]
+        ]);
+        groups
     };
 
     Arc::new(CryptoProvider {
@@ -354,15 +361,22 @@ pub mod tests {
     #[test]
     #[cfg(feature = "tls-openssl")]
     fn test_openssl_provider_kx_groups_valid() {
-        // Provider must have valid key exchange groups regardless of PQC state
         let provider = super::provider();
-        let expected_len = if *crate::PQC_ENABLED { 1 } else { 2 };
+        let mut expected = Vec::new();
+        #[cfg(ossl350)]
+        if openssl::version::number() >= 0x30500000 {
+            expected.push(rustls::NamedGroup::X25519MLKEM768);
+        }
+        if !*crate::PQC_ENABLED {
+            expected.extend([rustls::NamedGroup::secp256r1, rustls::NamedGroup::secp384r1]);
+        }
         assert_eq!(
-            provider.kx_groups.len(),
-            expected_len,
-            "PQC={} should have {} kx groups",
-            *crate::PQC_ENABLED,
-            expected_len
+            provider
+                .kx_groups
+                .iter()
+                .map(|g| g.name())
+                .collect::<Vec<_>>(),
+            expected,
         );
     }
 
