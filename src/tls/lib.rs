@@ -29,6 +29,8 @@ use std::sync::Arc;
 
 use rustls;
 use rustls::crypto::CryptoProvider;
+#[cfg(all(feature = "tls-openssl", ossl350))]
+use rustls::crypto::SecureRandom;
 
 use rustls::ClientConfig;
 use rustls::ServerConfig;
@@ -38,7 +40,11 @@ use rustls::ServerConfig;
 static MESH_CIPHER_SUITES: Lazy<Option<Vec<rustls::SupportedCipherSuite>>> = Lazy::new(|| {
     use rustls_openssl::cipher_suite as cs;
     let names: Vec<String> = match env::var("MESH_CIPHER_SUITES").ok() {
-        Some(s) => s.split(',').map(|v| v.trim().to_string()).filter(|v| !v.is_empty()).collect(),
+        Some(s) => s
+            .split(',')
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty())
+            .collect(),
         None => {
             tracing::info!("MESH_CIPHER_SUITES not set, using defaults");
             return None;
@@ -52,10 +58,21 @@ static MESH_CIPHER_SUITES: Lazy<Option<Vec<rustls::SupportedCipherSuite>>> = Laz
     let mut applied = Vec::new();
     for name in &names {
         match name.as_str() {
-            "TLS_AES_256_GCM_SHA384" => { suites.push(cs::TLS13_AES_256_GCM_SHA384); applied.push(name.as_str()); }
-            "TLS_AES_128_GCM_SHA256" => { suites.push(cs::TLS13_AES_128_GCM_SHA256); applied.push(name.as_str()); }
-            "TLS_CHACHA20_POLY1305_SHA256" => { suites.push(cs::TLS13_CHACHA20_POLY1305_SHA256); applied.push(name.as_str()); }
-            unknown => tracing::warn!("MESH_CIPHER_SUITES: unknown cipher suite '{unknown}', ignoring"),
+            "TLS_AES_256_GCM_SHA384" => {
+                suites.push(cs::TLS13_AES_256_GCM_SHA384);
+                applied.push(name.as_str());
+            }
+            "TLS_AES_128_GCM_SHA256" => {
+                suites.push(cs::TLS13_AES_128_GCM_SHA256);
+                applied.push(name.as_str());
+            }
+            "TLS_CHACHA20_POLY1305_SHA256" => {
+                suites.push(cs::TLS13_CHACHA20_POLY1305_SHA256);
+                applied.push(name.as_str());
+            }
+            unknown => {
+                tracing::warn!("MESH_CIPHER_SUITES: unknown cipher suite '{unknown}', ignoring")
+            }
         }
     }
     if suites.is_empty() {
@@ -196,9 +213,9 @@ pub(super) fn provider() -> Arc<CryptoProvider> {
         }
     } else {
         let mut groups: Vec<&'static dyn rustls::crypto::SupportedKxGroup> = Vec::new();
-        // Prefer hybrid MLKEM when both build-time and runtime OpenSSL support it.
+        // Prefer hybrid MLKEM outside FIPS mode when OpenSSL supports it.
         #[cfg(ossl350)]
-        if openssl::version::number() >= 0x30500000 {
+        if openssl::version::number() >= 0x30500000 && !rustls_openssl::SecureRandom.fips() {
             groups.push(rustls_openssl::kx_group::X25519MLKEM768);
         }
         groups.extend([
@@ -360,11 +377,36 @@ pub mod tests {
 
     #[test]
     #[cfg(feature = "tls-openssl")]
+    fn test_openssl_provider_excludes_x25519_in_fips_mode() {
+        use rustls::crypto::SecureRandom;
+
+        // Explicit PQC mode intentionally overrides the default group selection.
+        if !rustls_openssl::SecureRandom.fips() || *crate::PQC_ENABLED {
+            return;
+        }
+        let provider = super::provider();
+        assert_eq!(
+            provider
+                .kx_groups
+                .iter()
+                .map(|g| g.name())
+                .collect::<Vec<_>>(),
+            vec![rustls::NamedGroup::secp256r1, rustls::NamedGroup::secp384r1],
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "tls-openssl")]
     fn test_openssl_provider_kx_groups_valid() {
+        #[cfg(ossl350)]
+        use rustls::crypto::SecureRandom;
+
         let provider = super::provider();
         let mut expected = Vec::new();
         #[cfg(ossl350)]
-        if openssl::version::number() >= 0x30500000 {
+        if openssl::version::number() >= 0x30500000
+            && (*crate::PQC_ENABLED || !rustls_openssl::SecureRandom.fips())
+        {
             expected.push(rustls::NamedGroup::X25519MLKEM768);
         }
         if !*crate::PQC_ENABLED {
