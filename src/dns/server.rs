@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use hickory_proto::ProtoErrorKind;
 use hickory_proto::op::ResponseCode;
 use hickory_proto::rr::rdata::{A, AAAA, CNAME};
 use hickory_proto::rr::{Name, RData, Record, RecordType};
 use hickory_resolver::config::{NameServerConfig, ResolverConfig, ResolverOpts};
 use hickory_resolver::system_conf::read_system_conf;
-use hickory_server::ServerFuture;
-use hickory_server::authority::LookupError;
+use hickory_server::Server as HickoryServer;
 use hickory_server::server::Request;
+use hickory_server::zone_handler::LookupError;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use rand::rng;
@@ -53,6 +52,7 @@ use crate::state::workload::address::Address;
 use crate::{config, dns};
 
 const DEFAULT_TCP_REQUEST_TIMEOUT: u64 = 5;
+const DEFAULT_TCP_RESPONSE_BUFFER_SIZE: usize = 32;
 const DEFAULT_TTL_SECONDS: u32 = 30;
 
 static SVC: Lazy<Name> = Lazy::new(|| as_name("svc"));
@@ -63,7 +63,7 @@ pub struct Server {
     store: Arc<Store>,
     tcp_addr: SocketAddr,
     udp_addr: SocketAddr,
-    server: ServerFuture<dns::handler::Handler>,
+    server: HickoryServer<dns::handler::Handler>,
     drain: DrainWatcher,
 }
 
@@ -109,7 +109,7 @@ impl Server {
         );
         let store = Arc::new(store);
         let handler = dns::handler::Handler::new(store.clone());
-        let mut server = ServerFuture::new(handler);
+        let mut server = HickoryServer::new(handler);
         info!(
             address=%local_address,
             component="dns",
@@ -128,6 +128,7 @@ impl Server {
             server.register_listener(
                 tcp_listener.inner(),
                 Duration::from_secs(DEFAULT_TCP_REQUEST_TIMEOUT),
+                DEFAULT_TCP_RESPONSE_BUFFER_SIZE,
             );
 
             // Bind and register the UDP socket.
@@ -170,10 +171,7 @@ impl Server {
         tokio::select! {
             res = self.server.block_until_done() =>{
                 if let Err(e) = res {
-                    match e.kind() {
-                        ProtoErrorKind::NoError => (),
-                        _ => warn!("DNS server shutdown error: {e}"),
-                    }
+                    warn!("DNS server shutdown error: {e}");
                 }
             }
             res = self.drain.wait_for_drain() => {
@@ -938,14 +936,14 @@ mod tests {
     use std::net::{SocketAddrV4, SocketAddrV6};
 
     use bytes::Bytes;
-    use hickory_proto::xfer::Protocol;
+    use hickory_net::xfer::Protocol;
     use prometheus_client::registry::Registry;
 
     use super::*;
     use crate::state::WorkloadInfo;
     use crate::test_helpers::dns::{
         a, aaaa, cname, ip, ipv4, ipv6, n, new_message, new_tcp_client, new_udp_client, run_dns,
-        send_request, server_request,
+        send_no_edns_request, send_request, server_request,
     };
     use crate::test_helpers::helpers::initialize_telemetry;
     use crate::test_helpers::{new_proxy_state, test_default_workload};
@@ -1432,11 +1430,14 @@ mod tests {
                 tasks.push(async move {
                     let name = format!("[{protocol}] {}", c.name);
                     let resp = send_request(&mut client, n(c.host), c.query_type).await;
-                    assert_eq!(c.expect_authoritative, resp.authoritative(), "{name}");
-                    assert_eq!(c.expect_code, resp.response_code(), "{name}");
+                    assert_eq!(
+                        c.expect_authoritative, resp.metadata.authoritative,
+                        "{name}"
+                    );
+                    assert_eq!(c.expect_code, resp.metadata.response_code, "{name}");
 
                     if c.expect_code == ResponseCode::NoError {
-                        let mut actual = resp.answers().to_vec();
+                        let mut actual = resp.answers.to_vec();
 
                         // The IP records in an authoritative response will be randomly sorted to
                         // accommodate DNS-based load balancing. If the response is authoritative,
@@ -1515,9 +1516,9 @@ mod tests {
             for (protocol, client) in [("tcp", &mut tcp_client), ("udp", &mut udp_client)] {
                 let name = format!("[{protocol}] {}", c.name);
                 let resp = send_request(client, n(c.host), RecordType::A).await;
-                assert_eq!(c.expect_code, resp.response_code(), "{name}");
+                assert_eq!(c.expect_code, resp.metadata.response_code, "{name}");
                 if c.expect_code == ResponseCode::NoError {
-                    assert!(!resp.answers().is_empty());
+                    assert!(!resp.answers.is_empty());
                 }
             }
         }
@@ -1598,13 +1599,72 @@ mod tests {
         let mut udp_client = new_udp_client(udp_addr).await;
 
         let resp = send_request(&mut tcp_client, n("large.com."), RecordType::A).await;
-        assert!(!resp.truncated(), "TCP should not truncate");
-        assert_eq!(256, resp.answers().len());
+        assert!(!resp.metadata.truncation, "TCP should not truncate");
+        assert_eq!(256, resp.answers.len());
 
         let resp = send_request(&mut udp_client, n("large.com."), RecordType::A).await;
         // UDP is truncated
-        assert!(resp.truncated());
-        assert_eq!(74, resp.answers().len(), "expected UDP to be truncated");
+        assert!(resp.metadata.truncation);
+        assert_eq!(74, resp.answers.len(), "expected UDP to be truncated");
+    }
+
+    // https://github.com/istio/ztunnel/issues/2060
+    //
+    // RFC 1035 §4.2.1 limits a UDP DNS message to 512 bytes; that ceiling is only raised when
+    // the requestor advertises a larger buffer via EDNS(0) (RFC 6891). A client that sends no
+    // OPT record at all (e.g. `dig +noedns`, or resolvers like musl libc / Ruby's `Resolv` that
+    // don't implement EDNS(0)) MUST get a response that fits in 512 bytes, truncated (TC bit
+    // set) if necessary — never a larger, silently-truncated-by-the-kernel datagram.
+    #[tokio::test]
+    async fn large_response_no_edns_truncates_to_512() {
+        initialize_telemetry();
+        // Create and start the proxy with an empty state. The forwarder is configured to
+        // return a response that easily fits in a single UDP datagram, but is well over the
+        // RFC 1035 512-byte limit for a non-EDNS(0) client.
+        let (state, local_workload) = state();
+        let forwarder = Arc::new(FakeForwarder {
+            search_domains: vec![],
+            ips: HashMap::from([(n("large.com."), new_non_edns_response())]),
+        });
+        let domain = "cluster.local".to_string();
+        let (_signal, drain) = drain::new();
+        let factory = crate::proxy::DefaultSocketFactory::default();
+        let server = Server::new(
+            domain,
+            config::Address::Localhost(false, 0),
+            state,
+            forwarder,
+            test_metrics(),
+            drain,
+            &factory,
+            local_workload,
+            None,
+            true, // ipv6_enabled for tests
+        )
+        .await
+        .unwrap();
+        let udp_addr = server.udp_address();
+        tokio::spawn(server.run());
+
+        let mut udp_client = new_udp_client(udp_addr).await;
+
+        // Send a query with no OPT record at all, as a non-EDNS(0) client would.
+        let resp = send_no_edns_request(&mut udp_client, n("large.com."), RecordType::A).await;
+
+        assert!(
+            resp.as_buffer().len() <= 512,
+            "non-EDNS(0) UDP response must not exceed the RFC 1035 512-byte limit, got {} bytes",
+            resp.as_buffer().len()
+        );
+        assert!(
+            resp.metadata.truncation,
+            "response exceeding 512 bytes must set the TC bit"
+        );
+        assert!(
+            resp.answers.len() < 50,
+            "expected the answer set to be truncated, got {} answers",
+            resp.answers.len()
+        );
     }
 
     #[test]
@@ -1671,6 +1731,17 @@ mod tests {
         let mut out = Vec::new();
         for i in 0..256 {
             out.push(ip(format!("240.0.0.{i}")));
+        }
+        out
+    }
+
+    /// Returns a response that comfortably fits within a single UDP datagram (well under the
+    /// old, buggy 4096-byte non-EDNS(0) ceiling), but is over the RFC 1035 512-byte limit that
+    /// applies to a client that didn't advertise EDNS(0) support.
+    fn new_non_edns_response() -> Vec<IpAddr> {
+        let mut out = Vec::new();
+        for i in 0..50 {
+            out.push(ip(format!("241.0.0.{i}")));
         }
         out
     }
